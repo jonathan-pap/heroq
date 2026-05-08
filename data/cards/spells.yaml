@@ -1,0 +1,142 @@
+# =====================================================================
+# SPELLS — 12 cards, 3 per element (Air, Earth, Fire, Water).
+#
+# Each spell is one-shot: discarded after casting (some persist as a
+# status effect on the target until "broken").
+#
+# `effect` is the engine hook name. The server's spell resolver
+# dispatches on this string. New custom spells just need a matching
+# resolver branch.
+#
+# `target` types:
+#   ally       — any hero, including caster
+#   enemy      — any monster
+#   anyone     — any hero or monster
+#   self       — caster only
+#   line       — any cell on the board (board-wide range)
+# =====================================================================
+
+# ----- AIR -------------------------------------------------------------
+genie:
+  name: Genie
+  element: air
+  target: line
+  range: anywhere
+  effect: summonGenie
+  text: |
+    Conjures a Genie. The Genie may either open any single door on
+    the board OR attack any one creature with five combat dice. It
+    performs only one action and is then dispelled.
+
+swift-wind:
+  name: Swift Wind
+  element: air
+  target: ally
+  effect: doubleNextMovement
+  text: |
+    The next time the chosen Hero rolls movement dice, they roll
+    twice as many.
+
+tempest:
+  name: Tempest
+  element: air
+  target: anyone
+  effect: skipNextTurn
+  text: |
+    A small tempest envelops one creature of your choice. They
+    miss their next turn.
+
+# ----- EARTH -----------------------------------------------------------
+heal-body:
+  name: Heal Body
+  element: earth
+  target: ally
+  effect: healBody
+  amount: 4
+  text: |
+    Restores up to four lost Body points to one Hero.
+
+pass-through-rock:
+  name: Pass Through Rock
+  element: earth
+  target: ally
+  effect: passWalls
+  text: |
+    For the chosen Hero's next move, they may pass through walls,
+    spending one square of movement per wall traversed.
+
+rock-skin:
+  name: Rock Skin
+  element: earth
+  target: ally
+  effect: bonusDefendUntilWounded
+  bonus: 2
+  text: |
+    The chosen Hero rolls two extra defence dice until they take
+    Body damage, at which point the spell ends.
+
+# ----- FIRE ------------------------------------------------------------
+ball-of-flame:
+  name: Ball of Flame
+  element: fire
+  target: anyone
+  effect: directDamage
+  damage: 2
+  defenceDice: 2
+  text: |
+    Inflicts 2 Body damage on one target. The victim rolls 2 dice;
+    each shield reduces the damage by 1.
+
+courage:
+  name: Courage
+  element: fire
+  target: ally
+  effect: bonusAttackUntilSafe
+  bonus: 2
+  text: |
+    The chosen Hero rolls two extra attack dice each turn until no
+    monsters are visible to them, at which point the spell ends.
+
+fire-of-wrath:
+  name: Fire of Wrath
+  element: fire
+  target: anyone
+  range: anywhere
+  effect: directDamage
+  damage: 1
+  defenceDice: 1
+  text: |
+    Inflicts 1 Body damage on any target anywhere on the board,
+    unless they roll a shield on one defence die.
+
+# ----- WATER -----------------------------------------------------------
+sleep:
+  name: Sleep
+  element: water
+  target: anyone
+  effect: sleep
+  immuneTags: [undead]
+  immuneTypes: [skeleton, zombie, mummy]
+  text: |
+    Puts one creature into a deep sleep — they cannot move, attack, or
+    defend. Each turn the target rolls 1 red die per Mind Point; a 6
+    breaks the spell. May not be used against undead (skeletons,
+    zombies, mummies).
+
+veil-of-mist:
+  name: Veil of Mist
+  element: water
+  target: ally
+  effect: passOccupants
+  text: |
+    The chosen Hero may move through cells occupied by other
+    Heroes or monsters during their next move.
+
+water-of-healing:
+  name: Water of Healing
+  element: water
+  target: ally
+  effect: healBody
+  amount: 4
+  text: |
+    Restores up to four lost Body points to one Hero.

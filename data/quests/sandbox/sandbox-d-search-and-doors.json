@@ -1,0 +1,129 @@
+{
+  "id": "sandbox-d-search-and-doors",
+  "title": "Search & Doors",
+  "subtitle": "Sandbox D",
+  "intro": "Three things to test: (1) the Search Traps and Search Secret Doors actions are now distinct — each consumes the action separately. (2) Each hero may only Search Treasure once per room. Try Searching Treasure in r18, then try again — the second attempt should be refused. (3) A secret door connects r18 to a hidden goblin chamber. Use Search Secret Doors to find it. Doors marked closed and revealed can be opened FREE via the Adjacent Doors panel — no MP, no action.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Open Ground",
+      "hidden": false
+    },
+    "r17": {
+      "name": "Hidden Chamber",
+      "hidden": true
+    }
+  },
+  "doors": [],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        19,
+        14
+      ],
+      "b": [
+        18,
+        14
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-chest",
+      "type": "chest",
+      "cells": [
+        [
+          23,
+          16
+        ]
+      ]
+    }
+  ],
+  "traps": [
+    {
+      "id": "t-spear",
+      "type": "spear",
+      "at": [
+        22,
+        14
+      ]
+    }
+  ],
+  "heroSetup": {
+    "wizard": {
+      "equipped": {
+        "weapon": "staff",
+        "utility": "tool-kit"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        15,
+        15
+      ],
+      "roomId": "r17"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        23,
+        16
+      ],
+      "kind": "gold",
+      "amount": 25
+    }
+  ],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "g1",
+    "text": "Find the secret door, slay the hidden goblin, return."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Tested to death."
+  }
+}

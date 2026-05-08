@@ -1,0 +1,83 @@
+{
+  "id": "sandbox-a2-thrown-weapon",
+  "title": "Thrown Weapon",
+  "subtitle": "Sandbox A2",
+  "intro": "Verifies throw-and-lose: hand-axe (or spear / dagger) thrown at a non-adjacent target with line of sight clears the weapon slot. Barbarian starts with a Hand Axe equipped — there's a goblin three squares west. Throw it. The slot should empty after the attack lands.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Test Cell",
+      "hidden": false
+    }
+  },
+  "doors": [],
+  "furniture": [],
+  "traps": [],
+  "secretDoors": [],
+  "heroSetup": {
+    "barbarian": {
+      "equipped": {
+        "weapon": "hand-axe"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        19,
+        15
+      ],
+      "roomId": "r18"
+    }
+  ],
+  "treasure": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "g1",
+    "text": "Throw the hand-axe at the goblin. Confirm the weapon slot clears."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Tested to death."
+  }
+}

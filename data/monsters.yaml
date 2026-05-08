@@ -1,0 +1,186 @@
+# =====================================================================
+# MONSTERS — 2021 Avalon Hill HeroQuest stats.
+#
+# Differences from the 1989 EU edition:
+#   * "Chaos" rebranded as "Dread" — Chaos Warrior → Dread Warrior,
+#     Chaos Sorcerer → Dread Sorcerer.
+#   * Fimir replaced by Abomination (different artwork, same role: a
+#     mid-tier brute slightly tougher than an Orc).
+#
+# move = squares per turn (NO movement roll for monsters).
+# All stats per the 2021 monster cards / Game Master screen chart.
+# Named bosses (Verag, Ulag, Grak, Balur, the Witch Lord) inherit a
+# base type and override stats; quest JSONs reference them by id.
+# =====================================================================
+
+goblin:
+  name: Goblin
+  move: 10
+  attack: 2
+  defend: 1
+  body: 1
+  mind: 1
+  glyph: g
+  color: '#6b8030'
+
+orc:
+  name: Orc
+  move: 8
+  attack: 3
+  defend: 2
+  body: 1
+  mind: 2
+  glyph: o
+  color: '#7a4a20'
+
+abomination:
+  name: Abomination
+  move: 6
+  attack: 3
+  defend: 3
+  body: 1
+  mind: 3
+  glyph: a
+  color: '#5a3a48'
+  bio: |
+    Twisted, hulking creatures bound to Zargon's will. Slow but
+    well-armoured, often bear weapons forged in Dread fire.
+
+skeleton:
+  name: Skeleton
+  move: 6
+  attack: 2
+  defend: 2
+  body: 1
+  mind: 0
+  glyph: s
+  color: '#cccccc'
+  tags: [undead]
+
+zombie:
+  name: Zombie
+  move: 4
+  attack: 2
+  defend: 3
+  body: 1
+  mind: 0
+  glyph: z
+  color: '#7a8060'
+  tags: [undead]
+
+mummy:
+  name: Mummy
+  move: 4
+  attack: 3
+  defend: 4
+  body: 1
+  mind: 0
+  glyph: m
+  color: '#a09070'
+  tags: [undead]
+
+dread-warrior:
+  name: Dread Warrior
+  move: 6
+  attack: 3
+  defend: 4
+  body: 1
+  mind: 3
+  glyph: D
+  color: '#a02040'
+  tags: [dread]
+  bio: |
+    Humans corrupted into eternal servitude — heavily armoured,
+    weapons enchanted with Dread magic.
+
+gargoyle:
+  name: Gargoyle
+  move: 6
+  attack: 4
+  defend: 4
+  body: 1
+  mind: 4
+  glyph: G
+  color: '#806060'
+  tags: [dread]
+
+# ------- Aliases for legacy quest data ------------------------------
+# Older quests written in the 1989-era flavour referenced
+# `chaos-warrior`, `chaos-sorcerer`, and `fimir`. Keep them as aliases
+# pointing at the 2021 equivalents so existing JSON keeps working.
+chaos-warrior:
+  name: Dread Warrior
+  base: dread-warrior
+chaos-sorcerer:
+  name: Dread Sorcerer
+  base: dread-sorcerer
+fimir:
+  name: Abomination
+  base: abomination
+
+# ------- Bosses (named monsters with overrides) ---------------------
+
+verag:
+  name: Verag
+  base: gargoyle
+  body: 4
+  glyph: V
+  color: '#a05030'
+  bio: A foul gargoyle hiding in the catacombs of Fellmarg's tomb.
+
+orc-warlord:
+  name: Orc Warlord
+  base: orc
+  attack: 4
+  defend: 4
+  body: 4
+  glyph: U
+  color: '#a05030'
+
+ulag:
+  name: Ulag
+  base: orc-warlord
+
+grak:
+  name: Grak
+  base: orc
+  attack: 4
+  body: 3
+  glyph: K
+  color: '#7a3010'
+  bio: Ulag's foul offspring. Wields a staff and the Wizard's Cloak.
+
+dread-sorcerer:
+  name: Dread Sorcerer
+  base: dread-warrior
+  attack: 1
+  defend: 4
+  body: 2
+  mind: 6
+  glyph: S
+  color: '#603090'
+  tags: [dread, caster]
+
+balur:
+  name: Balur
+  base: dread-sorcerer
+  attack: 2
+  body: 3
+  mind: 7
+  glyph: B
+  color: '#c83018'
+  tags: [dread, caster, fire-immune]
+  bio: The Fire Mage. Immune to fire spells. Knows escape, summon orcs,
+       firestorm, tempest, ball of flame, fear.
+
+witch-lord:
+  name: The Witch Lord
+  base: dread-sorcerer
+  attack: 4
+  defend: 5
+  body: 6
+  mind: 6
+  glyph: L
+  color: '#241a3d'
+  tags: [undead, dread, caster, blade-only]
+  bio: Only the Spirit Blade can harm him.

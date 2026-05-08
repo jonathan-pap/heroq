@@ -1,0 +1,625 @@
+{
+  "id": "quest7-the-stone-hunter",
+  "title": "The Stone Hunter",
+  "subtitle": "Quest 7",
+  "intro": "A Chaos Sorcerer named Karkenroth is animating gargoyles in the deep caves. Slay him before his legion of stone is complete.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Cave Mouth",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "cav1",
+      "name": "Outer Cavern",
+      "hidden": true,
+      "cells": [
+        [
+          15,
+          14
+        ],
+        [
+          16,
+          14
+        ],
+        [
+          17,
+          14
+        ],
+        [
+          18,
+          14
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "cav2",
+      "name": "Echo Cavern",
+      "hidden": true,
+      "cells": [
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          9
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          12,
+          9
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          7,
+          11
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          11
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          12,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "ritual",
+      "name": "Ritual Chamber",
+      "hidden": true,
+      "cells": [
+        [
+          12,
+          2
+        ],
+        [
+          13,
+          2
+        ],
+        [
+          14,
+          2
+        ],
+        [
+          15,
+          2
+        ],
+        [
+          16,
+          2
+        ],
+        [
+          17,
+          2
+        ],
+        [
+          12,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          14,
+          3
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          16,
+          3
+        ],
+        [
+          17,
+          3
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          16,
+          4
+        ],
+        [
+          17,
+          4
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      19,
+      16
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      14
+    ],
+    [
+      14,
+      13
+    ],
+    [
+      14,
+      12
+    ],
+    [
+      14,
+      11
+    ],
+    [
+      14,
+      10
+    ],
+    [
+      13,
+      10
+    ],
+    [
+      13,
+      8
+    ],
+    [
+      13,
+      7
+    ],
+    [
+      13,
+      6
+    ],
+    [
+      13,
+      5
+    ],
+    [
+      14,
+      5
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        19,
+        16
+      ],
+      "b": [
+        18,
+        16
+      ]
+    },
+    {
+      "a": [
+        14,
+        15
+      ],
+      "b": [
+        15,
+        15
+      ]
+    },
+    {
+      "a": [
+        13,
+        10
+      ],
+      "b": [
+        12,
+        10
+      ]
+    },
+    {
+      "a": [
+        13,
+        5
+      ],
+      "b": [
+        13,
+        4
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-statue1",
+      "type": "throne",
+      "cells": [
+        [
+          18,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "f-statue2",
+      "type": "throne",
+      "cells": [
+        [
+          7,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "f-altar",
+      "type": "throne",
+      "cells": [
+        [
+          14,
+          3
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "fimir",
+      "at": [
+        16,
+        15
+      ],
+      "roomId": "cav1"
+    },
+    {
+      "id": "m2",
+      "type": "fimir",
+      "at": [
+        17,
+        15
+      ],
+      "roomId": "cav1"
+    },
+    {
+      "id": "m3",
+      "type": "gargoyle",
+      "at": [
+        16,
+        14
+      ],
+      "roomId": "cav1"
+    },
+    {
+      "id": "m4",
+      "type": "skeleton",
+      "at": [
+        9,
+        10
+      ],
+      "roomId": "cav2"
+    },
+    {
+      "id": "m5",
+      "type": "skeleton",
+      "at": [
+        10,
+        10
+      ],
+      "roomId": "cav2"
+    },
+    {
+      "id": "m6",
+      "type": "fimir",
+      "at": [
+        11,
+        10
+      ],
+      "roomId": "cav2"
+    },
+    {
+      "id": "m7",
+      "type": "gargoyle",
+      "at": [
+        8,
+        11
+      ],
+      "roomId": "cav2"
+    },
+    {
+      "id": "m8",
+      "type": "chaos-warrior",
+      "at": [
+        13,
+        3
+      ],
+      "roomId": "ritual"
+    },
+    {
+      "id": "m9",
+      "type": "chaos-warrior",
+      "at": [
+        15,
+        3
+      ],
+      "roomId": "ritual"
+    },
+    {
+      "id": "m10",
+      "type": "gargoyle",
+      "at": [
+        16,
+        3
+      ],
+      "roomId": "ritual"
+    },
+    {
+      "id": "boss",
+      "type": "chaos-sorcerer",
+      "name": "Karkenroth",
+      "at": [
+        14,
+        2
+      ],
+      "roomId": "ritual"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        15,
+        16
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        11,
+        9
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        12,
+        11
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        13,
+        2
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        17,
+        4
+      ],
+      "kind": "gold",
+      "amount": 100
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        14,
+        12
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        13,
+        7
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        13,
+        8
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        14,
+        10
+      ],
+      "b": [
+        14,
+        9
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "fimir",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "boss",
+    "text": "Slay Karkenroth, the Chaos Sorcerer."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Karkenroth's stone legion will march on the surface."
+  }
+}

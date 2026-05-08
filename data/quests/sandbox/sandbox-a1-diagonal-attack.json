@@ -1,0 +1,83 @@
+{
+  "id": "sandbox-a1-diagonal-attack",
+  "title": "Diagonal Attack",
+  "subtitle": "Sandbox A1",
+  "intro": "Verifies the diagonal-attack rule: weapons flagged `diagonal: true` (staff, longsword, shortsword, spear) hit Chebyshev-1 cells. Wizard starts with a Staff equipped. Goblin sits diagonally adjacent. Click it.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Test Cell",
+      "hidden": false
+    }
+  },
+  "doors": [],
+  "furniture": [],
+  "traps": [],
+  "secretDoors": [],
+  "heroSetup": {
+    "wizard": {
+      "equipped": {
+        "weapon": "staff"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        21,
+        14
+      ],
+      "roomId": "r18"
+    }
+  ],
+  "treasure": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "g1",
+    "text": "Slay the diagonal goblin to confirm the staff swings on the diagonal."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Tested to death."
+  }
+}

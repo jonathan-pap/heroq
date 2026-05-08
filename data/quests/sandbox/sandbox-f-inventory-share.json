@@ -1,0 +1,116 @@
+{
+  "id": "sandbox-f-inventory-share",
+  "title": "Inventory: Give & Drink-to-Save",
+  "subtitle": "Sandbox F",
+  "intro": "Two heroes — Barbarian and Wizard. Claim BOTH in the lobby. The Barbarian starts at 1 Body with two Potions of Healing in inventory; the Wizard starts empty-handed. Goblin at attacking range will likely drop the Barbarian to 0 Body next GM turn — when it does, the Drink-to-Save modal should appear with the choice of which potion to drink. The Wizard is adjacent to the Barbarian, so the 'Give to ...' panel should also list both potions as transfer options. Try giving one potion across, then attacking the goblin to win.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Triage Tent",
+      "hidden": false
+    }
+  },
+  "doors": [],
+  "furniture": [],
+  "traps": [],
+  "secretDoors": [],
+  "heroSetup": {
+    "barbarian": {
+      "body": 1,
+      "equipped": {
+        "weapon": "broadsword"
+      },
+      "inventory": [
+        {
+          "id": "p1",
+          "name": "Potion of Healing",
+          "use": "heal",
+          "amount": 4
+        },
+        {
+          "id": "p2",
+          "name": "Potion of Resilience",
+          "use": "heal",
+          "amount": 4
+        }
+      ]
+    },
+    "wizard": {
+      "equipped": {
+        "weapon": "staff"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        20,
+        15
+      ],
+      "roomId": "r18"
+    }
+  ],
+  "treasure": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "g1",
+    "text": "Survive the goblin; transfer items between heroes."
+  },
+  "objectives": [
+    {
+      "id": "kill-goblin",
+      "kind": "kill",
+      "monsterId": "g1",
+      "text": "Slay the goblin"
+    },
+    {
+      "id": "transfer-item",
+      "kind": "gave-item",
+      "text": "Transfer an item between heroes"
+    }
+  ],
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Tested to death."
+  }
+}

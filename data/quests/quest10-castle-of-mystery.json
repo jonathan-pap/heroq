@@ -1,0 +1,735 @@
+{
+  "id": "quest10-castle-of-mystery",
+  "title": "Castle of Mystery",
+  "subtitle": "Quest 10",
+  "intro": "An abandoned castle at the edge of the Empire is rumoured to hide more than dust. Search every wall — secret passages riddle this dungeon, and the true vault is found only by the keen-eyed.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Castle Gate",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "hall",
+      "name": "Great Hall",
+      "hidden": true,
+      "cells": [
+        [
+          14,
+          14
+        ],
+        [
+          15,
+          14
+        ],
+        [
+          16,
+          14
+        ],
+        [
+          17,
+          14
+        ],
+        [
+          18,
+          14
+        ],
+        [
+          19,
+          14
+        ],
+        [
+          14,
+          15
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          19,
+          15
+        ],
+        [
+          14,
+          16
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ],
+        [
+          19,
+          16
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          18,
+          17
+        ],
+        [
+          19,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "study",
+      "name": "Lord's Study",
+      "hidden": true,
+      "cells": [
+        [
+          7,
+          11
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          11
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          8,
+          12
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          10,
+          12
+        ],
+        [
+          11,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "false",
+      "name": "False Vault",
+      "hidden": true,
+      "cells": [
+        [
+          16,
+          7
+        ],
+        [
+          17,
+          7
+        ],
+        [
+          18,
+          7
+        ],
+        [
+          16,
+          8
+        ],
+        [
+          17,
+          8
+        ],
+        [
+          18,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "true",
+      "name": "True Vault",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      13,
+      16
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      13,
+      13
+    ],
+    [
+      13,
+      12
+    ],
+    [
+      13,
+      11
+    ],
+    [
+      12,
+      11
+    ],
+    [
+      6,
+      11
+    ],
+    [
+      5,
+      11
+    ],
+    [
+      4,
+      11
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      9
+    ],
+    [
+      4,
+      8
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      16,
+      9
+    ],
+    [
+      17,
+      9
+    ],
+    [
+      18,
+      9
+    ],
+    [
+      19,
+      9
+    ],
+    [
+      19,
+      10
+    ],
+    [
+      19,
+      11
+    ],
+    [
+      13,
+      9
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        16
+      ],
+      "b": [
+        14,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        11
+      ],
+      "b": [
+        12,
+        11
+      ]
+    },
+    {
+      "a": [
+        16,
+        9
+      ],
+      "b": [
+        16,
+        8
+      ]
+    },
+    {
+      "a": [
+        4,
+        6
+      ],
+      "b": [
+        4,
+        5
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-tables",
+      "type": "table",
+      "cells": [
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "f-throne",
+      "type": "throne",
+      "cells": [
+        [
+          18,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "f-desk",
+      "type": "table",
+      "cells": [
+        [
+          8,
+          12
+        ],
+        [
+          9,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "f-bookshelf",
+      "type": "bookcase",
+      "cells": [
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "f-vault",
+      "type": "throne",
+      "cells": [
+        [
+          4,
+          4
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "skeleton",
+      "at": [
+        16,
+        15
+      ],
+      "roomId": "hall"
+    },
+    {
+      "id": "m2",
+      "type": "skeleton",
+      "at": [
+        18,
+        15
+      ],
+      "roomId": "hall"
+    },
+    {
+      "id": "m3",
+      "type": "fimir",
+      "at": [
+        17,
+        16
+      ],
+      "roomId": "hall"
+    },
+    {
+      "id": "m4",
+      "type": "zombie",
+      "at": [
+        15,
+        17
+      ],
+      "roomId": "hall"
+    },
+    {
+      "id": "m5",
+      "type": "zombie",
+      "at": [
+        19,
+        17
+      ],
+      "roomId": "hall"
+    },
+    {
+      "id": "m6",
+      "type": "skeleton",
+      "at": [
+        8,
+        11
+      ],
+      "roomId": "study"
+    },
+    {
+      "id": "m7",
+      "type": "fimir",
+      "at": [
+        10,
+        12
+      ],
+      "roomId": "study"
+    },
+    {
+      "id": "m8",
+      "type": "chaos-warrior",
+      "at": [
+        16,
+        7
+      ],
+      "roomId": "false"
+    },
+    {
+      "id": "m9",
+      "type": "chaos-warrior",
+      "at": [
+        18,
+        7
+      ],
+      "roomId": "false"
+    },
+    {
+      "id": "m10",
+      "type": "gargoyle",
+      "at": [
+        4,
+        3
+      ],
+      "roomId": "true"
+    },
+    {
+      "id": "m11",
+      "type": "chaos-warrior",
+      "at": [
+        4,
+        5
+      ],
+      "roomId": "true"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        16,
+        16
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        9,
+        11
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        17,
+        8
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        3,
+        3
+      ],
+      "kind": "gold",
+      "amount": 200
+    },
+    {
+      "at": [
+        5,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        13,
+        13
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        4,
+        9
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        13,
+        9
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        11,
+        11
+      ],
+      "b": [
+        11,
+        10
+      ]
+    },
+    {
+      "id": "sd2",
+      "a": [
+        13,
+        9
+      ],
+      "b": [
+        13,
+        8
+      ]
+    },
+    {
+      "id": "sd3",
+      "a": [
+        4,
+        7
+      ],
+      "b": [
+        4,
+        6
+      ]
+    },
+    {
+      "id": "sd4",
+      "a": [
+        19,
+        15
+      ],
+      "b": [
+        20,
+        15
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "fimir",
+  "objective": {
+    "kind": "reach",
+    "cell": [
+      4,
+      4
+    ],
+    "text": "Search out the True Vault and claim its treasure."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "The castle keeps its secrets a while longer."
+  }
+}

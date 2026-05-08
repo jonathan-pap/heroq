@@ -1,0 +1,139 @@
+# =====================================================================
+# ARTIFACTS — Quest Treasure rewards.
+#
+# Sourced from the 2021 Avalon Hill Quest Book. Card-text mechanics
+# below are paraphrased from the quest descriptions; exact wording on
+# the artifact cards themselves is image-only in the PDF, so a couple
+# entries are best-effort and flagged `_tentative: true` — verify card
+# text and tweak if you spot a discrepancy.
+#
+# slot:
+#   artifactWeapon  — replaces or upgrades a normal weapon
+#   artifactArmour  — stacks with normal armour (combinable per card)
+#   artifactItem    — held; bonuses while in possession
+# =====================================================================
+
+# ----- Found in Quest 5 — Melar's Maze --------------------------------
+talisman-of-lore:
+  name: Talisman of Lore
+  slot: artifactItem
+  mindBonus: 2
+  text: +2 Mind while held.
+  flavour: |
+    Created by the wizard Melar to enhance the wearer's understanding
+    of magic. Hidden at the heart of his maze.
+
+# ----- Found in Quest 6 — Legacy of the Orc Warlord -------------------
+wizards-cloak:
+  name: Wizard's Cloak
+  slot: artifactArmour
+  defendBonus: 2
+  text: +2 Defend dice.
+  flavour: Special interest to the Wizard; enchanted by an old spellsmith.
+  _tentative: true
+
+# ----- Found in Quest 7 — The Lost Wizard -----------------------------
+borins-armour:
+  name: Borin's Armour
+  slot: artifactArmour
+  setDefend: 4
+  combinableWithHelmet: true
+  combinableWithShield: true
+  notWizard: true
+  text: |
+    Roll 4 Defend dice. Unlike normal plate mail, this magical
+    ultralight armour does not slow movement. May be combined
+    with a helmet and/or shield.
+  flavour: The legendary armour of the dwarven hero Borin.
+
+# ----- Found in Quest 8 — The Fire Mage -------------------------------
+wand-of-magic:
+  name: Wand of Magic
+  slot: artifactItem
+  spellsPerTurn: 2
+  text: Cast 2 spells per turn instead of 1.
+  flavour: Recovered from Balur's lair. Quickens the flow of arcane recall.
+  _tentative: true
+
+# ----- Found in Quest 9 — Race Against Time ---------------------------
+elixir-of-life:
+  name: Elixir of Life
+  slot: artifactItem
+  consumable: true
+  use: revive
+  text: |
+    Drink to instantly restore all lost Body Points. May be drunk
+    even at 0 Body to save the drinker. Discard after use.
+  flavour: A precious draught preserved from the ancient days.
+  _tentative: true
+
+# ----- Found in Quest 10 — Castle of Mystery --------------------------
+ring-of-return:
+  name: Ring of Return
+  slot: artifactItem
+  use: returnToStairs
+  text: |
+    Once per quest, the wearer may instantly return to the staircase
+    tile, ending their turn.
+  flavour: Worn by one of Ollar's lost guardians.
+  _tentative: true
+
+# ----- Found in Quest 11 — Bastion of Dread ---------------------------
+orcs-bane:
+  name: Orc's Bane
+  slot: artifactWeapon
+  attack: 2
+  doubleAttackVs: [orc, orc-warlord, ulag, grak]
+  text: |
+    Roll 2 Attack dice. Attack twice in the same turn against any Orc.
+  flavour: A blade that drinks deeply of greenskin blood.
+
+# ----- Found in Quest 12 — Barak Tor ----------------------------------
+wizards-staff:
+  name: Wizard's Staff
+  slot: artifactWeapon
+  attack: 2
+  diagonal: true
+  spellBonus: 1
+  text: |
+    Roll 2 Attack dice. May attack diagonally. Wielder may cast one
+    additional spell per turn.
+  flavour: Recovered from a hidden bookcase deep within the Witch Lord's barrow.
+  _tentative: true
+
+# ----- Found in Quest 13 — Quest for the Spirit Blade -----------------
+spirit-blade:
+  name: Spirit Blade
+  slot: artifactWeapon
+  attack: 3
+  bonusAttackVs:
+    targets: [skeleton, zombie, mummy, witch-lord]
+    extraDice: 1
+  canHarmWitchLord: true
+  text: |
+    Roll 3 Attack dice (4 against undead). The only weapon that can
+    harm the Witch Lord.
+  flavour: |
+    Forged by the dwarves of World's End Mountain and quenched in the
+    elven Fountain of Leben.
+
+# ----- Found in Quest 14 — Return to Barak Tor ------------------------
+spell-ring:
+  name: Spell Ring
+  slot: artifactItem
+  spellsPerTurn: 2
+  spellsRecharge: true
+  text: |
+    Cast 2 spells per turn. Once per quest, return one already-cast
+    spell card to its owner's hand.
+  flavour: Drawn from the Witch Lord's smouldering remains.
+  _tentative: true
+
+# =====================================================================
+# Legacy 1989 artifact aliased onto the 2021 equivalent so older quest
+# data still resolves. Wand of Recall was the 1989 name; the 2021 card
+# is Wand of Magic with the same "2 spells per turn" effect.
+# =====================================================================
+wand-of-recall:
+  name: Wand of Magic
+  base: wand-of-magic

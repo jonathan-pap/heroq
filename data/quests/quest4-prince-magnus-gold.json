@@ -1,0 +1,599 @@
+{
+  "id": "quest4-prince-magnus-gold",
+  "title": "Prince Magnus's Gold",
+  "subtitle": "Quest 4",
+  "intro": "Bandits have stolen Prince Magnus's tribute gold and hidden it in an old mine. Recover the strongbox and escape with the treasure.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Mine Entrance",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "shaft",
+      "name": "Old Shaft",
+      "hidden": true,
+      "cells": [
+        [
+          16,
+          7
+        ],
+        [
+          17,
+          7
+        ],
+        [
+          18,
+          7
+        ],
+        [
+          16,
+          8
+        ],
+        [
+          17,
+          8
+        ],
+        [
+          18,
+          8
+        ],
+        [
+          16,
+          9
+        ],
+        [
+          17,
+          9
+        ],
+        [
+          18,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "store",
+      "name": "Storeroom",
+      "hidden": true,
+      "cells": [
+        [
+          8,
+          13
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          11,
+          13
+        ],
+        [
+          8,
+          14
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          11,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "vault",
+      "name": "Bandit Vault",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      19,
+      16
+    ],
+    [
+      18,
+      16
+    ],
+    [
+      17,
+      16
+    ],
+    [
+      17,
+      15
+    ],
+    [
+      17,
+      14
+    ],
+    [
+      17,
+      13
+    ],
+    [
+      17,
+      12
+    ],
+    [
+      17,
+      11
+    ],
+    [
+      17,
+      10
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      12,
+      12
+    ],
+    [
+      12,
+      11
+    ],
+    [
+      12,
+      10
+    ],
+    [
+      12,
+      9
+    ],
+    [
+      12,
+      8
+    ],
+    [
+      12,
+      7
+    ],
+    [
+      12,
+      6
+    ],
+    [
+      12,
+      5
+    ],
+    [
+      12,
+      4
+    ],
+    [
+      11,
+      4
+    ],
+    [
+      10,
+      4
+    ],
+    [
+      9,
+      4
+    ],
+    [
+      8,
+      4
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        17,
+        10
+      ],
+      "b": [
+        17,
+        9
+      ]
+    },
+    {
+      "a": [
+        17,
+        15
+      ],
+      "b": [
+        17,
+        16
+      ]
+    },
+    {
+      "a": [
+        12,
+        13
+      ],
+      "b": [
+        11,
+        13
+      ]
+    },
+    {
+      "a": [
+        12,
+        7
+      ],
+      "b": [
+        12,
+        8
+      ]
+    },
+    {
+      "a": [
+        8,
+        4
+      ],
+      "b": [
+        7,
+        4
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-crates",
+      "type": "table",
+      "cells": [
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "f-rack",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          18,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "f-chest",
+      "type": "chest",
+      "cells": [
+        [
+          5,
+          4
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "goblin",
+      "at": [
+        17,
+        8
+      ],
+      "roomId": "shaft"
+    },
+    {
+      "id": "m2",
+      "type": "goblin",
+      "at": [
+        16,
+        9
+      ],
+      "roomId": "shaft"
+    },
+    {
+      "id": "m3",
+      "type": "orc",
+      "at": [
+        9,
+        13
+      ],
+      "roomId": "store"
+    },
+    {
+      "id": "m4",
+      "type": "orc",
+      "at": [
+        10,
+        13
+      ],
+      "roomId": "store"
+    },
+    {
+      "id": "m5",
+      "type": "fimir",
+      "at": [
+        11,
+        13
+      ],
+      "roomId": "store"
+    },
+    {
+      "id": "m6",
+      "type": "chaos-warrior",
+      "at": [
+        4,
+        4
+      ],
+      "roomId": "vault"
+    },
+    {
+      "id": "m7",
+      "type": "orc",
+      "at": [
+        3,
+        4
+      ],
+      "roomId": "vault"
+    },
+    {
+      "id": "m8",
+      "type": "orc",
+      "at": [
+        6,
+        4
+      ],
+      "roomId": "vault"
+    },
+    {
+      "id": "m9",
+      "type": "orc",
+      "at": [
+        7,
+        4
+      ],
+      "roomId": "vault"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        17,
+        8
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        9,
+        13
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        4,
+        3
+      ],
+      "kind": "gold",
+      "amount": 200
+    },
+    {
+      "at": [
+        6,
+        3
+      ],
+      "kind": "gold",
+      "amount": 150
+    },
+    {
+      "at": [
+        3,
+        5
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        12,
+        11
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        17,
+        12
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        10,
+        4
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        12,
+        5
+      ],
+      "b": [
+        13,
+        5
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "reach",
+    "cell": [
+      5,
+      4
+    ],
+    "text": "Reach the bandits' strongbox."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Prince Magnus's tribute is lost forever."
+  }
+}

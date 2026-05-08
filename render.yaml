@@ -1,0 +1,11 @@
+# Render.com one-click deploy config.
+# Visit https://render.com/deploy and point at your GitHub repo —
+# it picks up this file and provisions a free web service.
+services:
+  - type: web
+    name: hero-quest
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /

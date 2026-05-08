@@ -1,0 +1,765 @@
+{
+  "id": "quest3-lair-of-the-orc-warlord",
+  "title": "Lair of the Orc Warlord",
+  "subtitle": "Quest 3",
+  "intro": "Ulag the Orc Warlord has been gathering an army to march on the Empire. Find his lair and slay him before his horde sets out.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Stairway",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "watch",
+      "name": "Watch Post",
+      "hidden": true,
+      "cells": [
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          19,
+          15
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ],
+        [
+          19,
+          16
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          18,
+          17
+        ],
+        [
+          19,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "barracks",
+      "name": "Barracks",
+      "hidden": true,
+      "cells": [
+        [
+          8,
+          14
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          12,
+          14
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          9,
+          15
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          12,
+          15
+        ],
+        [
+          8,
+          16
+        ],
+        [
+          9,
+          16
+        ],
+        [
+          10,
+          16
+        ],
+        [
+          11,
+          16
+        ],
+        [
+          12,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "armoury",
+      "name": "Armoury",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          9
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          6,
+          10
+        ]
+      ]
+    },
+    {
+      "id": "throne",
+      "name": "Throne Hall",
+      "hidden": true,
+      "cells": [
+        [
+          10,
+          2
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          13,
+          2
+        ],
+        [
+          14,
+          2
+        ],
+        [
+          15,
+          2
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          12,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          14,
+          3
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          10,
+          5
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          12,
+          5
+        ],
+        [
+          13,
+          5
+        ],
+        [
+          14,
+          5
+        ],
+        [
+          15,
+          5
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      14,
+      16
+    ],
+    [
+      13,
+      16
+    ],
+    [
+      7,
+      15
+    ],
+    [
+      7,
+      14
+    ],
+    [
+      7,
+      13
+    ],
+    [
+      7,
+      12
+    ],
+    [
+      7,
+      11
+    ],
+    [
+      7,
+      10
+    ],
+    [
+      12,
+      7
+    ],
+    [
+      12,
+      8
+    ],
+    [
+      12,
+      9
+    ],
+    [
+      12,
+      10
+    ],
+    [
+      12,
+      11
+    ],
+    [
+      12,
+      12
+    ],
+    [
+      12,
+      6
+    ],
+    [
+      11,
+      7
+    ],
+    [
+      10,
+      7
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        20,
+        16
+      ],
+      "b": [
+        19,
+        16
+      ]
+    },
+    {
+      "a": [
+        15,
+        16
+      ],
+      "b": [
+        16,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        16
+      ],
+      "b": [
+        12,
+        16
+      ]
+    },
+    {
+      "a": [
+        7,
+        15
+      ],
+      "b": [
+        8,
+        15
+      ]
+    },
+    {
+      "a": [
+        7,
+        11
+      ],
+      "b": [
+        6,
+        10
+      ]
+    },
+    {
+      "a": [
+        12,
+        6
+      ],
+      "b": [
+        12,
+        5
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-bunks",
+      "type": "table",
+      "cells": [
+        [
+          9,
+          16
+        ],
+        [
+          10,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "f-bunks2",
+      "type": "table",
+      "cells": [
+        [
+          9,
+          14
+        ],
+        [
+          10,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "f-rack",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "f-throne",
+      "type": "throne",
+      "cells": [
+        [
+          12,
+          3
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "orc",
+      "at": [
+        17,
+        16
+      ],
+      "roomId": "watch"
+    },
+    {
+      "id": "m2",
+      "type": "orc",
+      "at": [
+        18,
+        16
+      ],
+      "roomId": "watch"
+    },
+    {
+      "id": "m3",
+      "type": "goblin",
+      "at": [
+        17,
+        17
+      ],
+      "roomId": "watch"
+    },
+    {
+      "id": "m4",
+      "type": "orc",
+      "at": [
+        9,
+        15
+      ],
+      "roomId": "barracks"
+    },
+    {
+      "id": "m5",
+      "type": "orc",
+      "at": [
+        10,
+        15
+      ],
+      "roomId": "barracks"
+    },
+    {
+      "id": "m6",
+      "type": "orc",
+      "at": [
+        11,
+        15
+      ],
+      "roomId": "barracks"
+    },
+    {
+      "id": "m7",
+      "type": "fimir",
+      "at": [
+        12,
+        15
+      ],
+      "roomId": "barracks"
+    },
+    {
+      "id": "m8",
+      "type": "orc",
+      "at": [
+        4,
+        10
+      ],
+      "roomId": "armoury"
+    },
+    {
+      "id": "m9",
+      "type": "orc",
+      "at": [
+        5,
+        10
+      ],
+      "roomId": "armoury"
+    },
+    {
+      "id": "ulag",
+      "type": "orc-warlord",
+      "name": "Ulag",
+      "at": [
+        12,
+        4
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m10",
+      "type": "chaos-warrior",
+      "at": [
+        11,
+        4
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m11",
+      "type": "chaos-warrior",
+      "at": [
+        13,
+        4
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m12",
+      "type": "orc",
+      "at": [
+        10,
+        3
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m13",
+      "type": "orc",
+      "at": [
+        14,
+        3
+      ],
+      "roomId": "throne"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        10,
+        16
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        3,
+        9
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        6,
+        10
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        10,
+        5
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        15,
+        5
+      ],
+      "kind": "gold",
+      "amount": 75
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "arrow",
+      "at": [
+        20,
+        16
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "pit",
+      "at": [
+        12,
+        9
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        12,
+        7
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        12,
+        16
+      ],
+      "b": [
+        11,
+        16
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "orc",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "ulag",
+    "text": "Slay Ulag, the Orc Warlord."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Ulag's horde rolls forth unopposed."
+  }
+}

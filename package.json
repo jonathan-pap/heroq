@@ -1,0 +1,19 @@
+{
+  "name": "hero-quest-online",
+  "version": "0.1.0",
+  "description": "HeroQuest (1989) — multiplayer browser recreation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "js-yaml": "^4.1.0",
+    "pdf-parse": "^1.1.4",
+    "pngjs": "^7.0.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

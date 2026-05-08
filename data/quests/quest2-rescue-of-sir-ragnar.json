@@ -1,0 +1,418 @@
+{
+  "id": "quest2-rescue-of-sir-ragnar",
+  "title": "The Rescue of Sir Ragnar",
+  "subtitle": "Quest 2",
+  "intro": "Sir Ragnar, one of the King's most powerful knights, has been captured. He is being held by Ulag, the orc warlord. Find Sir Ragnar and bring him back to the stairway. Prince Magnus has offered 240 gold coins, divided among the heroes, on his safe return — no reward if he is killed during the escape.",
+  "_canonical_notes": "From 2021 quest book. Sir Ragnar is represented by the Dread sorcerer figure. He starts in a marked cell (X on the map). When his cell door is opened an alarm sounds: all remaining monsters / doors / furniture are placed and ALL doors become open. The hero who opened his cell moves Sir Ragnar each turn — roll 1 red die for his movement. He cannot attack, rolls 2 Defend dice, and has 2 Body Points. Heroes cannot search for treasure in the cell. Wandering monster: Orc. Layout overlaid on master board (canonical-board exact-cell rebuild deferred).",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Stairway Hall",
+      "hidden": false
+    },
+    "r17": {
+      "name": "Outer Guardroom",
+      "hidden": true
+    },
+    "r16": {
+      "name": "Mess Hall",
+      "hidden": true
+    },
+    "r11": {
+      "name": "Inner Guard Post",
+      "hidden": true
+    },
+    "r10": {
+      "name": "Cell Block",
+      "hidden": true
+    },
+    "r07": {
+      "name": "Armoury",
+      "hidden": true
+    },
+    "r02": {
+      "name": "Treasure Vault",
+      "hidden": true
+    }
+  },
+  "doors": [
+    {
+      "a": [
+        22,
+        17
+      ],
+      "b": [
+        22,
+        18
+      ]
+    },
+    {
+      "a": [
+        16,
+        17
+      ],
+      "b": [
+        16,
+        18
+      ]
+    },
+    {
+      "a": [
+        14,
+        13
+      ],
+      "b": [
+        13,
+        13
+      ]
+    },
+    {
+      "a": [
+        10,
+        13
+      ],
+      "b": [
+        9,
+        13
+      ]
+    },
+    {
+      "a": [
+        8,
+        12
+      ],
+      "b": [
+        8,
+        11
+      ]
+    },
+    {
+      "a": [
+        3,
+        12
+      ],
+      "b": [
+        3,
+        13
+      ]
+    },
+    {
+      "a": [
+        9,
+        8
+      ],
+      "b": [
+        9,
+        9
+      ]
+    },
+    {
+      "a": [
+        7,
+        5
+      ],
+      "b": [
+        7,
+        4
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-chestA",
+      "type": "chest",
+      "cells": [
+        [
+          5,
+          16
+        ]
+      ],
+      "_note": "A: chest with poison-needle trap. -1 Body if searched before disarmed. Chest is empty."
+    },
+    {
+      "id": "f-chestB",
+      "type": "chest",
+      "cells": [
+        [
+          6,
+          1
+        ]
+      ],
+      "_note": "B: 60 gold + potion of healing for the first hero who searches."
+    },
+    {
+      "id": "f-cell",
+      "type": "cupboard",
+      "cells": [
+        [
+          2,
+          10
+        ]
+      ],
+      "_note": "Sir Ragnar's cell — heroes cannot search for treasure here."
+    },
+    {
+      "id": "f-bookcase",
+      "type": "bookcase",
+      "cells": [
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "f-cupboard",
+      "type": "cupboard",
+      "cells": [
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "f-table",
+      "type": "table",
+      "cells": [
+        [
+          12,
+          15
+        ],
+        [
+          13,
+          15
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        17,
+        16
+      ],
+      "roomId": "r17"
+    },
+    {
+      "id": "g2",
+      "type": "goblin",
+      "at": [
+        18,
+        17
+      ],
+      "roomId": "r17"
+    },
+    {
+      "id": "o1",
+      "type": "orc",
+      "at": [
+        16,
+        17
+      ],
+      "roomId": "r17"
+    },
+    {
+      "id": "o2",
+      "type": "orc",
+      "at": [
+        19,
+        16
+      ],
+      "roomId": "r17"
+    },
+    {
+      "id": "g3",
+      "type": "goblin",
+      "at": [
+        11,
+        16
+      ],
+      "roomId": "r16"
+    },
+    {
+      "id": "g4",
+      "type": "goblin",
+      "at": [
+        12,
+        14
+      ],
+      "roomId": "r16"
+    },
+    {
+      "id": "o3",
+      "type": "orc",
+      "at": [
+        14,
+        16
+      ],
+      "roomId": "r16"
+    },
+    {
+      "id": "g5",
+      "type": "goblin",
+      "at": [
+        7,
+        11
+      ],
+      "roomId": "r11"
+    },
+    {
+      "id": "g6",
+      "type": "goblin",
+      "at": [
+        9,
+        10
+      ],
+      "roomId": "r11"
+    },
+    {
+      "id": "o4",
+      "type": "orc",
+      "at": [
+        3,
+        11
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "g7",
+      "type": "goblin",
+      "at": [
+        4,
+        10
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "o5",
+      "type": "orc",
+      "at": [
+        7,
+        7
+      ],
+      "roomId": "r07"
+    },
+    {
+      "id": "g8",
+      "type": "goblin",
+      "at": [
+        9,
+        6
+      ],
+      "roomId": "r07"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        6,
+        1
+      ],
+      "kind": "gold",
+      "amount": 60,
+      "_note": "B: also yields a Potion of Healing — engine should auto-grant a heal-4 potion on this search."
+    },
+    {
+      "_note": "Potion of Healing companion to chest B — placed on the same room cell so the search action picks it up.",
+      "at": [
+        6,
+        2
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    }
+  ],
+  "traps": [],
+  "furnitureTraps": [
+    {
+      "id": "ft-A",
+      "kind": "poison-needle",
+      "at": [
+        5,
+        16
+      ],
+      "damage": 1,
+      "_note": "A: poison-needle in the chest. Fires when a hero searches for treasure here without first disarming. Chest is empty afterwards."
+    }
+  ],
+  "secretDoors": [],
+  "friendlyNpc": {
+    "id": "sir-ragnar",
+    "name": "Sir Ragnar",
+    "displayType": "dread-sorcerer",
+    "at": [
+      2,
+      10
+    ],
+    "roomId": "r10",
+    "body": 2,
+    "defend": 2,
+    "canAttack": false,
+    "movementDice": 1,
+    "rescuedBy": "stairway",
+    "_engine_note": "NPC escort mechanic not yet wired. Once implemented: when his cell door opens, all monsters/doors/furniture reveal and every door opens. The hero who opened the cell moves him on their turn (1d6 squares). Heroes lose if Sir Ragnar dies; full 240 gold reward only if he reaches the stairway alive."
+  },
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "orc",
+  "objective": {
+    "kind": "escort",
+    "npcId": "sir-ragnar",
+    "fallbackKind": "reach",
+    "fallbackCell": [
+      2,
+      10
+    ],
+    "text": "Find Sir Ragnar and escort him back to the staircase.",
+    "_engine_note": "Until the escort objective handler lands, the engine treats this as 'reach Sir Ragnar's cell' (objective.fallbackKind / fallbackCell)."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "All heroes have fallen — or Sir Ragnar with them."
+  }
+}

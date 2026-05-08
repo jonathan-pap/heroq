@@ -1,0 +1,41 @@
+# --- runtime / build ---
+node_modules/
+data/rooms.json
+data/rooms.json.tmp
+# intermediate output of extract scripts
+data/board.generated.yaml
+# local backup files
+data/*.bak
+srv.log
+srv.err
+*.log
+*.tsbuildinfo
+
+# --- reference / scratch ---
+_reference/
+# Local-only sprite drop-in folder. Keep PNG art (your own crops,
+# Kenney.nl CC0 packs, commissioned art, etc.) out of source control.
+public/icons/
+
+# --- copyrighted rulebook & quest-pack PDFs (Hasbro / Avalon Hill) ---
+# These are personal scans/copies for offline rules reference. They
+# must NOT be in source control. The data/ YAML files capture the
+# rules/values our code actually uses.
+*.pdf
+F2847_*
+F4193_*
+F6646_*
+F7539_*
+G0052_*
+G0053_*
+"(01) Games System Quest Book 2021"*
+"system-quest-book*"
+"system-rules-of-play*"
+"monster cards*"
+
+# --- editor / OS ---
+.DS_Store
+Thumbs.db
+.env
+.vscode/
+.idea/

@@ -1,0 +1,174 @@
+{
+  "id": "sandbox-c-trap-types",
+  "title": "All Trap Types",
+  "subtitle": "Sandbox C",
+  "intro": "Barbarian arrives with two Potions of Healing. Four trap types are seeded around the start cell: a SPEAR (1 die dodge or -1 Body), a PIT (-1 Body, hero stays in pit, combat at -1 die until they climb out), a FALLING BLOCK (3 combat dice, no defence, cell becomes a permanent obstacle), and a CHEST with a poison-needle FURNITURE trap (-1 Body if you Search Treasure before disarming). Use the new Search Traps action to discover them, or step in and observe each fire. A lone goblin sits in the south-east corner — slay it once you've kicked the tyres.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Trap Range",
+      "hidden": false
+    }
+  },
+  "doors": [],
+  "secretDoors": [],
+  "furniture": [
+    {
+      "id": "f-chest",
+      "type": "chest",
+      "cells": [
+        [
+          24,
+          17
+        ]
+      ],
+      "_note": "C: poison-needle chest. Search Treasure here without disarming first → -1 Body."
+    }
+  ],
+  "traps": [
+    {
+      "id": "t-spear",
+      "type": "spear",
+      "at": [
+        22,
+        14
+      ]
+    },
+    {
+      "id": "t-pit",
+      "type": "pit",
+      "at": [
+        21,
+        15
+      ]
+    },
+    {
+      "id": "t-block",
+      "type": "block",
+      "at": [
+        24,
+        14
+      ]
+    }
+  ],
+  "furnitureTraps": [
+    {
+      "id": "ft-chest",
+      "kind": "poison-needle",
+      "at": [
+        24,
+        17
+      ],
+      "damage": 1
+    }
+  ],
+  "heroSetup": {
+    "barbarian": {
+      "equipped": {
+        "weapon": "broadsword",
+        "utility": "tool-kit"
+      },
+      "inventory": [
+        {
+          "id": "p1",
+          "name": "Potion of Healing",
+          "use": "heal",
+          "amount": 4
+        },
+        {
+          "id": "p2",
+          "name": "Potion of Healing",
+          "use": "heal",
+          "amount": 4
+        }
+      ]
+    }
+  },
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        24,
+        16
+      ],
+      "roomId": "r18"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        24,
+        17
+      ],
+      "kind": "gold",
+      "amount": 50,
+      "_note": "Reward for surviving the chest trap (or disarming first)."
+    }
+  ],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "g1",
+    "text": "Slay the goblin and return to the staircase. Try every trap on the way."
+  },
+  "objectives": [
+    {
+      "id": "kill-goblin",
+      "kind": "kill",
+      "monsterId": "g1",
+      "text": "Slay the goblin"
+    },
+    {
+      "id": "open-chest",
+      "kind": "reach",
+      "cell": [
+        24,
+        17
+      ],
+      "text": "Reach the rewarded chest cell",
+      "optional": true
+    }
+  ],
+  "defeat": {
+    "kind": "all-dead",
+    "text": "The traps win."
+  }
+}

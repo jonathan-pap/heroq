@@ -1,0 +1,643 @@
+{
+  "id": "quest6-legacy-of-the-orc-warlord",
+  "title": "Legacy of the Orc Warlord",
+  "subtitle": "Quest 6",
+  "intro": "Ulag is dead, but his enchanted blade Orcs Bane lies somewhere in his old crypt — and a fimirach band has moved in to claim it. Recover the sword.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Crypt Entrance",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "outer",
+      "name": "Antechamber",
+      "hidden": true,
+      "cells": [
+        [
+          14,
+          15
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          19,
+          15
+        ],
+        [
+          14,
+          16
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ],
+        [
+          19,
+          16
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          18,
+          17
+        ],
+        [
+          19,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "ossu",
+      "name": "Ossuary",
+      "hidden": true,
+      "cells": [
+        [
+          6,
+          11
+        ],
+        [
+          7,
+          11
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          11
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          8,
+          12
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          9,
+          13
+        ]
+      ]
+    },
+    {
+      "id": "tomb",
+      "name": "Ulag's Tomb",
+      "hidden": true,
+      "cells": [
+        [
+          14,
+          3
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          16,
+          3
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          16,
+          4
+        ],
+        [
+          14,
+          5
+        ],
+        [
+          15,
+          5
+        ],
+        [
+          16,
+          5
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      13,
+      16
+    ],
+    [
+      12,
+      16
+    ],
+    [
+      11,
+      16
+    ],
+    [
+      10,
+      16
+    ],
+    [
+      9,
+      16
+    ],
+    [
+      9,
+      15
+    ],
+    [
+      9,
+      14
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      10
+    ],
+    [
+      11,
+      10
+    ],
+    [
+      12,
+      10
+    ],
+    [
+      13,
+      10
+    ],
+    [
+      14,
+      10
+    ],
+    [
+      15,
+      10
+    ],
+    [
+      15,
+      9
+    ],
+    [
+      15,
+      8
+    ],
+    [
+      15,
+      7
+    ],
+    [
+      15,
+      6
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        20,
+        16
+      ],
+      "b": [
+        19,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        16
+      ],
+      "b": [
+        14,
+        16
+      ]
+    },
+    {
+      "a": [
+        9,
+        16
+      ],
+      "b": [
+        9,
+        15
+      ]
+    },
+    {
+      "a": [
+        9,
+        14
+      ],
+      "b": [
+        9,
+        13
+      ]
+    },
+    {
+      "a": [
+        9,
+        10
+      ],
+      "b": [
+        9,
+        11
+      ]
+    },
+    {
+      "a": [
+        15,
+        6
+      ],
+      "b": [
+        15,
+        5
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-pews",
+      "type": "table",
+      "cells": [
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "f-bones",
+      "type": "sarcophagus",
+      "cells": [
+        [
+          7,
+          12
+        ],
+        [
+          8,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "f-coffin",
+      "type": "sarcophagus",
+      "cells": [
+        [
+          15,
+          4
+        ],
+        [
+          16,
+          4
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "skeleton",
+      "at": [
+        16,
+        15
+      ],
+      "roomId": "outer"
+    },
+    {
+      "id": "m2",
+      "type": "skeleton",
+      "at": [
+        17,
+        15
+      ],
+      "roomId": "outer"
+    },
+    {
+      "id": "m3",
+      "type": "orc",
+      "at": [
+        18,
+        16
+      ],
+      "roomId": "outer"
+    },
+    {
+      "id": "m4",
+      "type": "fimir",
+      "at": [
+        16,
+        17
+      ],
+      "roomId": "outer"
+    },
+    {
+      "id": "m5",
+      "type": "skeleton",
+      "at": [
+        7,
+        11
+      ],
+      "roomId": "ossu"
+    },
+    {
+      "id": "m6",
+      "type": "skeleton",
+      "at": [
+        8,
+        11
+      ],
+      "roomId": "ossu"
+    },
+    {
+      "id": "m7",
+      "type": "zombie",
+      "at": [
+        7,
+        13
+      ],
+      "roomId": "ossu"
+    },
+    {
+      "id": "m8",
+      "type": "zombie",
+      "at": [
+        8,
+        13
+      ],
+      "roomId": "ossu"
+    },
+    {
+      "id": "m9",
+      "type": "fimir",
+      "at": [
+        14,
+        4
+      ],
+      "roomId": "tomb"
+    },
+    {
+      "id": "m10",
+      "type": "fimir",
+      "at": [
+        16,
+        4
+      ],
+      "roomId": "tomb"
+    },
+    {
+      "id": "m11",
+      "type": "chaos-warrior",
+      "at": [
+        15,
+        5
+      ],
+      "roomId": "tomb"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        15,
+        17
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        6,
+        12
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        9,
+        12
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        14,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        16,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        11,
+        16
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        9,
+        13
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        15,
+        8
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        13,
+        10
+      ],
+      "b": [
+        13,
+        11
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "orc",
+  "objective": {
+    "kind": "reach",
+    "cell": [
+      15,
+      4
+    ],
+    "text": "Open Ulag's coffin and reclaim the sword Orcs Bane."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Orcs Bane remains lost beneath the stones."
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "id": "sandbox-b-spells-and-los",
+  "title": "Spells, LOS & Undead Immunity",
+  "subtitle": "Sandbox B",
+  "intro": "Wizard arrives with EVERY spell in hand. A skeleton stands one square west; a goblin stands three squares west, behind the skeleton. Test cases: (1) cast Sleep on the skeleton — should be refused (undead immune). (2) cast Ball of Flame on the goblin while the skeleton blocks the line — should be refused (no LOS). (3) kill the skeleton with Ball of Flame, then cast on the goblin — LOS now clear, should work. (4) Heal Body on yourself — a no-op while at full HP, but should still consume the card.",
+  "category": "sandbox",
+  "board": "default",
+  "showAllSpells": true,
+  "roomOverrides": {
+    "r18": {
+      "name": "Spell Lab",
+      "hidden": false
+    }
+  },
+  "doors": [],
+  "furniture": [],
+  "traps": [],
+  "secretDoors": [],
+  "heroSetup": {
+    "wizard": {
+      "equipped": {
+        "weapon": "staff"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "s1",
+      "type": "skeleton",
+      "at": [
+        21,
+        15
+      ],
+      "roomId": "r18"
+    },
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        19,
+        15
+      ],
+      "roomId": "r18"
+    }
+  ],
+  "treasure": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "skeleton",
+  "objective": {
+    "kind": "kill-all",
+    "text": "Slay the skeleton and the goblin."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Tested to death."
+  }
+}

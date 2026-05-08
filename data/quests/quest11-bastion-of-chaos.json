@@ -1,0 +1,867 @@
+{
+  "id": "quest11-bastion-of-chaos",
+  "title": "Bastion of Chaos",
+  "subtitle": "Quest 11",
+  "intro": "A Chaos warlord named Grin has built a bastion in the heart of the marshlands. Fight through his elite Chaos Warriors and slay him in his throne room.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Watchtower",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "guard1",
+      "name": "South Guard",
+      "hidden": true,
+      "cells": [
+        [
+          15,
+          14
+        ],
+        [
+          16,
+          14
+        ],
+        [
+          17,
+          14
+        ],
+        [
+          18,
+          14
+        ],
+        [
+          19,
+          14
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          19,
+          15
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ],
+        [
+          19,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "guard2",
+      "name": "West Guard",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          13
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          5,
+          13
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          3,
+          14
+        ],
+        [
+          4,
+          14
+        ],
+        [
+          5,
+          14
+        ],
+        [
+          6,
+          14
+        ],
+        [
+          7,
+          14
+        ],
+        [
+          3,
+          15
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          5,
+          15
+        ],
+        [
+          6,
+          15
+        ],
+        [
+          7,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "armoury",
+      "name": "Armoury",
+      "hidden": true,
+      "cells": [
+        [
+          15,
+          8
+        ],
+        [
+          16,
+          8
+        ],
+        [
+          17,
+          8
+        ],
+        [
+          18,
+          8
+        ],
+        [
+          15,
+          9
+        ],
+        [
+          16,
+          9
+        ],
+        [
+          17,
+          9
+        ],
+        [
+          18,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "throne",
+      "name": "Throne Hall",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          8,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          9,
+          4
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          8,
+          6
+        ],
+        [
+          9,
+          6
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      14
+    ],
+    [
+      14,
+      13
+    ],
+    [
+      14,
+      12
+    ],
+    [
+      14,
+      11
+    ],
+    [
+      14,
+      10
+    ],
+    [
+      13,
+      13
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      11,
+      13
+    ],
+    [
+      10,
+      13
+    ],
+    [
+      9,
+      13
+    ],
+    [
+      8,
+      13
+    ],
+    [
+      16,
+      10
+    ],
+    [
+      17,
+      10
+    ],
+    [
+      14,
+      9
+    ],
+    [
+      14,
+      8
+    ],
+    [
+      14,
+      7
+    ],
+    [
+      14,
+      6
+    ],
+    [
+      14,
+      5
+    ],
+    [
+      14,
+      4
+    ],
+    [
+      14,
+      3
+    ],
+    [
+      13,
+      3
+    ],
+    [
+      12,
+      3
+    ],
+    [
+      11,
+      3
+    ],
+    [
+      10,
+      3
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        14,
+        15
+      ],
+      "b": [
+        15,
+        15
+      ]
+    },
+    {
+      "a": [
+        14,
+        15
+      ],
+      "b": [
+        14,
+        16
+      ]
+    },
+    {
+      "a": [
+        8,
+        13
+      ],
+      "b": [
+        7,
+        13
+      ]
+    },
+    {
+      "a": [
+        16,
+        10
+      ],
+      "b": [
+        16,
+        9
+      ]
+    },
+    {
+      "a": [
+        10,
+        3
+      ],
+      "b": [
+        9,
+        3
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-rack1",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          19,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "f-rack2",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          3,
+          13
+        ]
+      ]
+    },
+    {
+      "id": "f-rack3",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          15,
+          8
+        ],
+        [
+          16,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "f-throne",
+      "type": "throne",
+      "cells": [
+        [
+          5,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "f-altars",
+      "type": "throne",
+      "cells": [
+        [
+          7,
+          4
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "chaos-warrior",
+      "at": [
+        16,
+        15
+      ],
+      "roomId": "guard1"
+    },
+    {
+      "id": "m2",
+      "type": "chaos-warrior",
+      "at": [
+        18,
+        15
+      ],
+      "roomId": "guard1"
+    },
+    {
+      "id": "m3",
+      "type": "orc",
+      "at": [
+        16,
+        16
+      ],
+      "roomId": "guard1"
+    },
+    {
+      "id": "m4",
+      "type": "orc",
+      "at": [
+        18,
+        16
+      ],
+      "roomId": "guard1"
+    },
+    {
+      "id": "m5",
+      "type": "fimir",
+      "at": [
+        17,
+        14
+      ],
+      "roomId": "guard1"
+    },
+    {
+      "id": "m6",
+      "type": "chaos-warrior",
+      "at": [
+        4,
+        14
+      ],
+      "roomId": "guard2"
+    },
+    {
+      "id": "m7",
+      "type": "chaos-warrior",
+      "at": [
+        6,
+        14
+      ],
+      "roomId": "guard2"
+    },
+    {
+      "id": "m8",
+      "type": "fimir",
+      "at": [
+        5,
+        13
+      ],
+      "roomId": "guard2"
+    },
+    {
+      "id": "m9",
+      "type": "orc",
+      "at": [
+        4,
+        15
+      ],
+      "roomId": "guard2"
+    },
+    {
+      "id": "m10",
+      "type": "orc",
+      "at": [
+        6,
+        15
+      ],
+      "roomId": "guard2"
+    },
+    {
+      "id": "m11",
+      "type": "gargoyle",
+      "at": [
+        17,
+        9
+      ],
+      "roomId": "armoury"
+    },
+    {
+      "id": "m12",
+      "type": "chaos-warrior",
+      "at": [
+        18,
+        9
+      ],
+      "roomId": "armoury"
+    },
+    {
+      "id": "m13",
+      "type": "chaos-warrior",
+      "at": [
+        4,
+        4
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m14",
+      "type": "chaos-warrior",
+      "at": [
+        6,
+        4
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m15",
+      "type": "gargoyle",
+      "at": [
+        3,
+        5
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "m16",
+      "type": "gargoyle",
+      "at": [
+        9,
+        5
+      ],
+      "roomId": "throne"
+    },
+    {
+      "id": "boss",
+      "type": "chaos-warrior",
+      "name": "Grin the Despoiler",
+      "at": [
+        5,
+        4
+      ],
+      "roomId": "throne"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        17,
+        15
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        4,
+        13
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        17,
+        9
+      ],
+      "kind": "gold",
+      "amount": 75
+    },
+    {
+      "at": [
+        4,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        9,
+        4
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        3,
+        6
+      ],
+      "kind": "gold",
+      "amount": 100
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        14,
+        12
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        11,
+        13
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        14,
+        7
+      ]
+    },
+    {
+      "id": "t4",
+      "type": "arrow",
+      "at": [
+        14,
+        5
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        14,
+        10
+      ],
+      "b": [
+        15,
+        10
+      ]
+    },
+    {
+      "id": "sd2",
+      "a": [
+        9,
+        4
+      ],
+      "b": [
+        10,
+        4
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "chaos-warrior",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "boss",
+    "text": "Slay Grin the Despoiler in his throne room."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "The bastion stands. The marsh-folk weep."
+  }
+}

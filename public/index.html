@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HeroQuest — Online</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ====================================================== -->
+<!-- WELCOME — create or join                                -->
+<!-- ====================================================== -->
+<section id="screen-welcome" class="screen">
+  <div class="title-card">
+    <h1 class="brand">HERO<span class="brand-q">QUEST</span></h1>
+    <p class="brand-sub">A 1989 dungeon crawl — recreated for the browser</p>
+  </div>
+
+  <div class="welcome-row">
+    <form id="form-create" class="card">
+      <h2>Create Game</h2>
+      <label>Your name<input id="create-name" maxlength="14" placeholder="Hero name" autocomplete="off"></label>
+      <button type="submit" class="primary">Create</button>
+    </form>
+
+    <form id="form-join" class="card">
+      <h2>Join with Code</h2>
+      <label>Your name<input id="join-name" maxlength="14" placeholder="Hero name" autocomplete="off"></label>
+      <label>Room code<input id="join-code" maxlength="4" placeholder="ABCD" autocomplete="off" style="text-transform:uppercase"></label>
+      <button type="submit" class="primary">Join</button>
+    </form>
+  </div>
+
+  <div id="welcome-error" class="error-bar hidden"></div>
+</section>
+
+<!-- ====================================================== -->
+<!-- LOBBY — room setup                                      -->
+<!-- ====================================================== -->
+<section id="screen-lobby" class="screen hidden">
+  <header class="lobby-header">
+    <div class="room-code-display">Room <span id="lobby-code">----</span></div>
+    <div class="lobby-actions">
+      <button id="btn-leave" class="ghost">Leave</button>
+    </div>
+  </header>
+
+  <div class="lobby-grid">
+
+    <div class="card">
+      <h2>Quest</h2>
+      <select id="lobby-quest"></select>
+      <p id="lobby-quest-intro" class="quest-intro"></p>
+      <p id="lobby-quest-board" class="hint" style="margin-top:8px"></p>
+    </div>
+
+    <div class="card">
+      <h2>Options</h2>
+      <label class="check-row">
+        <input type="checkbox" id="opt-autoroll">
+        Auto-roll movement at start of each hero turn
+      </label>
+      <p class="hint">Skip the manual "Roll Movement" click — the server rolls 2d6 for you when your turn begins.</p>
+      <label class="check-row" style="margin-top:10px">
+        <input type="checkbox" id="opt-reveal-all">
+        Reveal entire map (debug — disables fog of war)
+      </label>
+      <p class="hint">For verifying quest layouts. All rooms, doors, traps, secret doors, and monsters are visible from the start. Toggle off for a real game.</p>
+    </div>
+
+    <div class="card">
+      <h2>Evil Wizard (GM)</h2>
+      <div class="seg">
+        <label><input type="radio" name="gmMode" value="ai" checked> AI</label>
+        <label><input type="radio" name="gmMode" value="human"> Human</label>
+      </div>
+      <button id="lobby-claim-gm" class="claim-btn hidden">Take GM seat</button>
+      <p id="lobby-gm-info" class="seat-info">AI will run the dungeon.</p>
+    </div>
+
+    <div class="card">
+      <h2>Heroes <span class="hint">— claim 1 or more</span></h2>
+      <div class="hero-seat-grid">
+        <button class="seat-btn" data-seat="barbarian"><span class="hero-badge" style="background:#c83030">B</span> Barbarian <span class="seat-status"></span></button>
+        <button class="seat-btn" data-seat="dwarf"><span class="hero-badge" style="background:#d0a040">D</span> Dwarf <span class="seat-status"></span></button>
+        <button class="seat-btn" data-seat="elf"><span class="hero-badge" style="background:#3aa05a">E</span> Elf <span class="seat-status"></span></button>
+        <button class="seat-btn" data-seat="wizard"><span class="hero-badge" style="background:#5060d0">W</span> Wizard <span class="seat-status"></span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Players in room</h2>
+      <ul id="lobby-players"></ul>
+    </div>
+  </div>
+
+  <div class="lobby-footer">
+    <button id="btn-start" class="primary big">Begin Quest</button>
+    <p id="lobby-msg" class="muted"></p>
+  </div>
+</section>
+
+<!-- ====================================================== -->
+<!-- GAME                                                    -->
+<!-- ====================================================== -->
+<section id="screen-game" class="screen hidden">
+  <div class="game-grid">
+
+    <header class="game-header">
+      <div class="quest-title">
+        <span id="game-quest-title">—</span>
+        <span class="muted small" id="game-quest-objective">—</span>
+      </div>
+      <div class="turn-banner" id="turn-banner">—</div>
+      <div class="game-header-actions">
+        <button id="btn-end-turn-header" class="end-turn-header" title="End your turn">End Turn</button>
+        <button id="btn-leave-game" class="ghost small" title="Return to lobby (current quest will reset on rejoin)">Leave Quest</button>
+        <button id="btn-restart" class="ghost small hidden">Back to Lobby</button>
+      </div>
+    </header>
+
+    <div class="hero-banner card" id="hero-banner-wrap">
+      <div class="hero-strip" id="hero-strip"></div>
+    </div>
+
+    <aside class="quest-rail">
+      <div class="card objectives-card">
+        <h3>Objectives</h3>
+        <ul id="objectives-list" class="objectives-list"></ul>
+      </div>
+    </aside>
+
+    <main class="board-wrap">
+      <canvas id="board" width="832" height="608"></canvas>
+    </main>
+
+    <aside class="sidebar">
+      <nav class="sidebar-tabs" id="sidebar-tabs">
+        <button data-stab="actions" class="active">Actions</button>
+        <button data-stab="spells">Spells <span class="tab-count" id="spells-count"></span></button>
+        <button data-stab="items">Items <span class="tab-count" id="items-count"></span></button>
+        <button data-stab="log">Log</button>
+      </nav>
+
+      <div class="card sidebar-pane turn-controls" data-stab-content="actions" id="turn-controls">
+        <h3 id="actions-heading">Your turn</h3>
+        <div id="turn-controls-body"></div>
+      </div>
+
+      <div class="card sidebar-pane hidden" data-stab-content="spells">
+        <h3>Spells</h3>
+        <div id="spells-body"></div>
+      </div>
+
+      <div class="card sidebar-pane hidden" data-stab-content="items">
+        <h3>Items</h3>
+        <div id="items-body"></div>
+      </div>
+
+      <div class="card sidebar-pane log-card hidden" data-stab-content="log">
+        <h3>Quest log</h3>
+        <div id="log" class="log"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile bottom-tab bar — shown only at viewports ≤ 768px. -->
+  <nav id="mobile-tabs" class="mobile-tabs">
+    <button data-mtab="board" class="active">Board</button>
+    <button data-mtab="quest">Quest</button>
+    <button data-mtab="sidebar">Actions</button>
+  </nav>
+
+  <!-- Combat resolution modal -->
+  <div id="combat-modal" class="modal hidden">
+    <div class="modal-card combat-card">
+      <h2 id="combat-title">Combat</h2>
+      <div class="combat-rows">
+        <div class="combat-row">
+          <div class="combat-label">Attacker rolls</div>
+          <div id="combat-attack-dice" class="dice-row"></div>
+        </div>
+        <div class="combat-row">
+          <div class="combat-label">Defender rolls</div>
+          <div id="combat-defend-dice" class="dice-row"></div>
+        </div>
+      </div>
+      <p id="combat-summary" class="combat-summary"></p>
+      <button id="combat-ok" class="primary">OK</button>
+    </div>
+  </div>
+
+  <!-- Drink-to-save modal — appears when a hero hits 0 Body and has
+       multiple healing potions to choose from. -->
+  <div id="save-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2 id="save-title">A hero falls!</h2>
+      <p id="save-prompt" class="muted"></p>
+      <div id="save-options"></div>
+      <button id="save-decline" class="ghost" style="margin-top:12px">Accept death</button>
+    </div>
+  </div>
+
+  <!-- Treasure card reveal -->
+  <div id="treasure-modal" class="modal hidden">
+    <div class="modal-card treasure-card-modal">
+      <h2 id="treasure-card-name">—</h2>
+      <p id="treasure-card-flavour" class="muted"></p>
+      <button id="treasure-card-ok" class="primary">OK</button>
+    </div>
+  </div>
+
+  <!-- End-of-quest overlay -->
+  <div id="end-modal" class="modal hidden">
+    <div class="modal-card end-card">
+      <h2 id="end-title">—</h2>
+      <p id="end-reason" class="muted"></p>
+      <button id="end-ok" class="primary">Back to Lobby</button>
+    </div>
+  </div>
+</section>
+
+<script src="client.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+# =====================================================================
+# HEROES — character cards.
+# Body / Mind are the printed maxima; movement is 2d6 squares each turn.
+# attack / defend = base combat dice without equipment.
+# spells.elements = how many spell elements this hero starts with;
+#   the actual elements are picked at character creation. Original
+#   rules: Wizard begins with three elements (default = Air, Earth,
+#   Fire), Elf begins with one element (default = Water).
+# bans = equipment categories or specific items this hero may not use.
+# =====================================================================
+
+barbarian:
+  name: Barbarian
+  body: 8
+  mind: 2
+  attack: 3
+  defend: 2
+  glyph: B
+  color: '#c83030'
+  startingWeapon: broadsword
+  startingArmour: null
+  bio: |
+    A mighty warrior from the Borderlands. Few can match him in
+    mortal combat — but his magic is non-existent.
+  spells:
+    elements: 0
+
+dwarf:
+  name: Dwarf
+  body: 7
+  mind: 3
+  attack: 2
+  defend: 2
+  glyph: D
+  color: '#d0a040'
+  startingWeapon: short-sword
+  startingArmour: null
+  bio: |
+    A fearless warrior with intuition for traps and secret doors.
+    The Dwarf may disarm any trap without a Tool Kit (rolls 1 combat
+    die: black shield = sprung, anything else = disarmed).
+  abilities:
+    - disarmTrapsWithoutToolkit
+  spells:
+    elements: 0
+
+elf:
+  name: Elf
+  body: 6
+  mind: 4
+  attack: 2
+  defend: 2
+  glyph: E
+  color: '#3aa05a'
+  startingWeapon: short-sword
+  startingArmour: null
+  bio: |
+    A skilled fighter with some knowledge of the magical arts.
+    Chooses one element group at the start of each quest (3 spells).
+    By default the Elf takes Earth in the first quest.
+  spells:
+    elements: 1
+    default: [earth]
+
+wizard:
+  name: Wizard
+  body: 4
+  mind: 6
+  attack: 1
+  defend: 2
+  glyph: W
+  color: '#5060d0'
+  startingWeapon: dagger
+  startingArmour: null
+  bio: |
+    Master of arcane lore. Begins each quest with three spell groups
+    (9 spells). Cannot wear normal armour or wield large weapons —
+    restricted to the staff, dagger, bracers and cloak of protection.
+  spells:
+    elements: 3
+    default: [fire, water, air]
+  bans:
+    - weapon-not-staff-dagger
+    - heavyArmour

@@ -1,0 +1,122 @@
+# =====================================================================
+# DREAD SPELLS — 12 cards. Cast by Zargon's caster monsters (Dread
+# Sorcerer, named bosses with `tags: [caster]`). Mechanics summarised
+# from the 2021 quest book and rulebook references.
+#
+# `effect` strings dispatch in the server's spell resolver; reuse the
+# hero-spell handlers where the mechanic matches.
+#
+# Per the 2021 rule: each Dread spell may be cast at most once per
+# quest, by any monster Zargon assigns it to. Some spells appear only
+# in specific quest packs — they're authored here so quest data can
+# reference them; quests that don't use a spell simply ignore it.
+# =====================================================================
+
+ball-of-flame:
+  name: Ball of Flame
+  target: anyone
+  effect: directDamage
+  damage: 2
+  defenceDice: 2
+  text: |
+    Engulfs one hero in flame. 2 Body damage; victim rolls 2 red dice
+    and reduces damage by 1 for each 5 or 6.
+
+cloud-of-chaos:
+  name: Cloud of Chaos
+  target: enemy
+  effect: dispelHeroBuffs
+  text: |
+    A roiling cloud of dark magic. The target hero loses any active
+    persistent buffs (Rock Skin, Courage, etc.).
+
+command:
+  name: Command
+  target: enemy
+  effect: command
+  text: |
+    A hero is briefly turned to Zargon's bidding. On their next turn
+    they perform an attack at Zargon's direction (against a neighbour
+    of the GM's choosing) before regaining their senses.
+
+escape:
+  name: Escape
+  target: self
+  effect: escapeTeleport
+  text: |
+    The caster vanishes and reappears on a designated cell elsewhere
+    on the board (the quest map marks the escape destination). Used
+    by Balur the Fire Mage in Quest 8.
+
+fear:
+  name: Fear
+  target: enemy
+  effect: fear
+  text: |
+    The target hero rolls 1 fewer Attack die and 1 fewer Defend die
+    until the spell is broken — break it by killing the caster or by
+    casting Heal Body / Water of Healing on the cowed hero.
+
+firestorm:
+  name: Firestorm
+  target: line
+  effect: firestorm
+  damage: 1
+  defenceDice: 2
+  text: |
+    A wall of flame in line of sight from the caster. Each hero in
+    line takes 1 Body, defended with 2 dice (5 or 6 reduces by 1).
+
+rust:
+  name: Rust
+  target: enemy
+  effect: rustWeapon
+  text: |
+    The target hero's primary weapon corrodes — they revert to base
+    Attack dice for the rest of the quest (still draws their normal
+    weapon between quests).
+
+sleep:
+  name: Sleep
+  target: enemy
+  effect: sleep
+  immuneTags: [undead]
+  text: |
+    The hero rolls 1 red die per Mind Point; on a 6 they shrug off
+    the spell. Otherwise asleep — cannot move, attack or defend
+    until they roll a 6 at the start of their turn or are attacked.
+
+summon-orcs:
+  name: Summon Orcs
+  target: self
+  effect: summon
+  monsterType: orc
+  count: 2
+  text: |
+    Two orcs appear in cells adjacent to the caster.
+
+summon-undead:
+  name: Summon Undead
+  target: self
+  effect: summon
+  monsterType: skeleton
+  count: 2
+  text: |
+    Two skeletons claw their way out of the floor adjacent to the
+    caster.
+
+tempest:
+  name: Tempest
+  target: enemy
+  effect: skipNextTurn
+  text: |
+    A small tempest envelops one hero — they miss their next turn.
+
+terror:
+  name: Terror
+  target: enemy
+  effect: terror
+  text: |
+    The target hero may not move adjacent to the caster (or any
+    monster the caster designates) on their next turn. The spell
+    breaks on the caster's death.

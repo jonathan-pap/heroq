@@ -1,0 +1,175 @@
+# =====================================================================
+# EQUIPMENT — armoury items.
+#
+# The 2021 box ships with 23 punch-out equipment cards. We currently
+# carry 16 (the 1989 standard set + Dagger + Longsword). The remaining
+# 7 cards are not catalogued in the rulebook PDF — they're physical
+# punch-outs only — so they need eyes-on transcription from the cards
+# themselves. Add them below as you confirm each one's exact text.
+#
+# Heroes buy items between quests with accumulated gold.
+#
+# kind:    weapon | armour | utility
+# slot:    weapon | bodyArmour | helmet | shield | utility (limit 1 each)
+# attack/defend bonuses are dice added to the hero's base pool.
+# replaceAttack overrides base attack dice when wielding (instead
+#   of stacking) — used by dedicated weapon items.
+# notWizard / wizardOnly enforce class restrictions.
+# =====================================================================
+
+dagger:
+  name: Dagger
+  kind: weapon
+  slot: weapon
+  cost: 25
+  replaceAttack: 1
+  throwable: true
+  ranged: true
+  text: |
+    Roll 1 attack die. May be used to attack a target up to 6 squares
+    away (within line of sight). The Wizard's only starting weapon.
+
+short-sword:
+  name: Short Sword
+  kind: weapon
+  slot: weapon
+  cost: 150
+  replaceAttack: 2
+  diagonal: true
+  notWizard: true
+  text: Roll 2 attack dice. May attack diagonally.
+
+longsword:
+  name: Longsword
+  kind: weapon
+  slot: weapon
+  cost: 350
+  replaceAttack: 3
+  diagonal: true
+  notWizard: true
+  text: Roll 3 attack dice. May attack diagonally.
+
+broadsword:
+  name: Broadsword
+  kind: weapon
+  slot: weapon
+  cost: 250
+  replaceAttack: 3
+  notWizard: true
+  text: Roll 3 attack dice.
+
+battle-axe:
+  name: Battle Axe
+  kind: weapon
+  slot: weapon
+  cost: 400
+  replaceAttack: 4
+  forbidsShield: true
+  notWizard: true
+  text: Roll 4 attack dice. May not be used with a shield.
+
+hand-axe:
+  name: Hand Axe
+  kind: weapon
+  slot: weapon
+  cost: 150
+  replaceAttack: 2
+  throwable: true
+  notWizard: true
+  text: Roll 2 attack dice. May be thrown (lost on throw).
+
+spear:
+  name: Spear
+  kind: weapon
+  slot: weapon
+  cost: 150
+  replaceAttack: 2
+  diagonal: true
+  throwable: true
+  notWizard: true
+  text: Roll 2 attack dice. May attack diagonally; may be thrown (lost on throw).
+
+staff:
+  name: Staff
+  kind: weapon
+  slot: weapon
+  cost: 100
+  replaceAttack: 2
+  diagonal: true
+  text: Roll 2 attack dice. May attack diagonally.
+
+crossbow:
+  name: Crossbow
+  kind: weapon
+  slot: weapon
+  cost: 350
+  replaceAttack: 3
+  ranged: true
+  noAdjacent: true
+  notWizard: true
+  text: Roll 3 attack dice. May not be used against an adjacent target.
+
+helmet:
+  name: Helmet
+  kind: armour
+  slot: helmet
+  cost: 120
+  defendBonus: 1
+  notWizard: true
+  text: +1 defence die.
+
+shield:
+  name: Shield
+  kind: armour
+  slot: shield
+  cost: 100
+  defendBonus: 1
+  notWizard: true
+  text: +1 defence die.
+
+chain-mail:
+  name: Chain Mail
+  kind: armour
+  slot: bodyArmour
+  cost: 450
+  setDefend: 3
+  notWizard: true
+  text: Roll 3 defence dice (replaces base 2).
+
+plate-armour:
+  name: Plate Armour
+  kind: armour
+  slot: bodyArmour
+  cost: 850
+  setDefend: 4
+  movePenalty: 1   # only roll 1 die for movement instead of 2
+  notWizard: true
+  text: Roll 4 defence dice. Roll only 1 die for movement.
+
+bracers:
+  name: Bracers
+  kind: armour
+  slot: shield
+  cost: 200
+  defendBonus: 1
+  wizardOnly: true
+  text: +1 defence die. Wizard only.
+
+cloak-of-protection:
+  name: Cloak of Protection
+  kind: armour
+  slot: bodyArmour
+  cost: 350
+  defendBonus: 1
+  wizardOnly: true
+  text: +1 defence die. Wizard only.
+
+tool-kit:
+  name: Tool Kit
+  kind: utility
+  slot: utility
+  cost: 250
+  text: |
+    Allows you to disarm any trap you find. Roll one combat die;
+    on a skull the trap triggers and you lose 1 Body. Otherwise
+    the trap is removed.

@@ -1,0 +1,642 @@
+{
+  "id": "quest9-race-against-time",
+  "title": "Race Against Time",
+  "subtitle": "Quest 9",
+  "intro": "Goblins have stolen Mentor's healing elixir and intend to destroy it. Reach the elixir's chamber before the deed is done.",
+  "boardSize": [
+    26,
+    19
+  ],
+  "rooms": [
+    {
+      "id": "stair",
+      "name": "Service Tunnel",
+      "hidden": false,
+      "cells": [
+        [
+          22,
+          15
+        ],
+        [
+          23,
+          15
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          22,
+          16
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          22,
+          17
+        ],
+        [
+          23,
+          17
+        ],
+        [
+          24,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "kitch",
+      "name": "Kitchens",
+      "hidden": true,
+      "cells": [
+        [
+          14,
+          15
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          15
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          19,
+          15
+        ],
+        [
+          14,
+          16
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ],
+        [
+          18,
+          16
+        ],
+        [
+          19,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "den",
+      "name": "Goblin Den",
+      "hidden": true,
+      "cells": [
+        [
+          3,
+          13
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          5,
+          13
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          3,
+          14
+        ],
+        [
+          4,
+          14
+        ],
+        [
+          5,
+          14
+        ],
+        [
+          6,
+          14
+        ],
+        [
+          7,
+          14
+        ],
+        [
+          3,
+          15
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          5,
+          15
+        ],
+        [
+          6,
+          15
+        ],
+        [
+          7,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "elix",
+      "name": "Elixir Chamber",
+      "hidden": true,
+      "cells": [
+        [
+          10,
+          3
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          12,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          14,
+          3
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          16,
+          3
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          16,
+          4
+        ]
+      ]
+    }
+  ],
+  "corridors": [
+    [
+      21,
+      16
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      13,
+      16
+    ],
+    [
+      12,
+      16
+    ],
+    [
+      11,
+      16
+    ],
+    [
+      10,
+      16
+    ],
+    [
+      9,
+      16
+    ],
+    [
+      8,
+      16
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      13,
+      13
+    ],
+    [
+      13,
+      12
+    ],
+    [
+      13,
+      11
+    ],
+    [
+      13,
+      10
+    ],
+    [
+      13,
+      9
+    ],
+    [
+      13,
+      8
+    ],
+    [
+      13,
+      7
+    ],
+    [
+      13,
+      6
+    ],
+    [
+      13,
+      5
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        21,
+        16
+      ],
+      "b": [
+        22,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        16
+      ],
+      "b": [
+        14,
+        16
+      ]
+    },
+    {
+      "a": [
+        8,
+        16
+      ],
+      "b": [
+        7,
+        15
+      ]
+    },
+    {
+      "a": [
+        13,
+        15
+      ],
+      "b": [
+        13,
+        16
+      ]
+    },
+    {
+      "a": [
+        13,
+        5
+      ],
+      "b": [
+        13,
+        4
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-stove",
+      "type": "throne",
+      "cells": [
+        [
+          16,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "f-table",
+      "type": "table",
+      "cells": [
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "f-bunks",
+      "type": "table",
+      "cells": [
+        [
+          5,
+          14
+        ],
+        [
+          6,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "f-flask",
+      "type": "throne",
+      "cells": [
+        [
+          13,
+          3
+        ]
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "m1",
+      "type": "goblin",
+      "at": [
+        15,
+        15
+      ],
+      "roomId": "kitch"
+    },
+    {
+      "id": "m2",
+      "type": "goblin",
+      "at": [
+        17,
+        15
+      ],
+      "roomId": "kitch"
+    },
+    {
+      "id": "m3",
+      "type": "orc",
+      "at": [
+        19,
+        15
+      ],
+      "roomId": "kitch"
+    },
+    {
+      "id": "m4",
+      "type": "goblin",
+      "at": [
+        4,
+        14
+      ],
+      "roomId": "den"
+    },
+    {
+      "id": "m5",
+      "type": "goblin",
+      "at": [
+        6,
+        14
+      ],
+      "roomId": "den"
+    },
+    {
+      "id": "m6",
+      "type": "goblin",
+      "at": [
+        4,
+        15
+      ],
+      "roomId": "den"
+    },
+    {
+      "id": "m7",
+      "type": "goblin",
+      "at": [
+        6,
+        15
+      ],
+      "roomId": "den"
+    },
+    {
+      "id": "m8",
+      "type": "fimir",
+      "at": [
+        5,
+        13
+      ],
+      "roomId": "den"
+    },
+    {
+      "id": "m9",
+      "type": "chaos-warrior",
+      "at": [
+        12,
+        4
+      ],
+      "roomId": "elix"
+    },
+    {
+      "id": "m10",
+      "type": "chaos-warrior",
+      "at": [
+        14,
+        4
+      ],
+      "roomId": "elix"
+    },
+    {
+      "id": "m11",
+      "type": "fimir",
+      "at": [
+        11,
+        4
+      ],
+      "roomId": "elix"
+    },
+    {
+      "id": "m12",
+      "type": "fimir",
+      "at": [
+        15,
+        4
+      ],
+      "roomId": "elix"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        18,
+        16
+      ],
+      "kind": "gold",
+      "amount": 25
+    },
+    {
+      "at": [
+        3,
+        15
+      ],
+      "kind": "gold",
+      "amount": 50
+    },
+    {
+      "at": [
+        7,
+        13
+      ],
+      "kind": "potion",
+      "potion": "healing"
+    },
+    {
+      "at": [
+        10,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    },
+    {
+      "at": [
+        16,
+        3
+      ],
+      "kind": "gold",
+      "amount": 100
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        13,
+        12
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "arrow",
+      "at": [
+        13,
+        9
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "block",
+      "at": [
+        13,
+        7
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        8,
+        16
+      ],
+      "b": [
+        8,
+        15
+      ]
+    }
+  ],
+  "startCells": [
+    [
+      22,
+      16
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      23,
+      17
+    ]
+  ],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "reach",
+    "cell": [
+      13,
+      3
+    ],
+    "text": "Reach the elixir before it is destroyed."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Mentor's elixir is gone forever."
+  }
+}

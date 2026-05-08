@@ -1,0 +1,49 @@
+{
+  "id": "sandbox-h-board-tour",
+  "title": "Master Board Tour",
+  "subtitle": "Sandbox H — Layout Verification",
+  "intro": "An empty master board for verifying the auto-extracted layout against the canonical 1989/2021 HeroQuest reference (assets/board/board.jpg). No monsters, no doors, no furniture, no traps — just the four heroes on the stairs and the entire dungeon revealed. Walk around to confirm room shapes, corridor positions, and dimensions match the photographed board. Toggle 'Reveal entire map' in the lobby on to see EVERY cell from turn 1 (default for this quest). When you spot a room that's wrong (merged with a neighbour, split incorrectly, or missing a wall) note the cell coordinates and we'll edit data/board.yaml to fix it.",
+  "category": "sandbox",
+  "board": "default",
+  "doors": [],
+  "secretDoors": [],
+  "furniture": [],
+  "traps": [],
+  "furnitureTraps": [],
+  "monsters": [],
+  "treasure": [],
+  "heroSetup": {
+    "barbarian": { "equipped": { "weapon": "broadsword" } }
+  },
+  "startCells": [[21, 16], [22, 16], [21, 17], [22, 17]],
+  "stairCells": [[21, 16], [22, 16], [21, 17], [22, 17]],
+  "wanderingMonster": "goblin",
+  "objective": {
+    "kind": "reach",
+    "cell": [12, 1],
+    "text": "Walk to the top of the dungeon to confirm the corridor network is reachable."
+  },
+  "objectives": [
+    {
+      "id": "tour-north",
+      "kind": "reach",
+      "cell": [12, 1],
+      "text": "Reach the top corridor (col 12, row 1)"
+    },
+    {
+      "id": "tour-west",
+      "kind": "reach",
+      "cell": [1, 9],
+      "text": "Reach the left corridor (col 1, row 9)",
+      "optional": true
+    },
+    {
+      "id": "tour-east",
+      "kind": "reach",
+      "cell": [24, 9],
+      "text": "Reach the right corridor (col 24, row 9)",
+      "optional": true
+    }
+  ],
+  "defeat": { "kind": "all-dead", "text": "Heroes can't die in this quest — there are no monsters." }
+}

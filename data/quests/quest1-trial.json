@@ -1,0 +1,367 @@
+{
+  "id": "quest1-trial",
+  "title": "The Trial",
+  "subtitle": "Quest 1",
+  "intro": "Mentor sends the heroes into the catacombs that contain Fellmarg's tomb to seek out and destroy a foul gargoyle named Verag. This is their first trial — survival depends on working together.",
+  "_canonical_notes": "Per the 2021 quest book: there are NO traps or secret doors in Quest 1. The mummy guarding Fellmarg's tomb rolls 4 Attack dice (instead of the regular 3). Two treasure chests reward 84 and 120 gold to the first hero who searches each. Wandering monster: Orc. Layout overlaid onto the existing 18-room master board (canonical-board exact-cell rebuild deferred).",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Stairway Hall",
+      "hidden": false
+    },
+    "r15": {
+      "name": "Catacomb Antechamber",
+      "hidden": true
+    },
+    "r10": {
+      "name": "Skeleton Hall",
+      "hidden": true
+    },
+    "r06": {
+      "name": "Fellmarg's Tomb",
+      "hidden": true
+    },
+    "r01": {
+      "name": "Verag's Lair",
+      "hidden": true
+    }
+  },
+  "doors": [
+    {
+      "a": [
+        22,
+        17
+      ],
+      "b": [
+        22,
+        18
+      ]
+    },
+    {
+      "a": [
+        3,
+        17
+      ],
+      "b": [
+        3,
+        18
+      ]
+    },
+    {
+      "a": [
+        3,
+        12
+      ],
+      "b": [
+        3,
+        13
+      ]
+    },
+    {
+      "a": [
+        3,
+        8
+      ],
+      "b": [
+        3,
+        9
+      ]
+    },
+    {
+      "a": [
+        3,
+        4
+      ],
+      "b": [
+        3,
+        5
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-rack",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          5,
+          16
+        ]
+      ],
+      "_note": "A: weapons are chipped, rusted, broken — nothing of value."
+    },
+    {
+      "id": "f-tomb",
+      "type": "tomb",
+      "cells": [
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          6
+        ]
+      ],
+      "_note": "Fellmarg's tomb — the mummy is its guardian."
+    },
+    {
+      "id": "f-table",
+      "type": "table",
+      "cells": [
+        [
+          2,
+          12
+        ],
+        [
+          3,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "f-chestB",
+      "type": "chest",
+      "cells": [
+        [
+          6,
+          17
+        ]
+      ],
+      "_note": "B: empty treasure chest."
+    },
+    {
+      "id": "f-chestD",
+      "type": "chest",
+      "cells": [
+        [
+          5,
+          7
+        ]
+      ],
+      "_note": "D: 84 gold coins (first searcher)."
+    },
+    {
+      "id": "f-chestE",
+      "type": "chest",
+      "cells": [
+        [
+          5,
+          1
+        ]
+      ],
+      "_note": "E: 120 gold coins (first searcher) — in Verag's lair."
+    }
+  ],
+  "monsters": [
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        3,
+        15
+      ],
+      "roomId": "r15"
+    },
+    {
+      "id": "g2",
+      "type": "goblin",
+      "at": [
+        4,
+        16
+      ],
+      "roomId": "r15"
+    },
+    {
+      "id": "g3",
+      "type": "goblin",
+      "at": [
+        2,
+        14
+      ],
+      "roomId": "r15"
+    },
+    {
+      "id": "g4",
+      "type": "goblin",
+      "at": [
+        5,
+        15
+      ],
+      "roomId": "r15"
+    },
+    {
+      "id": "g5",
+      "type": "goblin",
+      "at": [
+        3,
+        17
+      ],
+      "roomId": "r15"
+    },
+    {
+      "id": "s1",
+      "type": "skeleton",
+      "at": [
+        2,
+        9
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "s2",
+      "type": "skeleton",
+      "at": [
+        4,
+        10
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "s3",
+      "type": "skeleton",
+      "at": [
+        3,
+        11
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "s4",
+      "type": "skeleton",
+      "at": [
+        5,
+        12
+      ],
+      "roomId": "r10"
+    },
+    {
+      "id": "fellmarg",
+      "type": "mummy",
+      "name": "Fellmarg's Guardian",
+      "attack": 4,
+      "at": [
+        3,
+        6
+      ],
+      "roomId": "r06",
+      "_note": "C: rolls 4 Attack dice instead of the regular 3."
+    },
+    {
+      "id": "o1",
+      "type": "orc",
+      "at": [
+        4,
+        6
+      ],
+      "roomId": "r06"
+    },
+    {
+      "id": "o2",
+      "type": "orc",
+      "at": [
+        5,
+        8
+      ],
+      "roomId": "r06"
+    },
+    {
+      "id": "verag",
+      "type": "verag",
+      "name": "Verag",
+      "at": [
+        3,
+        3
+      ],
+      "roomId": "r01",
+      "_note": "Quest objective — slay this gargoyle."
+    },
+    {
+      "id": "o3",
+      "type": "orc",
+      "at": [
+        2,
+        3
+      ],
+      "roomId": "r01"
+    },
+    {
+      "id": "o4",
+      "type": "orc",
+      "at": [
+        4,
+        3
+      ],
+      "roomId": "r01"
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        5,
+        7
+      ],
+      "kind": "gold",
+      "amount": 84,
+      "_note": "D: 84 gold coins to the first hero who searches this chest."
+    },
+    {
+      "at": [
+        5,
+        1
+      ],
+      "kind": "gold",
+      "amount": 120,
+      "_note": "E: 120 gold coins to the first hero who searches this chest."
+    }
+  ],
+  "traps": [],
+  "secretDoors": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "orc",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "verag",
+    "text": "Slay Verag, the gargoyle of Fellmarg's tomb. Then return to the staircase."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "All heroes have fallen — the catacombs swallow another company."
+  }
+}

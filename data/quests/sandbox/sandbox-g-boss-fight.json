@@ -1,0 +1,125 @@
+{
+  "id": "sandbox-g-boss-fight",
+  "title": "Boss & Return-to-Stairs",
+  "subtitle": "Sandbox G",
+  "intro": "End-to-end objective + victory test. A foul gargoyle (canonical Verag stats: A4 / D4 / Body 4) waits north of the staircase. Open the door, walk in, slay him, then return to a staircase cell to complete the quest. The 'Objective achieved — return to the staircase' log should fire on his death; victory and Body/Mind restore should fire when a living hero stands on a stair cell.",
+  "category": "sandbox",
+  "board": "default",
+  "roomOverrides": {
+    "r18": {
+      "name": "Stairway Hall",
+      "hidden": false
+    },
+    "r14": {
+      "name": "Verag's Cell",
+      "hidden": true
+    }
+  },
+  "doors": [
+    {
+      "a": [
+        22,
+        13
+      ],
+      "b": [
+        22,
+        12
+      ]
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-throne",
+      "type": "throne",
+      "cells": [
+        [
+          22,
+          9
+        ]
+      ]
+    }
+  ],
+  "traps": [],
+  "secretDoors": [],
+  "heroSetup": {
+    "barbarian": {
+      "equipped": {
+        "weapon": "broadsword",
+        "bodyArmour": "chain-mail",
+        "shield": "shield"
+      },
+      "inventory": [
+        {
+          "id": "p1",
+          "name": "Potion of Healing",
+          "use": "heal",
+          "amount": 4
+        }
+      ]
+    },
+    "wizard": {
+      "equipped": {
+        "weapon": "staff"
+      }
+    }
+  },
+  "monsters": [
+    {
+      "id": "verag",
+      "type": "verag",
+      "name": "Verag",
+      "at": [
+        22,
+        10
+      ],
+      "roomId": "r14"
+    }
+  ],
+  "treasure": [],
+  "startCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "stairCells": [
+    [
+      21,
+      16
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      22,
+      17
+    ]
+  ],
+  "wanderingMonster": "orc",
+  "objective": {
+    "kind": "kill",
+    "monsterId": "verag",
+    "text": "Slay Verag the gargoyle, then return to the staircase."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "Verag prevails."
+  }
+}

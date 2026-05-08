@@ -1,0 +1,172 @@
+# =====================================================================
+# TREASURE DECK — 24 cards drawn when a Hero searches a clear room.
+#
+# `effect` dispatches in the server's treasure resolver. Cards with
+# `keep: true` are kept by the Hero (potions, etc.); the rest are
+# returned to the deck after resolution. Some cards are recurring
+# hazards (Trap! / Wandering Monster) that loop back to the deck.
+#
+# count = number of identical cards in the deck.
+# =====================================================================
+
+cards:
+  - id: gem
+    count: 1
+    name: Gem!
+    effect: gold
+    amount: 50
+    flavour: "An old boot conceals a valuable gem worth 50 gold coins."
+
+  - id: gold-roll-d6
+    count: 1
+    name: Gold!
+    effect: goldDiceTimesTen
+    sideEffect: missNextTurn
+    flavour: "Hidden caches of gold draw your attention. Roll 1d6 × 10 — but you miss your next turn."
+
+  - id: gold-10
+    count: 1
+    name: Gold!
+    effect: gold
+    amount: 10
+    flavour: "A meagre 10 gold coins, found in a smelly jerkin."
+
+  - id: gold-20
+    count: 1
+    name: Gold!
+    effect: gold
+    amount: 20
+    flavour: "A rummage through old clothing reveals 20 gold coins."
+
+  - id: gold-25-a
+    count: 1
+    name: Gold!
+    effect: gold
+    amount: 25
+    flavour: "Amidst clutter and rags you find 25 gold coins."
+
+  - id: gold-25-b
+    count: 1
+    name: Gold!
+    effect: gold
+    amount: 25
+    flavour: "An unhidden box yields 25 gold coins."
+
+  - id: gold-50
+    count: 1
+    name: Gold!
+    effect: gold
+    amount: 50
+    flavour: "A loose stone hides a leather pouch containing 50 gold coins."
+
+  - id: jewels
+    count: 1
+    name: Jewels!
+    effect: gold
+    amount: 50
+    flavour: "An old velvet-lined box contains jewels worth 50 gold coins."
+
+  - id: treasure-horde
+    count: 1
+    name: Treasure Horde!
+    effect: gold
+    amount: 100
+    flavour: "A small treasure chest, hidden under fur, holds 100 gold coins."
+
+  - id: heroic-brew
+    count: 1
+    name: Heroic Brew
+    effect: keepPotion
+    keep: true
+    use: doubleAttacksOneTurn
+    flavour: "A leather bag holds a Heroic Brew. Drink before attacking to attack twice this turn."
+
+  - id: holy-water
+    count: 1
+    name: Holy Water
+    effect: keepConsumable
+    keep: true
+    use: smiteUndead
+    flavour: "A vial of Holy Water. Use instead of attacking to slay any one undead creature."
+
+  - id: potion-of-healing-a
+    count: 1
+    name: Potion of Healing
+    effect: keepPotion
+    keep: true
+    use: heal
+    amount: 4
+    flavour: "A healing potion. Restores up to 4 Body when drunk."
+
+  - id: potion-of-healing-b
+    count: 1
+    name: Potion of Healing
+    effect: keepPotion
+    keep: true
+    use: heal
+    amount: 4
+    flavour: "A healing potion. Restores up to 4 Body when drunk."
+
+  - id: potion-of-resilience
+    count: 1
+    name: Potion of Resilience
+    effect: keepPotion
+    keep: true
+    use: bonusDefendOnce
+    bonus: 2
+    flavour: "Roll 2 extra defence dice on your next defence roll."
+
+  - id: potion-of-speed
+    count: 1
+    name: Potion of Speed
+    effect: keepPotion
+    keep: true
+    use: doubleNextMovement
+    flavour: "Roll twice as many movement dice next time you move."
+
+  - id: potion-of-strength
+    count: 1
+    name: Potion of Strength
+    effect: keepPotion
+    keep: true
+    use: bonusAttackOnce
+    bonus: 2
+    flavour: "Roll 2 extra attack dice on your next attack."
+
+  - id: nothing
+    count: 1
+    name: Nothing
+    effect: nothing
+    flavour: "Despite a thorough search, you find nothing."
+
+  - id: trap-arrow-a
+    count: 1
+    name: Trap! (hidden arrow)
+    effect: trapArrow
+    damage: 1
+    returnToDeck: true
+    flavour: "An arrow shoots from the wall. -1 Body. (Card returns to deck.)"
+
+  - id: trap-arrow-b
+    count: 1
+    name: Trap! (hidden arrow)
+    effect: trapArrow
+    damage: 1
+    returnToDeck: true
+    flavour: "A trip wire releases a crossbow bolt. -1 Body. (Card returns to deck.)"
+
+  - id: trap-pit
+    count: 1
+    name: Trap! (pit)
+    effect: trapPit
+    damage: 1
+    sideEffect: missNextTurn
+    returnToDeck: true
+    flavour: "A pit opens beneath you. -1 Body and miss next turn. (Card returns to deck.)"
+
+  - id: wandering-monster-1
+    count: 5
+    name: Wandering Monster
+    effect: wanderingMonster
+    returnToDeck: true
+    flavour: "A monster stalks up. The GM places this quest's wandering monster adjacent and it attacks at once. (Card returns to deck.)"
