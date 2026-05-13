@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HeroQuest GUI — Layout Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=26">
+<style>
+  body {
+    background: var(--paper-shadow);
+    padding: 32px 24px 80px;
+    color: var(--ink);
+  }
+  .mocks-header {
+    max-width: 1120px;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+  .mocks-header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    font-size: 28px;
+    margin: 0 0 6px;
+    color: var(--gold);
+  }
+  .mocks-header p {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--paper-base);
+    margin: 0;
+  }
+  .mocks-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .mock-card {
+    background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+    border: 1px solid var(--paper-burn);
+    border-radius: 8px;
+    padding: 18px 20px;
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 100ms ease, filter 100ms ease;
+  }
+  .mock-card:hover { transform: translateY(-2px); filter: brightness(1.06); }
+  .mock-card h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--ink);
+  }
+  .mock-card .tag {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    background: rgba(20,10,4,0.55);
+  }
+  .mock-card .row { display: flex; gap: 8px; align-items: center; }
+  .mock-card p {
+    font-family: 'IM Fell English', serif;
+    font-size: 14px;
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .mock-card .open {
+    align-self: flex-start;
+    margin-top: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .mocks-footer {
+    max-width: 1120px;
+    margin: 28px auto 0;
+    text-align: center;
+    color: var(--paper-base);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <div class="mocks-header">
+    <h1>Layout Mockups</h1>
+    <p>Four static previews. Click one to open at full size in this tab.</p>
+  </div>
+
+  <div class="mocks-grid">
+
+    <a class="mock-card" href="r1.html">
+      <div class="row"><span class="tag">R1 · 20 min</span><span class="tag">low risk</span></div>
+      <h2>Combined right panel</h2>
+      <p>Treasure deck and Quest Log merge into one right-rail panel.
+      Deck card-back sits at top with the count badge; objectives and
+      last-five log lines below. Eliminates the gap of empty parchment
+      between two stacked panels.</p>
+      <span class="open">Preview →</span>
+    </a>
+
+    <a class="mock-card" href="r2.html">
+      <div class="row"><span class="tag">R2 · 30 min</span><span class="tag">low risk</span></div>
+      <h2>Trimmed log + "Full log" modal</h2>
+      <p>Quest Log keeps the objective checklist plus only the last five
+      events visible. A "Full log" button opens the complete history as a
+      scrollable modal — same pattern as Items/Spells overlays.</p>
+      <span class="open">Preview →</span>
+    </a>
+
+    <a class="mock-card" href="r3.html">
+      <div class="row"><span class="tag">R3 · 45 min</span><span class="tag">medium risk</span></div>
+      <h2>Treasure deck — corner-dock</h2>
+      <p>The deck moves out of the right rail and docks at the bottom-right
+      corner of the board frame, overlapping the wood-rim like a physical
+      deck on the table edge. Right rail shrinks; the board grows.
+      The tabletop move.</p>
+      <span class="open">Preview →</span>
+    </a>
+
+    <a class="mock-card" href="r5.html">
+      <div class="row"><span class="tag">R5 · half-day</span><span class="tag">bold</span></div>
+      <h2>Tabletop reframe</h2>
+      <p>Strip panel chrome from the rails entirely. Floating cards on
+      parchment: turn info top-left, deck top-right, objective + last
+      three log lines under it. Bare paper carries the weight; everything
+      else is a card or icon on the table.</p>
+      <span class="open">Preview →</span>
+    </a>
+
+  </div>
+
+  <div class="mocks-footer">
+    The board and hero strip are placeholders. Look at the rail layouts.
+  </div>
+</body>
+</html>

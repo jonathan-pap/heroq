@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeroQuest — welcome & lobby (burnt parchment theme)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HeroQuest — welcome + lobby mockup
+   Same burnt-parchment / dark-wood theme as gui-mockup.html so
+   the entire app reads as one product.
+   ============================================================ */
+
+:root {
+  --paper-base:   #b89568;
+  --paper-hi:     #d6b685;
+  --paper-mid:    #a87f4f;
+  --paper-shadow: #6e4a26;
+  --paper-burn:   #4a2c14;
+  --paper-edge:   #2c1808;
+
+  --wood-base:    #3e2614;
+  --wood-grain:   #2a160a;
+  --wood-hi:      #5a3a1c;
+  --wood-rim:     #1a0e06;
+
+  --ink:          #2a1808;
+  --ink-soft:     #4a2c14;
+  --ink-fade:     #6e4a26;
+
+  --gold:         #c8973c;
+  --gold-deep:    #8a6420;
+  --rust:         #8a3818;
+  --bone:         #e8d4a0;
+
+  --barbarian:    #a83020;
+  --dwarf:        #b8842a;
+  --elf:          #2f8050;
+  --wizard:       #3a4ab0;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--wood-rim);
+  background-image:
+    repeating-linear-gradient(88deg, #1c0e06 0%, #100804 2%, #220f08 4%, #1c0e06 6%),
+    radial-gradient(ellipse at center, #2c1c0e 0%, #150a04 75%);
+  color: var(--ink);
+  font-family: "IM Fell English", "EB Garamond", Georgia, serif;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 22px 60px;
+  gap: 50px;
+  min-height: 100vh;
+}
+
+/* ----- mockup section header (only for this preview) ----- */
+.preview-label {
+  width: min(1200px, 100%);
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-size: 12px;
+  margin-bottom: -36px;
+  padding-left: 8px;
+}
+
+/* =========================================================
+   FRAME — same as gui-mockup
+   ========================================================= */
+.frame {
+  width: min(1200px, 100%);
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--wood-base) 0%,
+      var(--wood-grain) 1.5%,
+      var(--wood-base) 3%,
+      var(--wood-hi) 4.2%,
+      var(--wood-base) 6%),
+    var(--wood-base);
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 2px var(--wood-rim),
+    inset 0 0 22px rgba(0, 0, 0, 0.55),
+    inset 0 2px 0 rgba(255, 220, 170, 0.06),
+    0 12px 40px rgba(0, 0, 0, 0.85);
+}
+.frame::before, .frame::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #d6a44a, #6e4818 70%, #2a1808);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.frame::before { top: 8px; left: 8px; }
+.frame::after  { top: 8px; right: 8px; }
+
+/* =========================================================
+   PARCHMENT
+   ========================================================= */
+.parchment {
+  position: relative;
+  background:
+    radial-gradient(circle at 0% 0%,   rgba(74, 44, 20, 0.55), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(74, 44, 20, 0.45), transparent 28%),
+    radial-gradient(circle at 0% 100%, rgba(74, 44, 20, 0.55), transparent 28%),
+    radial-gradient(circle at 100% 100%, rgba(74, 44, 20, 0.50), transparent 28%),
+    radial-gradient(ellipse at 45% 35%, var(--paper-hi) 0%, var(--paper-base) 45%, var(--paper-mid) 80%, var(--paper-shadow) 100%),
+    var(--paper-base);
+  padding: 36px 34px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px var(--paper-burn),
+    inset 0 0 32px rgba(80, 40, 12, 0.35),
+    0 0 0 4px var(--wood-rim);
+  overflow: hidden;
+}
+.parchment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.20  0 0 0 0 0.10  0 0 0 0.7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.parchment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg, transparent 0, transparent 14px,
+      rgba(60, 32, 12, 0.04) 15px, transparent 16px),
+    repeating-linear-gradient(
+      90deg, transparent 0, transparent 26px,
+      rgba(60, 32, 12, 0.03) 27px, transparent 28px);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================================
+   PANEL — nested parchment card
+   ========================================================= */
+.panel {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 35% 30%, rgba(255, 220, 170, 0.18), transparent 70%),
+    linear-gradient(180deg, #b89058 0%, #a07a48 100%);
+  border-radius: 10px 13px 11px 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(50, 26, 8, 0.4),
+    inset 0 0 18px rgba(80, 40, 12, 0.45),
+    inset 0 1px 0 rgba(255, 220, 170, 0.18),
+    0 2px 0 rgba(40, 18, 4, 0.3);
+  padding: 22px 24px;
+}
+.panel h2 {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.35);
+  border-bottom: 1px solid rgba(50, 26, 8, 0.25);
+  padding-bottom: 8px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.panel h2 .hint {
+  font-family: "IM Fell English", serif;
+  font-weight: normal;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-fade);
+  font-style: italic;
+}
+.hint, .muted {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  color: var(--ink-fade);
+  font-size: 12px;
+}
+
+/* =========================================================
+   FORMS / INPUTS
+   ========================================================= */
+label {
+  display: block;
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+input[type="text"], input:not([type]), select {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  background:
+    linear-gradient(180deg, rgba(50, 26, 8, 0.10) 0%, rgba(50, 26, 8, 0.04) 100%),
+    var(--paper-hi);
+  border: 1px solid var(--paper-burn);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: "IM Fell English", serif;
+  font-size: 16px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  box-shadow:
+    inset 0 1px 2px rgba(40, 18, 4, 0.25),
+    inset 0 -1px 0 rgba(255, 220, 170, 0.2);
+}
+input:focus, select:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+  background:
+    linear-gradient(180deg, rgba(50, 26, 8, 0.06) 0%, rgba(50, 26, 8, 0.02) 100%),
+    var(--paper-hi);
+}
+input::placeholder { color: var(--ink-fade); font-style: italic; }
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.btn, button {
+  font-family: "Cinzel", serif;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #c89a64 0%, #8a5e2c 100%);
+  border: 1px solid var(--paper-burn);
+  border-radius: 6px;
+  padding: 9px 18px;
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.4),
+    inset 0 -2px 0 rgba(40, 18, 4, 0.35),
+    0 1px 0 rgba(40, 18, 4, 0.4);
+  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.3);
+}
+.btn.primary, button.primary {
+  background: linear-gradient(180deg, #d8a44a 0%, #8a5e10 100%);
+  color: #2a1808;
+}
+.btn.big, button.big {
+  font-size: 14px;
+  padding: 12px 30px;
+  letter-spacing: 0.16em;
+}
+.btn.ghost, button.ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  box-shadow: none;
+  border: 1px dashed var(--paper-burn);
+  text-shadow: none;
+}
+.btn:hover, button:hover { filter: brightness(1.08); }
+
+/* =========================================================
+   WELCOME SCREEN
+   ========================================================= */
+.welcome { padding: 0; }
+.welcome .content {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 18px 14px 26px;
+}
+.welcome .title-card {
+  text-align: center;
+  padding: 18px 28px;
+  position: relative;
+}
+.welcome .brand {
+  font-family: "Cinzel", serif;
+  font-weight: 900;
+  font-size: 64px;
+  letter-spacing: 0.18em;
+  margin: 0;
+  color: var(--ink);
+  text-shadow:
+    0 1px 0 rgba(255, 220, 170, 0.5),
+    0 3px 6px rgba(40, 18, 4, 0.45),
+    0 0 24px rgba(200, 150, 60, 0.18);
+}
+.welcome .brand .q {
+  color: var(--rust);
+  text-shadow:
+    0 1px 0 rgba(255, 220, 170, 0.4),
+    0 2px 4px rgba(40, 18, 4, 0.5);
+}
+.welcome .tagline {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+  letter-spacing: 0.04em;
+}
+
+/* decorative flourishes around the title */
+.flourish {
+  display: block;
+  text-align: center;
+  color: var(--gold-deep);
+  font-size: 14px;
+  letter-spacing: 1.4em;
+  margin: 12px 0 0;
+}
+
+.welcome-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: min(900px, 100%);
+}
+@media (max-width: 720px) { .welcome-row { grid-template-columns: 1fr; } }
+
+.welcome .panel button.primary {
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* =========================================================
+   LOBBY SCREEN
+   ========================================================= */
+.lobby .content { padding: 0; }
+.lobby-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.room-code {
+  display: flex; align-items: baseline; gap: 14px;
+}
+.room-code .lbl {
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.room-code .code {
+  font-family: "Cinzel", serif;
+  font-weight: 900;
+  font-size: 30px;
+  color: var(--rust);
+  letter-spacing: 0.32em;
+  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.4), 0 2px 4px rgba(40, 18, 4, 0.4);
+}
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+@media (max-width: 800px) { .lobby-grid { grid-template-columns: 1fr; } }
+
+.lobby-grid .panel.full { grid-column: 1 / -1; }
+
+/* segmented control for AI / Human GM */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--paper-burn);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(50, 26, 8, 0.1);
+  margin-bottom: 8px;
+}
+.seg label {
+  margin: 0; padding: 8px 18px;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ink-soft);
+}
+.seg label.active {
+  background: linear-gradient(180deg, #d8a44a 0%, #8a5e10 100%);
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255,220,170,0.3);
+}
+.seg input { display: none; }
+
+.check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  text-transform: none; letter-spacing: 0;
+  font-size: 13px;
+  font-family: "IM Fell English", serif;
+  color: var(--ink);
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.check-row input[type="checkbox"] {
+  appearance: none;
+  width: 18px; height: 18px;
+  margin-top: 2px;
+  border: 1.5px solid var(--paper-burn);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper-base));
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.check-row input[type="checkbox"]:checked::after {
+  content: '✓';
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--rust);
+}
+
+/* hero seat tiles */
+.hero-seats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (max-width: 480px) { .hero-seats { grid-template-columns: 1fr; } }
+.seat {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+  border: 2px solid var(--paper-burn);
+  cursor: pointer;
+  transition: transform 100ms ease;
+  box-shadow: 0 2px 0 rgba(40, 18, 4, 0.3), inset 0 1px 0 rgba(255, 220, 170, 0.3);
+}
+.seat:hover { transform: translateY(-1px); }
+.seat.taken { outline: 2px solid var(--gold); outline-offset: -3px; }
+.seat-badge {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  color: #fff;
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 18px;
+  border: 2px solid rgba(40, 18, 4, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 2px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.seat-badge.barbarian { background: var(--barbarian); }
+.seat-badge.dwarf     { background: var(--dwarf); }
+.seat-badge.elf       { background: var(--elf); }
+.seat-badge.wizard    { background: var(--wizard); }
+.seat-info {
+  flex: 1; min-width: 0;
+}
+.seat-info .name {
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  display: block;
+}
+.seat-info .who {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.seat-info .who.empty { color: var(--ink-fade); }
+
+/* players list */
+.players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.players li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(50, 26, 8, 0.2);
+  font-size: 14px;
+  font-family: "IM Fell English", serif;
+}
+.players li:last-child { border-bottom: 0; }
+.players .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--elf);
+}
+.players .dot.idle { background: var(--ink-fade); }
+.players .role {
+  margin-left: auto;
+  font-size: 11px;
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+/* quest selector + intro */
+.quest-row {
+  display: flex; gap: 14px; align-items: center;
+  margin-bottom: 12px;
+}
+.quest-row select { flex: 1; }
+.quest-thumb {
+  width: 78px; height: 56px;
+  border-radius: 4px;
+  background:
+    url('/assets/map_qa/quest1-trial.png');
+  background-size: 884px 912px;
+  background-position: -36px -64px;
+  border: 2px solid var(--paper-burn);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.quest-intro {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  border-left: 3px solid var(--gold-deep);
+  padding-left: 10px;
+  margin: 0;
+}
+
+/* footer with begin-quest button */
+.lobby-footer {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  margin-top: 26px;
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     WELCOME SCREEN
+     ========================================================= -->
+<div class="preview-label">Welcome screen</div>
+<div class="frame">
+  <div class="parchment welcome">
+    <div class="content">
+      <div class="title-card">
+        <h1 class="brand">HERO<span class="q">QUEST</span></h1>
+        <p class="tagline">A 1989 dungeon crawl, recreated for the browser</p>
+        <div class="flourish">⚜ ⚜ ⚜</div>
+      </div>
+
+      <div class="welcome-row">
+        <section class="panel">
+          <h2>Create Game</h2>
+          <label>
+            Your name
+            <input type="text" maxlength="14" placeholder="Hero name…" value="">
+          </label>
+          <button class="primary">Forge a Realm</button>
+          <p class="hint" style="margin: 10px 0 0;">A 4-letter room code will be conjured for your fellows.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Join with Code</h2>
+          <label>
+            Your name
+            <input type="text" maxlength="14" placeholder="Hero name…" value="">
+          </label>
+          <label>
+            Room code
+            <input type="text" maxlength="4" placeholder="ABCD" style="text-transform:uppercase; letter-spacing:0.4em; font-weight:bold;" value="">
+          </label>
+          <button class="primary">Enter the Realm</button>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     LOBBY SCREEN
+     ========================================================= -->
+<div class="preview-label">Lobby screen</div>
+<div class="frame">
+  <div class="parchment lobby">
+    <div class="content">
+      <header class="lobby-header">
+        <div class="room-code">
+          <span class="lbl">Room</span>
+          <span class="code">VRGL</span>
+        </div>
+        <div>
+          <button class="ghost">⟵ Leave Room</button>
+        </div>
+      </header>
+
+      <div class="lobby-grid">
+
+        <section class="panel">
+          <h2>Quest <span class="hint">— pick the night's tale</span></h2>
+          <div class="quest-row">
+            <div class="quest-thumb"></div>
+            <select>
+              <option>Quest 1 — The Trial</option>
+              <option>Quest 2 — Rescue of Sir Ragnar</option>
+              <option>Quest 3 — Lair of the Orc Warlord</option>
+              <option>Quest 4 — Prince Magnus' Gold</option>
+            </select>
+          </div>
+          <p class="quest-intro">
+            Mentor sends the heroes into the catacombs that contain Fellmarg's
+            tomb to seek out and destroy a foul gargoyle named Verag. This is
+            their first trial — survival depends on working together.
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>Evil Wizard <span class="hint">— who runs the dungeon?</span></h2>
+          <div class="seg">
+            <label class="active"><input type="radio" name="gm" checked> AI</label>
+            <label><input type="radio" name="gm"> Human</label>
+          </div>
+          <p class="hint" style="margin: 8px 0 14px;">AI will run Zargon's monsters, traps and dread spells.</p>
+          <button class="ghost" style="display:none">Take GM seat</button>
+          <p class="muted" style="margin: 0;">Switch to <em>Human</em> to claim the GM seat yourself.</p>
+        </section>
+
+        <section class="panel full">
+          <h2>Heroes <span class="hint">— claim one or more</span></h2>
+          <div class="hero-seats">
+            <div class="seat taken">
+              <div class="seat-badge barbarian">B</div>
+              <div class="seat-info">
+                <span class="name">Barbarian</span>
+                <span class="who">claimed by Jon</span>
+              </div>
+            </div>
+            <div class="seat">
+              <div class="seat-badge dwarf">D</div>
+              <div class="seat-info">
+                <span class="name">Dwarf</span>
+                <span class="who empty">— available —</span>
+              </div>
+            </div>
+            <div class="seat">
+              <div class="seat-badge elf">E</div>
+              <div class="seat-info">
+                <span class="name">Elf</span>
+                <span class="who empty">— available —</span>
+              </div>
+            </div>
+            <div class="seat taken">
+              <div class="seat-badge wizard">W</div>
+              <div class="seat-info">
+                <span class="name">Wizard</span>
+                <span class="who">claimed by Mira</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Options</h2>
+          <label class="check-row">
+            <input type="checkbox" checked>
+            <span>
+              <strong style="font-family: 'Cinzel', serif; letter-spacing: 0.05em;">Auto-roll movement</strong><br>
+              <span class="hint">Skip the manual "Roll Movement" click — server rolls 2d6 for you.</span>
+            </span>
+          </label>
+          <label class="check-row" style="margin-top: 10px;">
+            <input type="checkbox">
+            <span>
+              <strong style="font-family: 'Cinzel', serif; letter-spacing: 0.05em;">Reveal entire map</strong><br>
+              <span class="hint">Debug — disables fog of war. Useful for verifying layouts.</span>
+            </span>
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>Players in Room</h2>
+          <ul class="players">
+            <li><span class="dot"></span> Jon <span class="role">Host · Barbarian</span></li>
+            <li><span class="dot"></span> Mira <span class="role">Wizard</span></li>
+            <li><span class="dot idle"></span> Tom <span class="role">spectator</span></li>
+          </ul>
+        </section>
+
+      </div>
+
+      <div class="lobby-footer">
+        <button class="primary big">⚔ Begin the Quest ⚔</button>
+        <p class="muted" style="margin: 0;">Waiting for the host to begin… 2 of 4 hero seats claimed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

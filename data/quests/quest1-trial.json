@@ -2,61 +2,943 @@
   "id": "quest1-trial",
   "title": "The Trial",
   "subtitle": "Quest 1",
-  "intro": "Mentor sends the heroes into the catacombs that contain Fellmarg's tomb to seek out and destroy a foul gargoyle named Verag. This is their first trial — survival depends on working together.",
-  "_canonical_notes": "Per the 2021 quest book: there are NO traps or secret doors in Quest 1. The mummy guarding Fellmarg's tomb rolls 4 Attack dice (instead of the regular 3). Two treasure chests reward 84 and 120 gold to the first hero who searches each. Wandering monster: Orc. Layout overlaid onto the existing 18-room master board (canonical-board exact-cell rebuild deferred).",
+  "intro": "Mentor sends the heroes into the catacombs that contain Fellmarg's\ntomb to seek out and destroy a foul gargoyle named Verag. This is\ntheir first trial — survival depends on working together.",
+  "category": "main",
   "board": "default",
-  "roomOverrides": {
-    "r18": {
-      "name": "Stairway Hall",
-      "hidden": false
-    },
-    "r15": {
-      "name": "Catacomb Antechamber",
-      "hidden": true
-    },
-    "r10": {
-      "name": "Skeleton Hall",
-      "hidden": true
-    },
-    "r06": {
-      "name": "Fellmarg's Tomb",
-      "hidden": true
-    },
-    "r01": {
-      "name": "Verag's Lair",
-      "hidden": true
-    }
-  },
+  "roomOverrides": {},
+  "dark": [
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      5,
+      11
+    ],
+    [
+      5,
+      12
+    ],
+    [
+      6,
+      0
+    ],
+    [
+      6,
+      10
+    ],
+    [
+      6,
+      11
+    ],
+    [
+      6,
+      12
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      7,
+      10
+    ],
+    [
+      7,
+      11
+    ],
+    [
+      7,
+      12
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      8,
+      11
+    ],
+    [
+      8,
+      12
+    ],
+    [
+      9,
+      0
+    ],
+    [
+      10,
+      0
+    ],
+    [
+      11,
+      0
+    ],
+    [
+      12,
+      0
+    ],
+    [
+      12,
+      1
+    ],
+    [
+      12,
+      2
+    ],
+    [
+      12,
+      3
+    ],
+    [
+      12,
+      4
+    ],
+    [
+      13,
+      0
+    ],
+    [
+      13,
+      1
+    ],
+    [
+      13,
+      2
+    ],
+    [
+      13,
+      3
+    ],
+    [
+      13,
+      4
+    ],
+    [
+      14,
+      0
+    ],
+    [
+      14,
+      1
+    ],
+    [
+      14,
+      2
+    ],
+    [
+      14,
+      3
+    ],
+    [
+      14,
+      4
+    ],
+    [
+      14,
+      5
+    ],
+    [
+      15,
+      0
+    ],
+    [
+      15,
+      1
+    ],
+    [
+      15,
+      2
+    ],
+    [
+      15,
+      3
+    ],
+    [
+      15,
+      4
+    ],
+    [
+      15,
+      5
+    ],
+    [
+      15,
+      18
+    ],
+    [
+      16,
+      0
+    ],
+    [
+      16,
+      1
+    ],
+    [
+      16,
+      2
+    ],
+    [
+      16,
+      3
+    ],
+    [
+      16,
+      4
+    ],
+    [
+      16,
+      5
+    ],
+    [
+      16,
+      18
+    ],
+    [
+      17,
+      0
+    ],
+    [
+      17,
+      1
+    ],
+    [
+      17,
+      2
+    ],
+    [
+      17,
+      3
+    ],
+    [
+      17,
+      4
+    ],
+    [
+      17,
+      5
+    ],
+    [
+      17,
+      6
+    ],
+    [
+      17,
+      7
+    ],
+    [
+      17,
+      8
+    ],
+    [
+      17,
+      10
+    ],
+    [
+      17,
+      11
+    ],
+    [
+      17,
+      12
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      0
+    ],
+    [
+      18,
+      1
+    ],
+    [
+      18,
+      2
+    ],
+    [
+      18,
+      3
+    ],
+    [
+      18,
+      4
+    ],
+    [
+      18,
+      5
+    ],
+    [
+      18,
+      6
+    ],
+    [
+      18,
+      7
+    ],
+    [
+      18,
+      8
+    ],
+    [
+      18,
+      9
+    ],
+    [
+      18,
+      10
+    ],
+    [
+      18,
+      11
+    ],
+    [
+      18,
+      12
+    ],
+    [
+      18,
+      13
+    ],
+    [
+      18,
+      14
+    ],
+    [
+      18,
+      15
+    ],
+    [
+      18,
+      16
+    ],
+    [
+      18,
+      17
+    ],
+    [
+      18,
+      18
+    ],
+    [
+      19,
+      0
+    ],
+    [
+      19,
+      1
+    ],
+    [
+      19,
+      2
+    ],
+    [
+      19,
+      3
+    ],
+    [
+      19,
+      4
+    ],
+    [
+      19,
+      5
+    ],
+    [
+      19,
+      6
+    ],
+    [
+      19,
+      7
+    ],
+    [
+      19,
+      8
+    ],
+    [
+      19,
+      9
+    ],
+    [
+      19,
+      10
+    ],
+    [
+      19,
+      11
+    ],
+    [
+      19,
+      12
+    ],
+    [
+      19,
+      13
+    ],
+    [
+      19,
+      14
+    ],
+    [
+      19,
+      15
+    ],
+    [
+      19,
+      16
+    ],
+    [
+      19,
+      17
+    ],
+    [
+      19,
+      18
+    ],
+    [
+      20,
+      0
+    ],
+    [
+      20,
+      1
+    ],
+    [
+      20,
+      2
+    ],
+    [
+      20,
+      3
+    ],
+    [
+      20,
+      4
+    ],
+    [
+      20,
+      5
+    ],
+    [
+      20,
+      6
+    ],
+    [
+      20,
+      7
+    ],
+    [
+      20,
+      8
+    ],
+    [
+      20,
+      9
+    ],
+    [
+      20,
+      10
+    ],
+    [
+      20,
+      11
+    ],
+    [
+      20,
+      12
+    ],
+    [
+      20,
+      13
+    ],
+    [
+      20,
+      14
+    ],
+    [
+      20,
+      15
+    ],
+    [
+      20,
+      16
+    ],
+    [
+      20,
+      17
+    ],
+    [
+      20,
+      18
+    ],
+    [
+      21,
+      0
+    ],
+    [
+      21,
+      1
+    ],
+    [
+      21,
+      2
+    ],
+    [
+      21,
+      3
+    ],
+    [
+      21,
+      4
+    ],
+    [
+      21,
+      5
+    ],
+    [
+      21,
+      6
+    ],
+    [
+      21,
+      7
+    ],
+    [
+      21,
+      8
+    ],
+    [
+      21,
+      9
+    ],
+    [
+      21,
+      10
+    ],
+    [
+      21,
+      11
+    ],
+    [
+      21,
+      12
+    ],
+    [
+      21,
+      13
+    ],
+    [
+      21,
+      14
+    ],
+    [
+      21,
+      15
+    ],
+    [
+      21,
+      16
+    ],
+    [
+      21,
+      17
+    ],
+    [
+      21,
+      18
+    ],
+    [
+      22,
+      0
+    ],
+    [
+      22,
+      1
+    ],
+    [
+      22,
+      2
+    ],
+    [
+      22,
+      3
+    ],
+    [
+      22,
+      4
+    ],
+    [
+      22,
+      5
+    ],
+    [
+      22,
+      6
+    ],
+    [
+      22,
+      7
+    ],
+    [
+      22,
+      8
+    ],
+    [
+      22,
+      9
+    ],
+    [
+      22,
+      10
+    ],
+    [
+      22,
+      11
+    ],
+    [
+      22,
+      12
+    ],
+    [
+      22,
+      13
+    ],
+    [
+      22,
+      14
+    ],
+    [
+      22,
+      15
+    ],
+    [
+      22,
+      16
+    ],
+    [
+      22,
+      17
+    ],
+    [
+      22,
+      18
+    ],
+    [
+      23,
+      0
+    ],
+    [
+      23,
+      1
+    ],
+    [
+      23,
+      2
+    ],
+    [
+      23,
+      3
+    ],
+    [
+      23,
+      4
+    ],
+    [
+      23,
+      5
+    ],
+    [
+      23,
+      6
+    ],
+    [
+      23,
+      7
+    ],
+    [
+      23,
+      8
+    ],
+    [
+      23,
+      9
+    ],
+    [
+      23,
+      10
+    ],
+    [
+      23,
+      11
+    ],
+    [
+      23,
+      12
+    ],
+    [
+      23,
+      13
+    ],
+    [
+      23,
+      14
+    ],
+    [
+      23,
+      15
+    ],
+    [
+      23,
+      16
+    ],
+    [
+      23,
+      17
+    ],
+    [
+      23,
+      18
+    ],
+    [
+      24,
+      0
+    ],
+    [
+      24,
+      1
+    ],
+    [
+      24,
+      2
+    ],
+    [
+      24,
+      3
+    ],
+    [
+      24,
+      4
+    ],
+    [
+      24,
+      5
+    ],
+    [
+      24,
+      6
+    ],
+    [
+      24,
+      7
+    ],
+    [
+      24,
+      8
+    ],
+    [
+      24,
+      9
+    ],
+    [
+      24,
+      10
+    ],
+    [
+      24,
+      11
+    ],
+    [
+      24,
+      12
+    ],
+    [
+      24,
+      13
+    ],
+    [
+      24,
+      14
+    ],
+    [
+      24,
+      15
+    ],
+    [
+      24,
+      16
+    ],
+    [
+      24,
+      17
+    ],
+    [
+      24,
+      18
+    ],
+    [
+      25,
+      0
+    ],
+    [
+      25,
+      1
+    ],
+    [
+      25,
+      2
+    ],
+    [
+      25,
+      3
+    ],
+    [
+      25,
+      4
+    ],
+    [
+      25,
+      5
+    ],
+    [
+      25,
+      6
+    ],
+    [
+      25,
+      7
+    ],
+    [
+      25,
+      8
+    ],
+    [
+      25,
+      9
+    ],
+    [
+      25,
+      10
+    ],
+    [
+      25,
+      11
+    ],
+    [
+      25,
+      12
+    ],
+    [
+      25,
+      13
+    ],
+    [
+      25,
+      14
+    ],
+    [
+      25,
+      15
+    ],
+    [
+      25,
+      16
+    ],
+    [
+      25,
+      17
+    ],
+    [
+      25,
+      18
+    ]
+  ],
+  "blocked": [
+    [
+      0,
+      1
+    ],
+    [
+      12,
+      5
+    ],
+    [
+      13,
+      5
+    ],
+    [
+      17,
+      9
+    ],
+    [
+      14,
+      18
+    ]
+  ],
   "doors": [
     {
       "a": [
-        22,
-        17
+        4,
+        2
       ],
       "b": [
-        22,
-        18
-      ]
+        5,
+        2
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        8,
+        2
+      ],
+      "b": [
+        9,
+        2
+      ],
+      "_rot": "leftward"
     },
     {
       "a": [
         3,
-        17
+        3
       ],
       "b": [
         3,
-        18
-      ]
-    },
-    {
-      "a": [
-        3,
-        12
+        4
       ],
-      "b": [
-        3,
-        13
-      ]
+      "_rot": "upward"
     },
     {
       "a": [
@@ -66,35 +948,142 @@
       "b": [
         3,
         9
-      ]
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        7,
+        8
+      ],
+      "b": [
+        7,
+        9
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        15,
+        9
+      ],
+      "b": [
+        16,
+        9
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        0,
+        11
+      ],
+      "b": [
+        1,
+        11
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        10,
+        12
+      ],
+      "b": [
+        10,
+        13
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        8,
+        15
+      ],
+      "b": [
+        9,
+        15
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        13,
+        15
+      ],
+      "b": [
+        14,
+        15
+      ],
+      "_rot": "leftward"
     },
     {
       "a": [
         3,
-        4
+        17
       ],
       "b": [
         3,
-        5
-      ]
+        18
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        7,
+        17
+      ],
+      "b": [
+        7,
+        18
+      ],
+      "_rot": "upward"
     }
   ],
   "furniture": [
     {
-      "id": "f-rack",
-      "type": "weapon-rack",
-      "cells": [
-        [
-          5,
-          16
-        ]
-      ],
-      "_note": "A: weapons are chipped, rusted, broken — nothing of value."
-    },
-    {
-      "id": "f-tomb",
+      "id": "f-tomb1",
       "type": "tomb",
       "cells": [
+        [
+          10,
+          1
+        ],
+        [
+          11,
+          1
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          11,
+          3
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-sorcerer-table1",
+      "type": "sorcerer-table",
+      "cells": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          5
+        ],
         [
           1,
           6
@@ -102,266 +1091,563 @@
         [
           2,
           6
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          2,
+          7
         ]
       ],
-      "_note": "Fellmarg's tomb — the mummy is its guardian."
+      "facing": "leftward"
     },
     {
-      "id": "f-table",
+      "id": "f-table1",
       "type": "table",
       "cells": [
         [
-          2,
-          12
+          6,
+          5
         ],
         [
-          3,
-          12
+          7,
+          5
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-chest1",
+      "type": "chest",
+      "cells": [
+        [
+          10,
+          5
         ]
       ]
     },
     {
-      "id": "f-chestB",
+      "id": "f-chest2",
       "type": "chest",
       "cells": [
+        [
+          11,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "f-fireplace1",
+      "type": "fireplace",
+      "cells": [
+        [
+          12,
+          7
+        ],
+        [
+          13,
+          7
+        ],
+        [
+          14,
+          7
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-throne1",
+      "type": "throne",
+      "cells": [
+        [
+          10,
+          8
+        ]
+      ],
+      "facing": "rightward",
+      "_flipH": true
+    },
+    {
+      "id": "f-table2",
+      "type": "table",
+      "cells": [
+        [
+          11,
+          9
+        ],
+        [
+          12,
+          9
+        ],
+        [
+          13,
+          9
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          13,
+          10
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-rack1",
+      "type": "rack",
+      "cells": [
+        [
+          3,
+          10
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          3,
+          11
+        ],
+        [
+          4,
+          11
+        ],
+        [
+          3,
+          12
+        ],
+        [
+          4,
+          12
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-bookcase1",
+      "type": "bookcase",
+      "cells": [
+        [
+          5,
+          13
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          13
+        ]
+      ],
+      "facing": "upward"
+    },
+    {
+      "id": "f-cupboard1",
+      "type": "cupboard",
+      "cells": [
+        [
+          15,
+          13
+        ],
+        [
+          16,
+          13
+        ],
+        [
+          17,
+          13
+        ]
+      ],
+      "facing": "upward"
+    },
+    {
+      "id": "f-alchemist-bench1",
+      "type": "alchemist-bench",
+      "cells": [
+        [
+          5,
+          15
+        ],
+        [
+          6,
+          15
+        ],
+        [
+          5,
+          16
+        ],
+        [
+          6,
+          16
+        ],
+        [
+          5,
+          17
+        ],
         [
           6,
           17
         ]
       ],
-      "_note": "B: empty treasure chest."
+      "facing": "rightward"
     },
     {
-      "id": "f-chestD",
+      "id": "f-weapon-rack1",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          11,
+          15
+        ],
+        [
+          11,
+          16
+        ],
+        [
+          11,
+          17
+        ]
+      ],
+      "facing": "rightward"
+    },
+    {
+      "id": "f-chest3",
       "type": "chest",
       "cells": [
         [
-          5,
-          7
+          17,
+          16
         ]
       ],
-      "_note": "D: 84 gold coins (first searcher)."
+      "facing": "leftward"
     },
     {
-      "id": "f-chestE",
-      "type": "chest",
+      "id": "f-bookcase2",
+      "type": "bookcase",
       "cells": [
         [
-          5,
-          1
+          15,
+          17
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          17,
+          17
         ]
       ],
-      "_note": "E: 120 gold coins (first searcher) — in Verag's lair."
+      "facing": "downward"
     }
   ],
   "monsters": [
     {
-      "id": "g1",
-      "type": "goblin",
+      "id": "z1",
+      "type": "zombie",
       "at": [
-        3,
-        15
-      ],
-      "roomId": "r15"
-    },
-    {
-      "id": "g2",
-      "type": "goblin",
-      "at": [
-        4,
-        16
-      ],
-      "roomId": "r15"
-    },
-    {
-      "id": "g3",
-      "type": "goblin",
-      "at": [
-        2,
-        14
-      ],
-      "roomId": "r15"
-    },
-    {
-      "id": "g4",
-      "type": "goblin",
-      "at": [
-        5,
-        15
-      ],
-      "roomId": "r15"
-    },
-    {
-      "id": "g5",
-      "type": "goblin",
-      "at": [
-        3,
-        17
-      ],
-      "roomId": "r15"
+        6,
+        1
+      ]
     },
     {
       "id": "s1",
       "type": "skeleton",
       "at": [
-        2,
-        9
-      ],
-      "roomId": "r10"
+        9,
+        1
+      ]
     },
     {
       "id": "s2",
       "type": "skeleton",
       "at": [
-        4,
-        10
-      ],
-      "roomId": "r10"
+        2,
+        2
+      ]
     },
     {
       "id": "s3",
       "type": "skeleton",
       "at": [
         3,
-        11
+        2
+      ]
+    },
+    {
+      "id": "m1",
+      "type": "mummy",
+      "at": [
+        6,
+        2
       ],
-      "roomId": "r10"
+      "name": "Fellmarg's Guardian",
+      "attack": 4,
+      "_note": "The Trial boss — canonical override."
+    },
+    {
+      "id": "z2",
+      "type": "zombie",
+      "at": [
+        6,
+        3
+      ]
     },
     {
       "id": "s4",
       "type": "skeleton",
       "at": [
-        5,
-        12
-      ],
-      "roomId": "r10"
+        9,
+        3
+      ]
     },
     {
-      "id": "fellmarg",
+      "id": "m2",
       "type": "mummy",
-      "name": "Fellmarg's Guardian",
-      "attack": 4,
       "at": [
-        3,
-        6
-      ],
-      "roomId": "r06",
-      "_note": "C: rolls 4 Attack dice instead of the regular 3."
+        9,
+        4
+      ]
     },
     {
       "id": "o1",
       "type": "orc",
       "at": [
         4,
+        5
+      ]
+    },
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        3,
         6
-      ],
-      "roomId": "r06"
+      ]
+    },
+    {
+      "id": "g2",
+      "type": "goblin",
+      "at": [
+        6,
+        7
+      ]
+    },
+    {
+      "id": "g3",
+      "type": "goblin",
+      "at": [
+        7,
+        7
+      ]
+    },
+    {
+      "id": "verag",
+      "type": "verag",
+      "at": [
+        12,
+        8
+      ]
     },
     {
       "id": "o2",
       "type": "orc",
       "at": [
-        5,
+        14,
         8
-      ],
-      "roomId": "r06"
+      ]
     },
     {
-      "id": "verag",
-      "type": "verag",
-      "name": "Verag",
+      "id": "g4",
+      "type": "goblin",
       "at": [
-        3,
-        3
-      ],
-      "roomId": "r01",
-      "_note": "Quest objective — slay this gargoyle."
+        2,
+        11
+      ]
     },
     {
       "id": "o3",
       "type": "orc",
       "at": [
-        2,
-        3
-      ],
-      "roomId": "r01"
+        11,
+        11
+      ]
+    },
+    {
+      "id": "c1",
+      "type": "chaos-warrior",
+      "at": [
+        14,
+        11
+      ]
     },
     {
       "id": "o4",
       "type": "orc",
       "at": [
-        4,
-        3
-      ],
-      "roomId": "r01"
+        2,
+        12
+      ]
+    },
+    {
+      "id": "o5",
+      "type": "orc",
+      "at": [
+        7,
+        14
+      ]
+    },
+    {
+      "id": "g5",
+      "type": "goblin",
+      "at": [
+        10,
+        14
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "chaos-warrior",
+      "at": [
+        16,
+        15
+      ]
+    },
+    {
+      "id": "f1",
+      "type": "fimir",
+      "at": [
+        10,
+        16
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "chaos-warrior",
+      "at": [
+        15,
+        16
+      ]
+    },
+    {
+      "id": "o6",
+      "type": "orc",
+      "at": [
+        8,
+        15
+      ]
     }
   ],
   "treasure": [
     {
       "at": [
-        5,
-        7
+        10,
+        5
       ],
       "kind": "gold",
       "amount": 84,
-      "_note": "D: 84 gold coins to the first hero who searches this chest."
+      "_note": "D: 84 gold (first searcher only)"
     },
     {
       "at": [
-        5,
-        1
+        11,
+        7
       ],
       "kind": "gold",
       "amount": 120,
-      "_note": "E: 120 gold coins to the first hero who searches this chest."
+      "_note": "E: 120 gold (first searcher only) — Verag's lair"
+    },
+    {
+      "at": [
+        17,
+        16
+      ],
+      "kind": "gold",
+      "amount": 0,
+      "_note": "B: empty chest"
     }
   ],
   "traps": [],
   "secretDoors": [],
+  "furnitureTraps": [],
   "startCells": [
     [
-      21,
-      16
+      1,
+      14
     ],
     [
-      22,
-      16
+      2,
+      14
     ],
     [
-      21,
-      17
+      1,
+      15
     ],
     [
-      22,
-      17
+      2,
+      15
     ]
   ],
   "stairCells": [
     [
-      21,
-      16
+      1,
+      14
     ],
     [
-      22,
-      16
+      2,
+      14
     ],
     [
-      21,
-      17
+      1,
+      15
     ],
     [
-      22,
-      17
+      2,
+      15
     ]
   ],
   "wanderingMonster": "orc",
   "objective": {
     "kind": "kill",
     "monsterId": "verag",
-    "text": "Slay Verag, the gargoyle of Fellmarg's tomb. Then return to the staircase."
+    "text": "Slay Verag, the gargoyle of Fellmarg's tomb."
   },
   "defeat": {
     "kind": "all-dead",
     "text": "All heroes have fallen — the catacombs swallow another company."
-  }
+  },
+  "_canonical_notes": "Auto-generated by scripts/install-canonical-batch.js from the HeroScribe XML + per-quest meta in data/canonical-quests-meta.yaml. Re-run the converter on the XML, then re-run this batch installer to refresh.",
+  "objectives": [
+    {
+      "id": "slay-boss",
+      "kind": "kill",
+      "monsterId": "verag",
+      "text": "Slay Verag, the gargoyle of Fellmarg's tomb."
+    }
+  ]
 }

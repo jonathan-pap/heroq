@@ -21,22 +21,48 @@
 const fs = require('fs');
 const path = require('path');
 
-// shape -> { w, h, cells: count, label }
-const FOOTPRINTS = {
-  'chest':           [{ w: 1, h: 1 }],
-  'throne':          [{ w: 1, h: 1 }],
-  'table':           [{ w: 2, h: 1 }, { w: 1, h: 2 }],
-  'tomb':            [{ w: 2, h: 1 }, { w: 1, h: 2 }],
-  'sarcophagus':     [{ w: 2, h: 1 }, { w: 1, h: 2 }],
-  'bookcase':        [{ w: 2, h: 1 }, { w: 1, h: 2 }],
-  'fireplace':       [{ w: 2, h: 1 }, { w: 1, h: 2 }],
-  'weapon-rack':     [{ w: 1, h: 1 }, { w: 2, h: 1 }, { w: 1, h: 2 }],
-  'cupboard':        [{ w: 1, h: 1 }, { w: 2, h: 1 }, { w: 1, h: 2 }],
-  'alchemist-bench': [{ w: 2, h: 1 }, { w: 1, h: 2 }, { w: 3, h: 1 }, { w: 1, h: 3 }],
-  'alchemists-bench':[{ w: 2, h: 1 }, { w: 1, h: 2 }, { w: 3, h: 1 }, { w: 1, h: 3 }],
-  'sorcerer-table':  [{ w: 3, h: 1 }, { w: 1, h: 3 }],
-  'rack':            [{ w: 1, h: 2 }, { w: 2, h: 1 }],
-};
+// Canonical footprint table — sourced from data/canonical-pieces.yaml
+// (single source of truth shared with the XML→JSON converter and the
+// renderer). For each type we accept its declared (w, h) AND the
+// rotated equivalent (h, w) since rotation is permitted.
+let FOOTPRINTS;
+try {
+  const yaml = require('js-yaml');
+  const raw = yaml.load(require('fs').readFileSync(
+    require('path').join(__dirname, '..', 'data', 'canonical-pieces.yaml'), 'utf8'
+  )).pieces || {};
+  FOOTPRINTS = {};
+  // Map XML piece names → our internal type names.
+  const XML_TO_TYPE = {
+    Tomb: ['tomb', 'sarcophagus'],
+    SorcerersTable: ['sorcerer-table', 'sorcerers-table'],
+    AlchemistsBench: ['alchemist-bench', 'alchemists-bench'],
+    Bookcase: ['bookcase'],
+    Cupboard: ['cupboard'],
+    Fireplace: ['fireplace'],
+    WeaponsRack: ['weapon-rack'],
+    Rack: ['rack'],
+    Table: ['table'],
+    Throne: ['throne'],
+    Stairway: ['stairway'],
+    TreasureChest: ['chest'],
+    SingleBlockedSquare: [],   // not validated as furniture
+    DoubleBlockedSquare: [],
+    Door: [],
+  };
+  for (const [xmlName, def] of Object.entries(raw)) {
+    const types = XML_TO_TYPE[xmlName] || [];
+    if (!def.natural || !types.length) continue;
+    const { w, h } = def.natural;
+    for (const t of types) {
+      // Both natural and 90° rotated dims accepted.
+      FOOTPRINTS[t] = [{ w, h }, { w: h, h: w }];
+    }
+  }
+} catch (e) {
+  console.warn('[validator] failed to load canonical-pieces.yaml; using fallback', e.message);
+  FOOTPRINTS = { 'chest': [{ w: 1, h: 1 }], 'throne': [{ w: 1, h: 1 }] };
+}
 
 function describeFootprint(cells) {
   if (!Array.isArray(cells) || cells.length === 0) return null;

@@ -1,0 +1,139 @@
+/* HeroQuest board builder v2 — minimal dark UI, lets the board breathe. */
+:root {
+  --bg:        #18140e;
+  --bg2:       #1e1812;
+  --line:      #2a2520;
+  --ink:       #d8cdb6;
+  --ink-soft:  #968a73;
+  --ink-faint: #5e5746;
+  --gold:      #c8973c;
+  --accent:    #6b8fb0;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  height: 100%;
+}
+body { display: flex; flex-direction: column; min-height: 100vh; }
+
+.bar {
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand strong { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+.brand .sub   { color: var(--ink-soft); font-size: 11px; margin-left: 8px; }
+.actions { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+.spacer { flex: 1; }
+.link-back { color: var(--accent); text-decoration: none; font-size: 12px; }
+.link-back:hover { text-decoration: underline; }
+.hint { color: var(--ink-soft); font-size: 11px; font-style: italic; }
+
+main {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 280px;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.quest-list, .inspector {
+  background: var(--bg2);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+.inspector { border-right: none; border-left: 1px solid var(--line); }
+.filter { padding: 8px; border-bottom: 1px solid var(--line); }
+.filter input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 5px 8px;
+  font-size: 12px;
+}
+#quest-list { list-style: none; margin: 0; padding: 6px 0; }
+#quest-list li {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+}
+#quest-list li:hover    { background: rgba(255,255,255,0.04); }
+#quest-list li.active   { background: rgba(200,151,60,0.12); border-left-color: var(--gold); }
+#quest-list li .qid     { color: var(--ink-faint); font-family: ui-monospace, Consolas, monospace; font-size: 10px; display: block; }
+
+.canvas-wrap {
+  display: flex; flex-direction: column; min-width: 0;
+}
+.canvas-header {
+  padding: 8px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.canvas-header h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.canvas-header #quest-meta { color: var(--ink-soft); font-size: 11px; }
+.canvas-scroll {
+  overflow: auto;
+  flex: 1;
+  padding: 14px;
+  background: var(--bg);
+}
+canvas#board {
+  background: #221d18;
+  cursor: crosshair;
+  border: 1px solid var(--line);
+  display: block;
+}
+
+.panel {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.panel h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  font-weight: 600;
+}
+.panel h3 .hint { color: var(--ink-faint); text-transform: none; letter-spacing: 0; }
+.panel label {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+.panel p { margin: 6px 0; font-size: 11px; color: var(--ink-soft); line-height: 1.4; }
+.panel code {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--gold);
+  font-size: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.inspect .row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+}
+.inspect .row .lbl   { color: var(--ink-soft); }
+.inspect .row .val   { color: var(--ink); font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+.inspect .group {
+  margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line);
+}
+.inspect .group-title { color: var(--gold); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.inspect .empty { color: var(--ink-faint); font-style: italic; font-size: 12px; }

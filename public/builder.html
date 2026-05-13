@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeroQuest board builder — v2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="builder.css?v=2">
+</head>
+<body>
+<header class="bar top">
+  <div class="brand">
+    <strong>HeroQuest</strong>
+    <span class="sub">board builder · v2 (layered render)</span>
+  </div>
+  <div class="actions">
+    <a href="/map-editor.html" class="link-back">← classic editor</a>
+    <span class="spacer"></span>
+    <span class="hint" id="status">Ready.</span>
+  </div>
+</header>
+
+<main>
+  <aside class="quest-list">
+    <div class="filter">
+      <input id="quest-filter" type="search" placeholder="Filter quests…">
+    </div>
+    <ul id="quest-list"></ul>
+  </aside>
+
+  <section class="canvas-wrap">
+    <div class="canvas-header">
+      <h2 id="quest-title">Pick a quest</h2>
+      <span id="quest-meta"></span>
+    </div>
+    <div class="canvas-scroll">
+      <canvas id="board" width="1084" height="804"></canvas>
+    </div>
+  </section>
+
+  <aside class="inspector">
+    <div class="panel">
+      <h3>Layers</h3>
+      <label><input type="checkbox" id="layer-floor"     checked> Floor (flat stone)</label>
+      <label><input type="checkbox" id="layer-rooms"     checked> Room tint</label>
+      <label><input type="checkbox" id="layer-roomTex"          > <strong>Room textures (per-room)</strong></label>
+      <div style="margin-left:22px; margin-top:-2px;">
+        <div class="hint" style="margin-bottom:2px;">
+          Texture scale — adjust until the printed floor tiles align with the editor grid.
+        </div>
+        <label style="padding:0;">
+          <span style="color:var(--ink-soft); font-size:11px; min-width:60px;">scale</span>
+          <input type="range" id="layer-roomTex-scale" min="100" max="180" value="100" style="flex:1;">
+          <span id="layer-roomTex-scale-val" style="font-family:ui-monospace,Consolas,monospace; font-size:11px; color:var(--gold); min-width:38px; text-align:right;">100%</span>
+        </label>
+        <div class="hint">100% = texture fills room exactly. Higher zooms in (overflow clipped). Won't shrink below 100% — that would leave gaps.</div>
+      </div>
+      <label style="margin-left:22px;">
+        <input type="checkbox" id="layer-corridorWalls" checked> Corridor: include walls
+      </label>
+      <div class="hint" style="margin-left:22px; margin-top:-2px;">
+        On = <code>corridor.png</code> (with printed wall stones).
+        Off = <code>corridor_no_walls.png</code> (clean stone only).
+      </div>
+      <label><input type="checkbox" id="layer-roomBbox"> Room bbox outline (debug)</label>
+      <div style="margin-left:22px; margin-top:-2px; display:none;"><!-- spacer placeholder -->
+      </div>
+      <label><input type="checkbox" id="layer-walls"     checked> <strong>Walls (edges)</strong></label>
+      <label><input type="checkbox" id="layer-doors"     checked> Doors</label>
+      <label><input type="checkbox" id="layer-furn"      checked> Furniture</label>
+      <label><input type="checkbox" id="layer-monsters"  checked> Monsters</label>
+      <label><input type="checkbox" id="layer-traps"     checked> Traps</label>
+      <label><input type="checkbox" id="layer-blocked"   checked> Rubble (blocked)</label>
+      <label><input type="checkbox" id="layer-start"     checked> Start cells</label>
+      <label><input type="checkbox" id="layer-dark"      checked> Dark cells</label>
+      <label><input type="checkbox" id="layer-grid"     checked> Grid (red — calibration)</label>
+      <label><input type="checkbox" id="layer-coords"    checked> Coordinate labels</label>
+      <label style="border-top:1px dashed var(--line); margin-top:6px; padding-top:6px;">
+        <input type="checkbox" id="layer-reference"> Reference photo (board_v2.png)
+      </label>
+      <div class="hint" style="margin-left:22px; margin-top:-2px;">
+        Decorative overlay — not used by the render math. Toggle on to
+        cross-check your data against the canonical printed board.
+      </div>
+      <label style="margin-left:22px; margin-top:4px;">
+        Opacity
+        <input type="range" id="layer-reference-opacity" min="10" max="100" value="55" style="margin-left:6px;">
+      </label>
+    </div>
+
+    <div class="panel">
+      <h3>Inspect <span class="hint" id="inspect-coord"></span></h3>
+      <div id="inspect-body" class="inspect">
+        <div class="empty">Click a cell to see what lives on it and the edges around it.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Architecture</h3>
+      <p class="hint">
+        Cells (col, row) hold per-quest data.
+        <strong>Walls and doors are edges between cells</strong>, not cells.
+        Floor is flat — rooms are defined by which cells share a <code>roomId</code>,
+        and walls are derived from <code>roomId</code> changes plus any explicit
+        <code>walls</code> array in the quest JSON.
+      </p>
+    </div>
+  </aside>
+</main>
+
+<script src="shared/rules.js?v=1"></script>
+<script src="builder.js?v=16"></script>
+</body>
+</html>

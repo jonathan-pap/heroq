@@ -1,0 +1,1517 @@
+{
+  "id": "quest11-bastion-of-dread",
+  "title": "Bastion of Dread",
+  "subtitle": "Quest 11",
+  "intro": "Lands east of the Empire have been plagued by marauding orcs and\ngoblins allied with Zargon. They are well-protected in an\nunderground fortress — the Bastion of Dread — led by a small\ngroup of Dread warriors. Fight your way in and slay every monster.\nBounty: 10g per goblin, 20g per orc, 30g per abomination,\n50g per Dread warrior.",
+  "category": "main",
+  "board": "default",
+  "roomOverrides": {},
+  "dark": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      5,
+      1
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      6,
+      0
+    ],
+    [
+      6,
+      1
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      6,
+      3
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      7,
+      1
+    ],
+    [
+      7,
+      2
+    ],
+    [
+      7,
+      3
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      8,
+      1
+    ],
+    [
+      8,
+      2
+    ],
+    [
+      8,
+      3
+    ],
+    [
+      9,
+      0
+    ],
+    [
+      10,
+      0
+    ],
+    [
+      11,
+      0
+    ],
+    [
+      12,
+      0
+    ],
+    [
+      12,
+      1
+    ],
+    [
+      12,
+      2
+    ],
+    [
+      12,
+      3
+    ],
+    [
+      12,
+      4
+    ],
+    [
+      13,
+      0
+    ],
+    [
+      13,
+      1
+    ],
+    [
+      13,
+      2
+    ],
+    [
+      13,
+      3
+    ],
+    [
+      13,
+      4
+    ],
+    [
+      13,
+      5
+    ],
+    [
+      13,
+      6
+    ],
+    [
+      14,
+      0
+    ],
+    [
+      14,
+      1
+    ],
+    [
+      14,
+      2
+    ],
+    [
+      14,
+      3
+    ],
+    [
+      14,
+      4
+    ],
+    [
+      14,
+      5
+    ],
+    [
+      14,
+      6
+    ],
+    [
+      14,
+      13
+    ],
+    [
+      14,
+      14
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      16
+    ],
+    [
+      14,
+      17
+    ],
+    [
+      15,
+      0
+    ],
+    [
+      15,
+      1
+    ],
+    [
+      15,
+      2
+    ],
+    [
+      15,
+      3
+    ],
+    [
+      15,
+      4
+    ],
+    [
+      15,
+      5
+    ],
+    [
+      15,
+      6
+    ],
+    [
+      15,
+      13
+    ],
+    [
+      15,
+      14
+    ],
+    [
+      15,
+      15
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      17
+    ],
+    [
+      16,
+      0
+    ],
+    [
+      16,
+      1
+    ],
+    [
+      16,
+      2
+    ],
+    [
+      16,
+      3
+    ],
+    [
+      16,
+      4
+    ],
+    [
+      16,
+      5
+    ],
+    [
+      16,
+      6
+    ],
+    [
+      16,
+      7
+    ],
+    [
+      16,
+      13
+    ],
+    [
+      16,
+      14
+    ],
+    [
+      16,
+      15
+    ],
+    [
+      16,
+      16
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      0
+    ],
+    [
+      17,
+      1
+    ],
+    [
+      17,
+      2
+    ],
+    [
+      17,
+      3
+    ],
+    [
+      17,
+      4
+    ],
+    [
+      17,
+      5
+    ],
+    [
+      17,
+      6
+    ],
+    [
+      17,
+      7
+    ],
+    [
+      17,
+      8
+    ],
+    [
+      17,
+      13
+    ],
+    [
+      17,
+      14
+    ],
+    [
+      17,
+      15
+    ],
+    [
+      17,
+      16
+    ],
+    [
+      17,
+      17
+    ],
+    [
+      18,
+      0
+    ],
+    [
+      18,
+      1
+    ],
+    [
+      18,
+      2
+    ],
+    [
+      18,
+      3
+    ],
+    [
+      18,
+      4
+    ],
+    [
+      18,
+      5
+    ],
+    [
+      18,
+      6
+    ],
+    [
+      18,
+      7
+    ],
+    [
+      18,
+      8
+    ],
+    [
+      19,
+      0
+    ],
+    [
+      19,
+      1
+    ],
+    [
+      19,
+      2
+    ],
+    [
+      19,
+      3
+    ],
+    [
+      19,
+      4
+    ],
+    [
+      19,
+      5
+    ],
+    [
+      19,
+      6
+    ],
+    [
+      19,
+      7
+    ],
+    [
+      19,
+      8
+    ],
+    [
+      20,
+      0
+    ],
+    [
+      20,
+      1
+    ],
+    [
+      20,
+      2
+    ],
+    [
+      20,
+      3
+    ],
+    [
+      20,
+      4
+    ],
+    [
+      20,
+      5
+    ],
+    [
+      20,
+      6
+    ],
+    [
+      20,
+      7
+    ],
+    [
+      20,
+      8
+    ],
+    [
+      21,
+      0
+    ],
+    [
+      21,
+      1
+    ],
+    [
+      21,
+      2
+    ],
+    [
+      21,
+      3
+    ],
+    [
+      21,
+      4
+    ],
+    [
+      21,
+      5
+    ],
+    [
+      21,
+      6
+    ],
+    [
+      21,
+      7
+    ],
+    [
+      21,
+      8
+    ],
+    [
+      21,
+      10
+    ],
+    [
+      21,
+      11
+    ],
+    [
+      21,
+      12
+    ],
+    [
+      21,
+      13
+    ],
+    [
+      22,
+      0
+    ],
+    [
+      22,
+      1
+    ],
+    [
+      22,
+      2
+    ],
+    [
+      22,
+      3
+    ],
+    [
+      22,
+      4
+    ],
+    [
+      22,
+      5
+    ],
+    [
+      22,
+      6
+    ],
+    [
+      22,
+      7
+    ],
+    [
+      22,
+      8
+    ],
+    [
+      22,
+      10
+    ],
+    [
+      22,
+      11
+    ],
+    [
+      22,
+      12
+    ],
+    [
+      22,
+      13
+    ],
+    [
+      23,
+      0
+    ],
+    [
+      23,
+      1
+    ],
+    [
+      23,
+      2
+    ],
+    [
+      23,
+      3
+    ],
+    [
+      23,
+      4
+    ],
+    [
+      23,
+      5
+    ],
+    [
+      23,
+      6
+    ],
+    [
+      23,
+      7
+    ],
+    [
+      23,
+      8
+    ],
+    [
+      23,
+      10
+    ],
+    [
+      23,
+      11
+    ],
+    [
+      23,
+      12
+    ],
+    [
+      23,
+      13
+    ],
+    [
+      24,
+      0
+    ],
+    [
+      24,
+      1
+    ],
+    [
+      24,
+      2
+    ],
+    [
+      24,
+      3
+    ],
+    [
+      24,
+      4
+    ],
+    [
+      24,
+      5
+    ],
+    [
+      24,
+      6
+    ],
+    [
+      24,
+      7
+    ],
+    [
+      24,
+      8
+    ],
+    [
+      24,
+      10
+    ],
+    [
+      24,
+      11
+    ],
+    [
+      24,
+      12
+    ],
+    [
+      24,
+      13
+    ],
+    [
+      25,
+      0
+    ],
+    [
+      25,
+      1
+    ],
+    [
+      25,
+      2
+    ],
+    [
+      25,
+      3
+    ],
+    [
+      25,
+      4
+    ],
+    [
+      25,
+      5
+    ],
+    [
+      25,
+      6
+    ],
+    [
+      25,
+      7
+    ]
+  ],
+  "blocked": [
+    [
+      0,
+      3
+    ],
+    [
+      12,
+      5
+    ],
+    [
+      12,
+      6
+    ],
+    [
+      9,
+      7
+    ],
+    [
+      16,
+      8
+    ],
+    [
+      25,
+      8
+    ],
+    [
+      1,
+      9
+    ],
+    [
+      12,
+      16
+    ],
+    [
+      13,
+      16
+    ]
+  ],
+  "doors": [
+    {
+      "a": [
+        8,
+        4
+      ],
+      "b": [
+        9,
+        4
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        0,
+        5
+      ],
+      "b": [
+        1,
+        5
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        9,
+        5
+      ],
+      "b": [
+        9,
+        6
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        11,
+        6
+      ],
+      "b": [
+        11,
+        7
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        4,
+        7
+      ],
+      "b": [
+        5,
+        7
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        9,
+        8
+      ],
+      "b": [
+        10,
+        8
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        2,
+        9
+      ],
+      "b": [
+        2,
+        10
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        18,
+        9
+      ],
+      "b": [
+        18,
+        10
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        13,
+        11
+      ],
+      "b": [
+        13,
+        10
+      ],
+      "_rot": "downward"
+    },
+    {
+      "a": [
+        7,
+        12
+      ],
+      "b": [
+        7,
+        13
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        24,
+        15
+      ],
+      "b": [
+        25,
+        15
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        4,
+        16
+      ],
+      "b": [
+        5,
+        16
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        8,
+        16
+      ],
+      "b": [
+        9,
+        16
+      ],
+      "_rot": "leftward"
+    },
+    {
+      "a": [
+        2,
+        17
+      ],
+      "b": [
+        2,
+        18
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        19,
+        17
+      ],
+      "b": [
+        19,
+        18
+      ],
+      "_rot": "upward"
+    },
+    {
+      "a": [
+        22,
+        17
+      ],
+      "b": [
+        22,
+        18
+      ],
+      "_rot": "upward"
+    }
+  ],
+  "furniture": [
+    {
+      "id": "f-rack1",
+      "type": "rack",
+      "cells": [
+        [
+          9,
+          1
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          11,
+          1
+        ],
+        [
+          9,
+          2
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          11,
+          2
+        ]
+      ],
+      "facing": "leftward"
+    },
+    {
+      "id": "f-bookcase1",
+      "type": "bookcase",
+      "cells": [
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          6
+        ]
+      ],
+      "facing": "rightward"
+    },
+    {
+      "id": "f-table1",
+      "type": "table",
+      "cells": [
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-table2",
+      "type": "table",
+      "cells": [
+        [
+          12,
+          8
+        ],
+        [
+          13,
+          8
+        ],
+        [
+          12,
+          9
+        ],
+        [
+          13,
+          9
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          13,
+          10
+        ]
+      ],
+      "facing": "rightward"
+    },
+    {
+      "id": "f-throne1",
+      "type": "throne",
+      "cells": [
+        [
+          15,
+          9
+        ]
+      ],
+      "facing": "leftward"
+    },
+    {
+      "id": "f-chest1",
+      "type": "chest",
+      "cells": [
+        [
+          5,
+          10
+        ]
+      ],
+      "_trapped": true
+    },
+    {
+      "id": "f-cupboard1",
+      "type": "cupboard",
+      "cells": [
+        [
+          20,
+          10
+        ],
+        [
+          20,
+          11
+        ],
+        [
+          20,
+          12
+        ]
+      ],
+      "facing": "rightward"
+    },
+    {
+      "id": "f-alchemist-bench1",
+      "type": "alchemist-bench",
+      "cells": [
+        [
+          1,
+          12
+        ],
+        [
+          2,
+          12
+        ],
+        [
+          3,
+          12
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          2,
+          13
+        ],
+        [
+          3,
+          13
+        ]
+      ],
+      "facing": "upward",
+      "_flipV": true
+    },
+    {
+      "id": "f-fireplace1",
+      "type": "fireplace",
+      "cells": [
+        [
+          9,
+          13
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          11,
+          13
+        ]
+      ],
+      "facing": "downward"
+    },
+    {
+      "id": "f-weapon-rack1",
+      "type": "weapon-rack",
+      "cells": [
+        [
+          18,
+          14
+        ],
+        [
+          18,
+          15
+        ],
+        [
+          18,
+          16
+        ]
+      ],
+      "facing": "rightward"
+    }
+  ],
+  "monsters": [
+    {
+      "id": "o1",
+      "type": "orc",
+      "at": [
+        10,
+        3
+      ]
+    },
+    {
+      "id": "f1",
+      "type": "fimir",
+      "at": [
+        7,
+        6
+      ]
+    },
+    {
+      "id": "f2",
+      "type": "fimir",
+      "at": [
+        3,
+        7
+      ]
+    },
+    {
+      "id": "g1",
+      "type": "goblin",
+      "at": [
+        13,
+        7
+      ]
+    },
+    {
+      "id": "o2",
+      "type": "orc",
+      "at": [
+        14,
+        8
+      ]
+    },
+    {
+      "id": "c1",
+      "type": "chaos-warrior",
+      "at": [
+        14,
+        9
+      ]
+    },
+    {
+      "id": "o3",
+      "type": "orc",
+      "at": [
+        14,
+        10
+      ]
+    },
+    {
+      "id": "c2",
+      "type": "chaos-warrior",
+      "at": [
+        2,
+        11
+      ]
+    },
+    {
+      "id": "g2",
+      "type": "goblin",
+      "at": [
+        14,
+        11
+      ]
+    },
+    {
+      "id": "c3",
+      "type": "chaos-warrior",
+      "at": [
+        18,
+        11
+      ]
+    },
+    {
+      "id": "verag1",
+      "type": "verag",
+      "at": [
+        5,
+        12
+      ]
+    },
+    {
+      "id": "g3",
+      "type": "goblin",
+      "at": [
+        6,
+        15
+      ]
+    },
+    {
+      "id": "g4",
+      "type": "goblin",
+      "at": [
+        7,
+        15
+      ]
+    },
+    {
+      "id": "g5",
+      "type": "goblin",
+      "at": [
+        10,
+        15
+      ]
+    },
+    {
+      "id": "c4",
+      "type": "chaos-warrior",
+      "at": [
+        19,
+        15
+      ]
+    },
+    {
+      "id": "o4",
+      "type": "orc",
+      "at": [
+        22,
+        15
+      ]
+    },
+    {
+      "id": "g6",
+      "type": "goblin",
+      "at": [
+        10,
+        16
+      ]
+    },
+    {
+      "id": "o5",
+      "type": "orc",
+      "at": [
+        11,
+        16
+      ]
+    },
+    {
+      "id": "o6",
+      "type": "orc",
+      "at": [
+        20,
+        16
+      ]
+    },
+    {
+      "id": "o7",
+      "type": "orc",
+      "at": [
+        23,
+        16
+      ]
+    },
+    {
+      "id": "g7",
+      "type": "goblin",
+      "at": [
+        10,
+        17
+      ]
+    },
+    {
+      "id": "g8",
+      "type": "goblin",
+      "at": [
+        12,
+        17
+      ]
+    },
+    {
+      "id": "g9",
+      "type": "goblin",
+      "at": [
+        13,
+        17
+      ]
+    }
+  ],
+  "treasure": [
+    {
+      "at": [
+        5,
+        10
+      ],
+      "kind": "gold",
+      "amount": 0
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "type": "pit",
+      "at": [
+        9,
+        12
+      ]
+    },
+    {
+      "id": "t2",
+      "type": "pit",
+      "at": [
+        12,
+        13
+      ]
+    },
+    {
+      "id": "t3",
+      "type": "pit",
+      "at": [
+        13,
+        13
+      ]
+    },
+    {
+      "id": "t4",
+      "type": "pit",
+      "at": [
+        25,
+        18
+      ]
+    }
+  ],
+  "secretDoors": [
+    {
+      "id": "sd1",
+      "a": [
+        5,
+        11
+      ],
+      "b": [
+        4,
+        11
+      ],
+      "_rot": "rightward"
+    }
+  ],
+  "furnitureTraps": [
+    {
+      "id": "ft-f-chest1",
+      "kind": "poison-needle",
+      "at": [
+        5,
+        10
+      ],
+      "damage": 1
+    }
+  ],
+  "startCells": [
+    [
+      7,
+      10
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      7,
+      11
+    ],
+    [
+      8,
+      11
+    ]
+  ],
+  "stairCells": [
+    [
+      7,
+      10
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      7,
+      11
+    ],
+    [
+      8,
+      11
+    ]
+  ],
+  "wanderingMonster": "abomination",
+  "objective": {
+    "kind": "kill-all",
+    "text": "Slay every monster in the Bastion of Dread."
+  },
+  "defeat": {
+    "kind": "all-dead",
+    "text": "The bastion stands. The marsh-folk weep."
+  },
+  "_canonical_notes": "Auto-generated by scripts/install-canonical-batch.js from the HeroScribe XML + per-quest meta in data/canonical-quests-meta.yaml. Re-run the converter on the XML, then re-run this batch installer to refresh.",
+  "_quirks": [
+    "Note A: armory — first hero to search Treasure finds a shield exactly like the one in the armory; all other weapons are unusable.",
+    "Note B: gargoyle is a stone statue that does not move until moved or attacked. The treasure chest is a trap — searching for treasure before disarming wakes the gargoyle, which springs to life and immediately attacks. Disarming first reveals what would have happened.",
+    "Note C: a Dread warrior carries Orc's Bane — whoever kills it claims the artifact."
+  ],
+  "objectives": [
+    {
+      "id": "goal",
+      "kind": "kill-all",
+      "text": "Slay every monster in the Bastion of Dread."
+    }
+  ]
+}

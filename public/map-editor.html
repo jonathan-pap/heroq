@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeroQuest map editor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="map-editor.css?v=7">
+</head>
+<body>
+<header class="bar top">
+  <div class="brand">
+    <strong>HeroQuest</strong>
+    <span class="sub">map editor</span>
+  </div>
+  <div class="actions">
+    <button id="btn-undo"  title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+    <button id="btn-redo"  title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
+    <span class="spacer"></span>
+    <button id="btn-reload" title="Discard changes & reload from disk">Reload</button>
+    <button id="btn-render-png" title="Regenerate the QA PNG for this quest">Re-render PNG</button>
+    <button id="btn-save"   class="primary" title="Save (Ctrl+S)" disabled>Save</button>
+  </div>
+</header>
+
+<main>
+  <aside class="quest-list">
+    <div class="filter">
+      <input id="quest-filter" type="search" placeholder="Filter quests…">
+    </div>
+    <ul id="quest-list"></ul>
+  </aside>
+
+  <section class="canvas-wrap">
+    <div class="canvas-header">
+      <h2 id="quest-title">Pick a quest</h2>
+      <span id="quest-meta"></span>
+      <span id="dirty-flag" class="dirty" hidden>● unsaved</span>
+    </div>
+    <div class="canvas-scroll">
+      <canvas id="board" width="1140" height="848"></canvas>
+    </div>
+    <div class="canvas-footer" id="status">Ready.</div>
+  </section>
+
+  <aside class="inspector">
+    <div class="panel">
+      <h3>Selection</h3>
+      <div id="selection-empty" class="empty">Click a piece on the board.</div>
+      <div id="selection-detail" hidden>
+        <div class="row"><span class="lbl">Kind</span><span id="sel-kind"></span></div>
+        <div class="row"><span class="lbl">Type</span><span id="sel-type"></span></div>
+        <div class="row"><span class="lbl">At</span><span id="sel-at"></span></div>
+        <div class="row" id="sel-row-facing" hidden>
+          <span class="lbl">Facing</span><span id="sel-facing"></span>
+        </div>
+        <div class="row" id="sel-row-name" hidden>
+          <span class="lbl">Name</span><span id="sel-name"></span>
+        </div>
+        <div class="actions sel-actions">
+          <button id="btn-rot-ccw" title="Rotate 90° counter-clockwise (L)">↺ Rotate</button>
+          <button id="btn-rot-cw"  title="Rotate 90° clockwise (R)">Rotate ↻</button>
+          <button id="btn-delete" class="danger" title="Delete (Del)">✕ Delete</button>
+        </div>
+        <div class="actions sel-actions">
+          <button id="btn-flip-h" title="Flip horizontal (H)">⇋ Flip H</button>
+          <button id="btn-flip-v" title="Flip vertical (V)">⥯ Flip V</button>
+        </div>
+        <div class="actions sel-actions">
+          <span class="hint">Drag piece to move · arrow keys nudge 1 cell.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Layers <span class="hint" style="margin-left:auto"><a href="#" id="layer-all">all</a> · <a href="#" id="layer-none">none</a></span></h3>
+      <label><input type="checkbox" id="layer-walls"      checked> <strong>Walls</strong></label>
+      <label style="margin-left:18px;">
+        <input type="checkbox" id="layer-lightWalls" checked> Light walls (cream)
+      </label>
+      <label style="margin-left:18px;">
+        <input type="checkbox" id="layer-outerWalls" checked> Outer walls (perimeter)
+      </label>
+      <label><input type="checkbox" id="layer-floors"     checked> <strong>Floor textures</strong> (per-room)</label>
+      <label style="margin-left:18px;">
+        <input type="checkbox" id="layer-corridorWalls"> Corridor: include walls
+      </label>
+      <label><input type="checkbox" id="layer-rooms"      checked> Room / corridor tint</label>
+      <label><input type="checkbox" id="layer-roomLabels" checked> Room labels</label>
+      <label><input type="checkbox" id="layer-grid"       checked> Grid</label>
+      <label><input type="checkbox" id="layer-coords"     checked> Coordinate labels (1-based)</label>
+      <label><input type="checkbox" id="layer-furniture"  checked> Furniture</label>
+      <label><input type="checkbox" id="layer-doors"      checked> Doors</label>
+      <label><input type="checkbox" id="layer-secret"     checked> Secret doors</label>
+      <label><input type="checkbox" id="layer-monsters"   checked> Monsters</label>
+      <label><input type="checkbox" id="layer-treasure"   checked> Treasure</label>
+      <label><input type="checkbox" id="layer-traps"      checked> Traps</label>
+      <label><input type="checkbox" id="layer-blocked"    checked> Rubble (blocked)</label>
+      <label><input type="checkbox" id="layer-start"      checked> Start cells</label>
+      <label><input type="checkbox" id="layer-heroes"     checked> Hero tokens (at start)</label>
+      <label><input type="checkbox" id="layer-darkmask"   checked> Dark cells (out of play)</label>
+    </div>
+
+    <div class="panel">
+      <h3>QA preview</h3>
+      <div class="hint">Same colours as the offline <code>scripts/render-quest-maps.js</code> output. Click <em>Re-render PNG</em> after saving to refresh.</div>
+      <a id="qa-link" target="_blank" rel="noopener">Open full PNG ↗</a>
+    </div>
+
+    <div class="panel">
+      <h3>Tile inset (rubble · traps)</h3>
+      <div class="hint">Padding for floor-tile icons (rubble, pit/spear traps). Same three-bucket shape as furniture.</div>
+      <div class="natural-row">
+        <code title="1×1 — single rubble, traps">small (1×1)</code>
+        <input type="range" id="tile-inset-small" min="0" max="15" step="1">
+        <span id="tile-inset-small-val" class="hint"></span>
+      </div>
+      <div class="natural-row">
+        <code title="N×1 — double rubble, future linear tiles">linear (N×1)</code>
+        <input type="range" id="tile-inset-linear" min="0" max="15" step="1">
+        <span id="tile-inset-linear-val" class="hint"></span>
+      </div>
+      <div class="natural-row">
+        <code title="2×2 / larger tile blocks">block (M×N)</code>
+        <input type="range" id="tile-inset-block" min="0" max="15" step="1">
+        <span id="tile-inset-block-val" class="hint"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Furniture inset</h3>
+      <div class="hint">Px of padding between each piece's icon and the cell wall. Three buckets — change live, persists in localStorage.</div>
+      <div class="natural-row">
+        <code title="1×1 — throne, chest, altar">small (1×1)</code>
+        <input type="range" id="furn-inset-small" min="0" max="15" step="1">
+        <span id="furn-inset-small-val" class="hint"></span>
+      </div>
+      <div class="natural-row">
+        <code title="N×1 — bookcase, cupboard, fireplace, weapon-rack">linear (N×1)</code>
+        <input type="range" id="furn-inset-linear" min="0" max="15" step="1">
+        <span id="furn-inset-linear-val" class="hint"></span>
+      </div>
+      <div class="natural-row">
+        <code title="2×2 — stairway specifically">stair (2×2)</code>
+        <input type="range" id="furn-inset-stair" min="0" max="15" step="1">
+        <span id="furn-inset-stair-val" class="hint"></span>
+      </div>
+      <div class="natural-row">
+        <code title="2×3 / 3×2 / 3×3 — tomb, table, rack, sorcerer, alchemist">block (M×N)</code>
+        <input type="range" id="furn-inset-block" min="0" max="15" step="1">
+        <span id="furn-inset-block-val" class="hint"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Natural orientations</h3>
+      <div class="hint">
+        Override each piece type's <em>natural</em> source direction.
+        Changes save automatically to <code>data/furniture-naturals.json</code>
+        on the server, so the live game inherits them on reload.
+      </div>
+      <div id="natural-list" class="natural-list"></div>
+      <div class="actions sel-actions">
+        <button id="btn-natural-copy" hidden></button>
+        <button id="btn-natural-reset" title="Clear all overrides (writes to disk)">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Help</h3>
+      <ul class="help">
+        <li><kbd>Click</kbd> — select piece</li>
+        <li><kbd>Drag</kbd> — move piece (snaps to cell)</li>
+        <li><kbd>R</kbd> / <kbd>L</kbd> — rotate CW / CCW</li>
+        <li><kbd>H</kbd> / <kbd>V</kbd> — flip horizontal / vertical</li>
+        <li><kbd>↑↓←→</kbd> — nudge 1 cell</li>
+        <li><kbd>Del</kbd> — delete selected</li>
+        <li><kbd>Esc</kbd> — clear selection</li>
+        <li><kbd>Ctrl+S</kbd> — save</li>
+        <li><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> — undo/redo</li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<script src="shared/rules.js?v=1"></script>
+<script src="map-editor.js?v=43"></script>
+</body>
+</html>

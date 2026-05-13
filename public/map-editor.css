@@ -1,0 +1,250 @@
+/* HeroQuest map editor — standalone tool styles */
+:root {
+  --bg:        #1a1815;
+  --bg2:       #221f1a;
+  --bg3:       #2c2823;
+  --line:      #3a342c;
+  --ink:       #efe6d2;
+  --ink-dim:   #b3a890;
+  --ink-faint: #6b624f;
+  --accent:    #d8a52a;
+  --accent2:   #e8b94f;
+  --danger:    #c0432e;
+  --good:      #4eaa6a;
+  --warn:      #d8a52a;
+  --select:    #59c8ff;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+}
+.bar.top { z-index: 10; }
+.brand strong { letter-spacing: .04em; }
+.brand .sub {
+  margin-left: 8px;
+  color: var(--ink-dim);
+  font-style: italic;
+}
+.actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.actions .spacer { width: 12px; }
+
+button, .btn {
+  background: var(--bg3);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary {
+  background: var(--accent);
+  color: #1a1815;
+  border-color: var(--accent2);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: var(--accent2); color: #1a1815; }
+button.danger { color: #ffb4a8; border-color: #5a2a22; }
+button.danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+main {
+  display: grid;
+  grid-template-columns: 240px 1fr 290px;
+  height: 100%;
+  min-height: 0;
+}
+
+aside.quest-list {
+  background: var(--bg2);
+  border-right: 1px solid var(--line);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.filter { padding: 8px; border-bottom: 1px solid var(--line); }
+.filter input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 5px 8px;
+  border-radius: 3px;
+  font: inherit;
+}
+#quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  flex: 1;
+}
+#quest-list li {
+  padding: 6px 10px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+#quest-list li:hover { background: var(--bg3); }
+#quest-list li.active {
+  background: var(--bg3);
+  border-left-color: var(--accent);
+  color: var(--accent2);
+}
+#quest-list li small {
+  display: block;
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+section.canvas-wrap {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--bg);
+  min-width: 0;
+}
+.canvas-header {
+  padding: 8px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.canvas-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.canvas-header #quest-meta { color: var(--ink-faint); font-size: 12px; }
+.dirty { color: var(--warn); font-size: 12px; }
+.canvas-scroll {
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 14px;
+}
+canvas#board {
+  /* Neutral dark background — was #efe8d2 cream, which bled through
+     subpixel gaps between floor cells and made the whole render look
+     yellowish. Stone-grey reads as 'between the tiles' instead. */
+  background: #2a2520;
+  cursor: pointer;
+  border: 1px solid #2a2520;
+  image-rendering: pixelated;
+}
+.canvas-footer {
+  padding: 6px 14px;
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+}
+
+aside.inspector {
+  background: var(--bg2);
+  border-left: 1px solid var(--line);
+  overflow: auto;
+  padding: 0;
+}
+.panel {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+}
+.panel h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.panel .empty { color: var(--ink-faint); font-style: italic; }
+.panel label {
+  display: block;
+  padding: 2px 0;
+  cursor: pointer;
+}
+.panel label input { margin-right: 6px; vertical-align: middle; }
+.panel .row {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+}
+.panel .row .lbl {
+  width: 60px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.sel-actions { margin-top: 10px; }
+.sel-actions .hint { color: var(--ink-faint); font-size: 11px; }
+.help { margin: 0; padding-left: 16px; color: var(--ink-dim); }
+.help li { padding: 2px 0; }
+kbd {
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--ink);
+}
+.hint { color: var(--ink-faint); font-size: 11px; }
+#qa-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--accent2);
+  text-decoration: none;
+}
+#qa-link:hover { text-decoration: underline; }
+
+/* Natural-orientation playground */
+.natural-list { margin: 8px 0; }
+.natural-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+}
+.natural-row code {
+  color: var(--ink);
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 11px;
+}
+.natural-row select {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 11px;
+}
+.natural-row .changed { color: var(--accent); font-weight: 600; }
+.natural-row .reset-one {
+  background: transparent;
+  color: var(--ink-faint);
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 10px;
+  cursor: pointer;
+  visibility: hidden;
+}
+.natural-row.changed .reset-one { visibility: visible; }
+.natural-row .reset-one:hover { color: var(--ink); border-color: var(--accent); }

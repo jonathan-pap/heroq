@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock R1 — Combined right panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=26">
+<style>
+  /* Variant-specific: merge Treasure + Quest Log into one panel.
+     No structural change needed beyond the markup below. */
+  .mock-label {
+    position: fixed; top: 10px; left: 10px;
+    background: rgba(20,10,4,0.85); color: var(--gold);
+    padding: 6px 12px; border-radius: 6px; z-index: 100;
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em;
+    border: 1px solid var(--gold);
+  }
+  .mock-board-stub {
+    width: 100%; aspect-ratio: 832/608;
+    background:
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.04) 0 12px, transparent 12px 24px),
+      linear-gradient(135deg, #6b4422, #3c2510);
+    border: 1px solid var(--wood-rim);
+    display: grid; place-items: center;
+    font-family: 'Cinzel', serif; font-size: 13px;
+    color: rgba(255,220,170,0.45); letter-spacing: 0.2em;
+  }
+  /* Combined right-rail panel */
+  .panel-questmaster {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .panel-questmaster .deck-strip {
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px dashed rgba(50,26,8,0.25);
+    padding-bottom: 10px;
+  }
+  .panel-questmaster .deck-strip .card.deck {
+    width: 64px; min-height: 88px; padding: 0;
+  }
+  .panel-questmaster .deck-strip .deck-meta {
+    font-family: 'IM Fell English', serif; font-size: 13px;
+    color: var(--ink-soft); flex: 1;
+  }
+  .panel-questmaster .deck-strip .deck-meta strong {
+    font-family: 'Cinzel', serif; font-size: 12px;
+    letter-spacing: 0.06em; color: var(--ink); display: block;
+  }
+</style>
+</head>
+<body>
+<a class="mock-label" href="index.html">← Mock R1 · Combined right panel</a>
+
+<section id="screen-game" class="screen">
+  <div class="frame frame-game">
+    <div class="parchment game-parchment">
+
+      <header class="game-header">
+        <div class="quest-title">
+          <h1>The Trial</h1>
+          <span class="muted small">Slay Verag, the gargoyle of Fellmarg's tomb.</span>
+        </div>
+        <div class="turn-banner">Barbarian's turn</div>
+        <div class="game-header-actions">
+          <button class="ghost small">Hide rails</button>
+          <button class="ghost small">Zargon ×1</button>
+          <button class="primary end-turn-header">End Turn</button>
+          <button class="ghost small">Leave Quest</button>
+        </div>
+      </header>
+
+      <div class="game-layout">
+
+        <div class="side-stack side-stack-left">
+          <section class="panel panel-actions">
+            <h3>Actions</h3>
+            <div class="turn-pipeline">
+              <div class="step done">Roll</div>
+              <div class="step active">Move</div>
+              <div class="step">Action</div>
+              <div class="step">End</div>
+            </div>
+            <div class="roll-display">Move: <strong class="avail">2<span class="slash"> / </span>7</strong></div>
+            <div class="action-row">
+              <button class="ghost">Treasure</button>
+              <button class="ghost">Traps</button>
+              <button class="ghost">Secrets</button>
+            </div>
+            <p class="muted small" style="margin:6px 0 0">Click to move · click a monster to attack.</p>
+            <div class="hand-buttons">
+              <button class="hand-btn"><span class="hand-btn-label">Items</span><span class="hand-btn-count">2</span></button>
+              <button class="hand-btn"><span class="hand-btn-label">Spells</span><span class="hand-btn-count">3</span></button>
+            </div>
+          </section>
+        </div>
+
+        <main class="board-area">
+          <div class="board-frame">
+            <div class="mock-board-stub">[ GAME BOARD ]</div>
+          </div>
+        </main>
+
+        <div class="side-stack side-stack-right">
+          <section class="panel panel-questmaster">
+            <h3>Quest</h3>
+            <div class="deck-strip">
+              <div class="card deck">
+                <img class="deck-back" src="../assets/cards/card_backs/Treasure.png" alt="">
+                <div class="deck-count-badge">22</div>
+              </div>
+              <div class="deck-meta">
+                <strong>Treasure deck</strong>
+                22 cards remain
+              </div>
+            </div>
+            <ul class="objectives-list">
+              <li class="done"><span class="obj-box">✓</span><span class="obj-text">Find Sir Ragnar</span></li>
+              <li><span class="obj-box">·</span><span class="obj-text">Slay Verag, the gargoyle of Fellmarg's tomb</span></li>
+              <li class="locked"><span class="obj-box">·</span><span class="obj-text">All living heroes return to a staircase (1/4)</span></li>
+            </ul>
+            <div class="log" style="max-height: 220px">
+              <div class="entry reveal">Banquet Hall revealed!</div>
+              <div class="entry">Barbarian rolls movement: 4+3=7</div>
+              <div class="entry">Barbarian attacks Goblin — 2 skulls, 0 blocks.</div>
+              <div class="entry kill">Goblin defeated.</div>
+              <div class="entry treasure">Treasure! Gem worth 50 gold.</div>
+            </div>
+          </section>
+        </div>
+
+        <section class="hero-bar">
+          <div class="hero-strip">
+            <div class="hero-row current">
+              <span class="hero-badge" style="background:#a83020">B</span>
+              <span class="hero-name">Barbarian</span>
+              <span class="stats">♥♥♥♥♥♡♡♡ ★★ A3 D2 0g</span>
+            </div>
+            <div class="hero-row">
+              <span class="hero-badge" style="background:#b8842a">D</span>
+              <span class="hero-name">Dwarf</span>
+              <span class="stats">♥♥♥♥♥♥♥ ★★★ A2 D2 0g</span>
+            </div>
+            <div class="hero-row">
+              <span class="hero-badge" style="background:#2f8050">E</span>
+              <span class="hero-name">Elf</span>
+              <span class="stats">♥♥♥♥♥♥ ★★★★ A2 D2 0g</span>
+            </div>
+            <div class="hero-row">
+              <span class="hero-badge" style="background:#3a4ab0">W</span>
+              <span class="hero-name">Wizard</span>
+              <span class="stats">♥♥♥♥ ★★★★★★ A1 D2 0g</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

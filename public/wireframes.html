@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeroQuest GUI — wireframes</title>
+<style>
+  body {
+    margin: 0; padding: 24px;
+    background: #15110b;
+    color: #f0e7d0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  h1 .sub { color: #b3a890; font-style: italic; font-size: 14px; font-weight: normal; margin-left: 10px; }
+  .lead { color: #b3a890; max-width: 780px; margin: 6px 0 26px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(720px, 1fr));
+    gap: 28px;
+  }
+  figure {
+    margin: 0;
+    background: #1f1a13;
+    border: 1px solid #3a3225;
+    padding: 16px 18px 18px;
+    border-radius: 6px;
+  }
+  figure h2 { margin: 0 0 4px; font-size: 16px; color: #e8b94f; }
+  figure h2 .tag { color: #b3a890; font-style: italic; font-weight: normal; font-size: 12px; margin-left: 8px; }
+  figure svg { display: block; width: 100%; height: auto; background: #efe4c4; border: 1px solid #2a2218; margin: 10px 0; }
+  figure p { margin: 8px 0 4px; font-size: 13px; }
+  figure .pros, figure .cons { font-size: 12px; }
+  figure .pros { color: #8ed391; }
+  figure .cons { color: #e89898; }
+
+  /* SVG-internal styles */
+  svg .panel  { fill: #f7eccb; stroke: #7a5a32; stroke-width: 2; }
+  svg .board  { fill: #d8c08a; stroke: #5a3a1c; stroke-width: 4; }
+  svg .frame  { fill: none; stroke: #5a3a1c; stroke-width: 8; stroke-linejoin: round; }
+  svg .frameInner { fill: none; stroke: #8a6a3a; stroke-width: 1.5; }
+  svg .accent { fill: #f0d290; stroke: #8a6a3a; stroke-width: 1.5; }
+  svg .deck   { fill: #d4a55a; stroke: #5a3a1c; stroke-width: 2; }
+  svg .card   { fill: #f7eccb; stroke: #5a3a1c; stroke-width: 1.5; }
+  svg .hero   { fill: #c8b48c; stroke: #5a3a1c; stroke-width: 1.5; }
+  svg .label  { font: 600 11px ui-sans-serif, sans-serif; fill: #3a2814; }
+  svg .small  { font: 10px ui-sans-serif, sans-serif; fill: #5a4222; }
+  svg .axis   { font: italic 10px ui-sans-serif, sans-serif; fill: #8a6a3a; }
+</style>
+</head>
+<body>
+
+<h1>HeroQuest GUI <span class="sub">wireframe options</span></h1>
+<p class="lead">
+  Four layouts, each a distinct philosophy. All assume a parchment background, a wooden border around the playable canvas,
+  and a dedicated home for the treasure deck. Pick one as the starting point — we can tune from there.
+</p>
+
+<div class="grid">
+
+<!-- ============================================================ -->
+<!-- A — Refined dock                                              -->
+<!-- ============================================================ -->
+<figure>
+  <h2>A. Refined dock <span class="tag">closest to today's layout, polished</span></h2>
+  <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" aria-label="Layout A">
+    <!-- parchment base -->
+    <rect x="0" y="0" width="800" height="500" fill="#efe4c4"/>
+
+    <!-- top bar: turn header / phase / dice -->
+    <rect class="panel" x="14" y="14" width="772" height="48"/>
+    <text class="label" x="26" y="36">Turn header · active hero · phase · dice tray</text>
+    <text class="small"  x="26" y="52">[Roll] [Move] [Action] [End Turn]   movement remaining: 7</text>
+
+    <!-- left: hero list strip -->
+    <rect class="panel" x="14" y="74" width="160" height="412"/>
+    <text class="label" x="26" y="92">Heroes</text>
+    <rect class="hero" x="24" y="100" width="140" height="62"/>
+    <text class="small" x="32" y="118">Barbarian · 8/8 · 2/2</text>
+    <rect class="hero" x="24" y="170" width="140" height="62"/>
+    <text class="small" x="32" y="188">Dwarf · 7/7 · 3/3</text>
+    <rect class="hero" x="24" y="240" width="140" height="62"/>
+    <text class="small" x="32" y="258">Elf · 6/6 · 4/4</text>
+    <rect class="hero" x="24" y="310" width="140" height="62"/>
+    <text class="small" x="32" y="328">Wizard · 4/4 · 6/6</text>
+    <text class="axis" x="26" y="478">portraits · stats · dead state</text>
+
+    <!-- centre: framed board -->
+    <rect class="frame" x="186" y="74" width="430" height="320"/>
+    <rect class="board" x="200" y="88" width="402" height="292"/>
+    <rect class="frameInner" x="194" y="82" width="414" height="304"/>
+    <text class="axis" x="350" y="232" text-anchor="middle">26 × 19 board</text>
+    <text class="axis" x="350" y="248" text-anchor="middle">canvas</text>
+
+    <!-- log under board -->
+    <rect class="panel" x="186" y="402" width="430" height="84"/>
+    <text class="label" x="198" y="420">Quest log</text>
+    <text class="small" x="198" y="438">▸ Barbarian rolls 4 attack…</text>
+    <text class="small" x="198" y="454">▸ Goblin defends 0 — slain</text>
+    <text class="small" x="198" y="470">▸ Wizard moves to L8T6</text>
+
+    <!-- right: cards stack -->
+    <rect class="panel" x="628" y="74" width="158" height="412"/>
+    <text class="label" x="640" y="92">Cards</text>
+    <rect class="card" x="638" y="100" width="60" height="76"/>
+    <text class="small" x="668" y="142" text-anchor="middle">spell</text>
+    <rect class="card" x="704" y="100" width="60" height="76"/>
+    <text class="small" x="734" y="142" text-anchor="middle">spell</text>
+
+    <text class="label" x="640" y="200">Treasure deck</text>
+    <rect class="deck" x="638" y="208" width="58" height="78"/>
+    <text class="small" x="667" y="252" text-anchor="middle">deck (32)</text>
+    <rect class="card" x="708" y="208" width="58" height="78"/>
+    <text class="small" x="737" y="244" text-anchor="middle">last</text>
+    <text class="small" x="737" y="258" text-anchor="middle">drawn</text>
+
+    <text class="label" x="640" y="310">Inventory</text>
+    <rect class="card" x="638" y="318" width="58" height="36"/>
+    <rect class="card" x="704" y="318" width="58" height="36"/>
+    <rect class="card" x="638" y="362" width="58" height="36"/>
+    <rect class="card" x="704" y="362" width="58" height="36"/>
+    <text class="small" x="640" y="420">artifacts · weapons · potions</text>
+  </svg>
+  <p>Today's structure with the gaps filled in: dedicated treasure stack (deck + last drawn) sits with the spell hand on the right rail, hero list on the left, log under the board.</p>
+  <p class="pros">+ Smallest behavioural change; familiar mouse-paths preserved.</p>
+  <p class="pros">+ Treasure deck always in view, never blocks the board.</p>
+  <p class="cons">− Feels like a spreadsheet; doesn't really evoke a tabletop game.</p>
+</figure>
+
+<!-- ============================================================ -->
+<!-- B — Tabletop spread                                           -->
+<!-- ============================================================ -->
+<figure>
+  <h2>B. Tabletop spread <span class="tag">cards around the board, like the real game</span></h2>
+  <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" aria-label="Layout B">
+    <rect x="0" y="0" width="800" height="500" fill="#efe4c4"/>
+
+    <!-- top header: thin -->
+    <rect class="panel" x="14" y="14" width="772" height="32"/>
+    <text class="label" x="26" y="34">HeroQuest · The Trial · Mentor narrates</text>
+
+    <!-- top-left: dice tray + turn buttons (where Mentor / GM sits) -->
+    <rect class="panel" x="14" y="58" width="180" height="118"/>
+    <text class="label" x="26" y="76">Dice tray</text>
+    <circle cx="40" cy="100" r="12" class="accent"/>
+    <circle cx="74" cy="100" r="12" class="accent"/>
+    <circle cx="108" cy="100" r="12" class="accent"/>
+    <text class="small" x="26" y="138">[Roll]  [Move]  [End Turn]</text>
+    <text class="small" x="26" y="156">movement: 7 / 8</text>
+
+    <!-- top-right: TREASURE DECK (where Mentor holds the deck) -->
+    <rect class="panel" x="606" y="58" width="180" height="118"/>
+    <text class="label" x="618" y="76">Treasure deck</text>
+    <rect class="deck" x="618" y="84" width="60" height="80"/>
+    <text class="small" x="648" y="128" text-anchor="middle">draw</text>
+    <text class="small" x="648" y="142" text-anchor="middle">deck</text>
+    <rect class="card" x="690" y="84" width="60" height="80"/>
+    <text class="small" x="720" y="124" text-anchor="middle">last drawn</text>
+    <text class="small" x="720" y="138" text-anchor="middle">face-up</text>
+
+    <!-- centre: framed board, BIG -->
+    <rect class="frame" x="200" y="56" width="400" height="300"/>
+    <rect class="board" x="214" y="70" width="372" height="272"/>
+    <rect class="frameInner" x="208" y="64" width="384" height="284"/>
+    <text class="axis" x="400" y="208" text-anchor="middle">framed board</text>
+
+    <!-- left side: artifact / inventory rail (small) -->
+    <rect class="panel" x="14" y="186" width="180" height="160"/>
+    <text class="label" x="26" y="204">Inventory · artifacts</text>
+    <rect class="card" x="24" y="214" width="74" height="44"/>
+    <rect class="card" x="106" y="214" width="74" height="44"/>
+    <rect class="card" x="24" y="268" width="74" height="44"/>
+    <rect class="card" x="106" y="268" width="74" height="44"/>
+    <text class="small" x="26" y="334">drag onto hero · click to use</text>
+
+    <!-- right side: quest log -->
+    <rect class="panel" x="606" y="186" width="180" height="160"/>
+    <text class="label" x="618" y="204">Quest log · objectives</text>
+    <text class="small" x="618" y="222">◆ Slay Verag</text>
+    <text class="small" x="618" y="240">◆ Rescue Sir Ragnar</text>
+    <text class="small" x="618" y="270">▸ Goblin slain by Dwarf</text>
+    <text class="small" x="618" y="284">▸ Door to L8T9 opened</text>
+    <text class="small" x="618" y="298">▸ Trap! Pit · Elf -1B</text>
+
+    <!-- BOTTOM: hero hands fanned along the bottom edge -->
+    <rect class="panel" x="14" y="358" width="772" height="128"/>
+    <text class="label" x="26" y="376">Active hero · spell hand</text>
+    <!-- active hero portrait -->
+    <rect class="hero" x="22" y="386" width="84" height="92"/>
+    <text class="small" x="64" y="436" text-anchor="middle">Wizard</text>
+    <text class="small" x="64" y="450" text-anchor="middle">4/4 · 6/6</text>
+    <!-- fanned spells -->
+    <g transform="translate(140 388) rotate(-8)">  <rect class="card" width="60" height="86"/></g>
+    <g transform="translate(210 386) rotate(-3)">  <rect class="card" width="60" height="86"/></g>
+    <g transform="translate(286 384) rotate(0)">   <rect class="card" width="60" height="86"/></g>
+    <g transform="translate(360 386) rotate(3)">   <rect class="card" width="60" height="86"/></g>
+    <g transform="translate(434 388) rotate(8)">   <rect class="card" width="60" height="86"/></g>
+    <text class="axis" x="290" y="478" text-anchor="middle">spell hand of the active hero</text>
+    <!-- mini hero pips for non-active heroes -->
+    <g>
+      <rect class="hero" x="540" y="392" width="50" height="60"/>
+      <rect class="hero" x="600" y="392" width="50" height="60"/>
+      <rect class="hero" x="660" y="392" width="50" height="60"/>
+      <text class="small" x="565" y="466" text-anchor="middle">Bar</text>
+      <text class="small" x="625" y="466" text-anchor="middle">Dwf</text>
+      <text class="small" x="685" y="466" text-anchor="middle">Elf</text>
+      <text class="axis"  x="720" y="442">other heroes</text>
+    </g>
+  </svg>
+  <p>Cards live where they would on a tabletop: deck top-right (Mentor's side), spell hand fanned along the active hero's bottom edge, inventory + artifacts to the left, log + objectives right. Reads as a board game, not an app.</p>
+  <p class="pros">+ Strong tabletop feel; treasure deck has its own visual home.</p>
+  <p class="pros">+ Active hero's hand is huge and obvious.</p>
+  <p class="cons">− Less screen room for the board itself (~400px wide vs ~430 in A).</p>
+  <p class="cons">− Other heroes' inventories are 2 clicks away (right pane swap).</p>
+</figure>
+
+<!-- ============================================================ -->
+<!-- C — Drawer / focused                                          -->
+<!-- ============================================================ -->
+<figure>
+  <h2>C. Focused board · drawer dock <span class="tag">board dominates, controls slide up</span></h2>
+  <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" aria-label="Layout C">
+    <rect x="0" y="0" width="800" height="500" fill="#efe4c4"/>
+
+    <!-- top: minimal turn ribbon -->
+    <rect class="panel" x="14" y="14" width="772" height="38"/>
+    <text class="label" x="26" y="38">▸ Wizard's turn — Move 7 / 8 · [End turn]</text>
+
+    <!-- left rail: ACTIVE hero only + dice -->
+    <rect class="panel" x="14" y="64" width="120" height="294"/>
+    <text class="label" x="26" y="82">Active</text>
+    <rect class="hero" x="24" y="90" width="100" height="118"/>
+    <text class="small" x="74" y="160" text-anchor="middle">Wizard</text>
+    <text class="small" x="74" y="176" text-anchor="middle">4 / 4 Body</text>
+    <text class="small" x="74" y="190" text-anchor="middle">6 / 6 Mind</text>
+    <text class="label" x="26" y="232">Dice</text>
+    <circle cx="42" cy="252" r="10" class="accent"/>
+    <circle cx="68" cy="252" r="10" class="accent"/>
+    <circle cx="94" cy="252" r="10" class="accent"/>
+    <text class="small" x="26" y="290">[Roll]</text>
+    <text class="small" x="26" y="308">[Cast]  [Search]</text>
+    <text class="small" x="26" y="326">[End]</text>
+
+    <!-- right rail: ONLY treasure deck -->
+    <rect class="panel" x="666" y="64" width="120" height="294"/>
+    <text class="label" x="678" y="82">Treasure</text>
+    <rect class="deck" x="688" y="92" width="76" height="100"/>
+    <text class="small" x="726" y="138" text-anchor="middle">draw deck</text>
+    <text class="small" x="726" y="152" text-anchor="middle">(32)</text>
+    <rect class="card" x="688" y="206" width="76" height="100"/>
+    <text class="small" x="726" y="248" text-anchor="middle">last</text>
+    <text class="small" x="726" y="262" text-anchor="middle">drawn</text>
+    <text class="small" x="678" y="338">[Discard]</text>
+
+    <!-- centre: HUGE framed board -->
+    <rect class="frame" x="146" y="62" width="510" height="298"/>
+    <rect class="board" x="158" y="74" width="486" height="274"/>
+    <rect class="frameInner" x="152" y="68" width="498" height="286"/>
+    <text class="axis" x="400" y="220" text-anchor="middle">large framed board</text>
+
+    <!-- mini hero pips along bottom of board (other heroes) -->
+    <rect class="hero" x="158" y="328" width="34" height="20"/>
+    <rect class="hero" x="200" y="328" width="34" height="20"/>
+    <rect class="hero" x="242" y="328" width="34" height="20"/>
+    <text class="axis" x="380" y="346" text-anchor="middle">other heroes — click to switch</text>
+
+    <!-- BOTTOM: drawer/dock with tabs (closed by default) -->
+    <rect class="panel" x="14" y="372" width="772" height="114"/>
+    <!-- tab bar -->
+    <rect class="card" x="14" y="372" width="100" height="28"/>
+    <text class="small" x="64" y="390" text-anchor="middle">Spells</text>
+    <rect class="card" x="116" y="372" width="100" height="28" fill="#efe4c4"/>
+    <text class="small" x="166" y="390" text-anchor="middle">Inventory</text>
+    <rect class="card" x="218" y="372" width="100" height="28" fill="#efe4c4"/>
+    <text class="small" x="268" y="390" text-anchor="middle">Quest log</text>
+    <rect class="card" x="320" y="372" width="100" height="28" fill="#efe4c4"/>
+    <text class="small" x="370" y="390" text-anchor="middle">Objectives</text>
+    <!-- drawer body -->
+    <rect class="card" x="22" y="408" width="60" height="70"/>
+    <rect class="card" x="90" y="408" width="60" height="70"/>
+    <rect class="card" x="158" y="408" width="60" height="70"/>
+    <rect class="card" x="226" y="408" width="60" height="70"/>
+    <rect class="card" x="294" y="408" width="60" height="70"/>
+    <rect class="card" x="362" y="408" width="60" height="70"/>
+    <text class="axis" x="600" y="442">drawer slides up — tab to switch</text>
+    <text class="axis" x="600" y="458">collapsible (▼) to maximise board</text>
+  </svg>
+  <p>Board owns the screen. Side rails minimised: only the active hero on the left, only the treasure deck on the right. Spells / inventory / log / objectives live in a tabbed bottom drawer that you can slide closed for max board real estate.</p>
+  <p class="pros">+ Best board experience by far (≈510×300 inside the frame).</p>
+  <p class="pros">+ Clear: deck always visible, no clutter.</p>
+  <p class="cons">− More clicks: viewing another hero's inventory needs a tab swap.</p>
+  <p class="cons">− Drawer is a new interaction model to learn / build.</p>
+</figure>
+
+<!-- ============================================================ -->
+<!-- D — Two-column compact                                        -->
+<!-- ============================================================ -->
+<figure>
+  <h2>D. Two-column compact <span class="tag">simple, mobile-first, works at any width</span></h2>
+  <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" aria-label="Layout D">
+    <rect x="0" y="0" width="800" height="500" fill="#efe4c4"/>
+
+    <!-- left: framed board, full height -->
+    <rect class="frame" x="14" y="14" width="500" height="472"/>
+    <rect class="board" x="26" y="26" width="476" height="448"/>
+    <rect class="frameInner" x="20" y="20" width="488" height="460"/>
+    <text class="axis" x="264" y="246" text-anchor="middle">board fills the left column</text>
+    <text class="axis" x="264" y="262" text-anchor="middle">scales naturally on narrower screens</text>
+
+    <!-- right: stacked panels -->
+    <!-- header: turn -->
+    <rect class="panel" x="528" y="14" width="258" height="44"/>
+    <text class="label" x="540" y="32">Wizard's turn</text>
+    <text class="small" x="540" y="48">[Roll] [Move] [Cast] [End]</text>
+
+    <!-- heroes (stacked) -->
+    <rect class="panel" x="528" y="68" width="258" height="120"/>
+    <text class="label" x="540" y="86">Party</text>
+    <rect class="hero" x="538" y="94" width="58" height="72"/>
+    <text class="small" x="567" y="178" text-anchor="middle">Bar 8/8</text>
+    <rect class="hero" x="604" y="94" width="58" height="72"/>
+    <text class="small" x="633" y="178" text-anchor="middle">Dwf 7/7</text>
+    <rect class="hero" x="670" y="94" width="58" height="72"/>
+    <text class="small" x="699" y="178" text-anchor="middle">Elf 6/6</text>
+    <rect class="hero" x="736" y="94" width="44" height="72"/>
+    <text class="small" x="758" y="178" text-anchor="middle">Wiz</text>
+
+    <!-- treasure deck -->
+    <rect class="panel" x="528" y="198" width="258" height="98"/>
+    <text class="label" x="540" y="216">Treasure</text>
+    <rect class="deck" x="538" y="222" width="60" height="68"/>
+    <text class="small" x="568" y="248" text-anchor="middle">deck</text>
+    <text class="small" x="568" y="262" text-anchor="middle">(32)</text>
+    <rect class="card" x="608" y="222" width="60" height="68"/>
+    <text class="small" x="638" y="262" text-anchor="middle">last drawn</text>
+    <text class="small" x="678" y="244">[Draw]</text>
+    <text class="small" x="678" y="266">[Discard]</text>
+
+    <!-- spells / inventory accordion -->
+    <rect class="panel" x="528" y="306" width="258" height="100"/>
+    <text class="label" x="540" y="324">Spells / Inventory</text>
+    <rect class="card" x="540" y="334" width="46" height="60"/>
+    <rect class="card" x="592" y="334" width="46" height="60"/>
+    <rect class="card" x="644" y="334" width="46" height="60"/>
+    <rect class="card" x="696" y="334" width="46" height="60"/>
+    <text class="small" x="540" y="404">▾ swap tab</text>
+
+    <!-- quest log -->
+    <rect class="panel" x="528" y="416" width="258" height="70"/>
+    <text class="label" x="540" y="434">Log</text>
+    <text class="small" x="540" y="452">▸ Wizard moves to L8T6</text>
+    <text class="small" x="540" y="468">▸ Goblin slain</text>
+  </svg>
+  <p>Just two columns. Board on the left, single stacked sidebar on the right with everything: turn → party → treasure deck → cards → log. Designed to gracefully collapse to single-column on narrow screens / mobile.</p>
+  <p class="pros">+ Simplest to build / reason about; clean on every screen size.</p>
+  <p class="pros">+ Tallest board view of any layout.</p>
+  <p class="cons">− Right column is dense — needs careful spacing to not feel cramped.</p>
+  <p class="cons">− Spells & inventory share one tabbed slot, not always visible together.</p>
+</figure>
+
+</div>
+
+<p style="margin-top: 28px; color:#b3a890; font-size: 13px;">
+  Once you pick one (or two to merge), I'll do a high-fi mockup with the actual parchment background + wood frame applied.
+  Tell me which letter you like — and any of the elements from another that you'd want pulled in.
+</p>
+</body>
+</html>

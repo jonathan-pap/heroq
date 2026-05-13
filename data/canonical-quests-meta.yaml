@@ -1,0 +1,318 @@
+# =====================================================================
+# CANONICAL QUEST METADATA
+#
+# Per-quest properties applied AFTER the XML→JSON converter generates
+# the base layout. Single source of truth for all 14 main quests.
+#
+# Used by scripts/install-canonical-q-batch.js (and the per-quest
+# install-canonical-qNN.js shims) to overlay quest-specific:
+#   - id, title, subtitle, intro, _canonical_notes
+#   - wandering monster
+#   - boss override (one monster gets boosted stats + named id)
+#   - friendly NPCs (Sir Ragnar etc.)
+#   - per-cell treasure amounts
+#   - objective + objectives
+#   - defeat text
+# =====================================================================
+
+quests:
+
+  q01:
+    id: quest1-trial
+    title: The Trial
+    subtitle: Quest 1
+    intro: |-
+      Mentor sends the heroes into the catacombs that contain Fellmarg's
+      tomb to seek out and destroy a foul gargoyle named Verag. This is
+      their first trial — survival depends on working together.
+    wandering: orc
+    bossOverride:
+      # Mummy adjacent to LetterC (the C-mummy = Fellmarg's Guardian)
+      type: mummy
+      at: [6, 2]
+      name: "Fellmarg's Guardian"
+      attack: 4
+    monsterIdAlias:
+      # Verag is auto-named verag1 by the converter; alias him to 'verag'
+      # so the objective can reference a stable id.
+      verag1: verag
+    treasure:
+      # XML chest cells: D = 84g, E = 120g, B = empty
+      "10,5":  { amount: 84,  note: "D: 84 gold (first searcher only)" }
+      "11,7":  { amount: 120, note: "E: 120 gold (first searcher only) — Verag's lair" }
+      "17,16": { amount: 0,   note: "B: empty chest" }
+    objective:
+      kind: kill
+      monsterId: verag
+      text: "Slay Verag, the gargoyle of Fellmarg's tomb."
+    defeat: "All heroes have fallen — the catacombs swallow another company."
+
+  q02:
+    id: quest2-rescue-of-sir-ragnar
+    title: The Rescue of Sir Ragnar
+    subtitle: Quest 2
+    intro: |-
+      Sir Ragnar, one of the King's most powerful knights, has been
+      captured. He is being held by Ulag, the orc warlord. Find Sir
+      Ragnar and bring him back to the stairway. Prince Magnus has
+      offered 240 gold coins, divided among the heroes, on his safe
+      return — no reward if he is killed during the escape.
+    wandering: orc
+    friendlyNpc:
+      id: sir-ragnar
+      name: "Sir Ragnar"
+      displayType: dread-sorcerer
+      at: [5, 11]
+      body: 2
+      bodyMax: 2
+      defendDice: 2
+      attackDice: 0
+      movementDice: 1
+      rescuedBy: stairway
+    treasure:
+      "2,13":  { amount: 0,  note: "A: poison-needle trap" }
+      "19,8":  { amount: 50, note: "B: 50 gold" }
+    objective:
+      kind: escort
+      npcId: sir-ragnar
+      fallbackKind: reach
+      fallbackCell: [5, 11]
+      text: "Find Sir Ragnar and escort him back to the staircase."
+    defeat: "All heroes have fallen — or Sir Ragnar with them."
+
+  q03:
+    id: quest3-lair-of-the-orc-warlord
+    title: Lair of the Orc Warlord
+    subtitle: Quest 3
+    intro: |-
+      Ulag, the Orc Warlord, has been raising an army of orcs and
+      goblins to march on the Empire. The heroes must find his lair
+      and slay him before his horde sets out.
+    wandering: orc
+    bossOverride:
+      type: orc
+      at: [4, 15]
+      name: Ulag
+      attack: 4
+      defend: 4
+      body: 5
+      mind: 4
+      idAlias: ulag
+    objective:
+      kind: kill
+      monsterId: ulag
+      text: "Slay Ulag, the Orc Warlord."
+    defeat: "Ulag's horde rolls forth unopposed."
+
+  q04:
+    id: quest4-prince-magnus-gold
+    title: "Prince Magnus' Gold"
+    subtitle: Quest 4
+    intro: |-
+      Bandits have stolen tribute meant for the Empire. Recover the
+      strongbox before they spend the gold on more mischief.
+    wandering: orc
+    objective:
+      kind: reach
+      cell: [4, 3]   # placeholder — adjust after first playthrough
+      text: "Reach the bandits' strongbox and reclaim the prince's gold."
+    defeat: "Prince Magnus's tribute is lost forever."
+
+  q05:
+    id: quest5-melars-maze
+    title: "Melar's Maze"
+    subtitle: Quest 5
+    intro: |-
+      Melar the Mad built a labyrinth beneath his keep. The heroes
+      must penetrate it and recover the Talisman of Lore from the
+      altar at the maze's heart.
+    wandering: skeleton
+    objective:
+      kind: reach
+      cell: [3, 2]   # placeholder
+      text: "Reach the altar holding the Talisman of Lore."
+    defeat: "Melar's spirit cackles in the darkness."
+
+  q06:
+    id: quest6-legacy-of-the-orc-warlord
+    title: Legacy of the Orc Warlord
+    subtitle: Quest 6
+    intro: |-
+      Ulag's tomb has been opened. Heroes must descend, defeat his
+      remnant, and reclaim the sword Orcs Bane buried with him.
+    wandering: orc
+    quirks:
+      - "Heroes begin in the room marked 'Cell'. They cannot Search for Treasure in the Cell."
+      - "All of the heroes' equipment has been taken. They may not use any equipment (weapons, armor, potions, etc.) or cast any spells until they locate their equipment."
+      - "A hero with no weapons or armor rolls 1 Attack die and 2 Defend dice."
+      - "The stairway is the escape route, NOT the start position — start cells are inside the Cell room."
+    objective:
+      kind: reach
+      cell: [14, 3]   # placeholder
+      text: "Open Ulag's coffin and reclaim the sword Orcs Bane."
+    defeat: "Orcs Bane remains lost beneath the stones."
+
+  q07:
+    id: quest7-the-lost-wizard
+    title: The Lost Wizard
+    subtitle: Quest 7
+    intro: |-
+      Wardoz, the King's personal wizard, has disappeared. The heroes
+      must find out what happened to him — kidnapped, murdered, or
+      seduced by Dread magic? 100 gold each on safe return.
+    wandering: dread-warrior
+    objective:
+      kind: reach
+      cell: [12, 3]   # placeholder — adjust to the canonical Wardoz cell
+      text: "Find what became of Wardoz, the lost wizard."
+    defeat: "Wardoz's fate remains a mystery."
+
+  q08:
+    id: quest8-the-fire-mage
+    title: The Fire Mage
+    subtitle: Quest 8
+    intro: |-
+      Balur, a Fire Mage, has begun raining flame on caravans crossing
+      the border. Find his sanctum and end him.
+    wandering: chaos-warrior
+    bossOverride:
+      type: chaos-warrior
+      at: [12, 4]   # placeholder
+      name: Balur
+      attack: 5
+      defend: 5
+      body: 6
+      mind: 6
+      idAlias: balur
+    objective:
+      kind: kill
+      monsterId: balur
+      text: "Slay Balur, the Fire Mage."
+    defeat: "Balur's flame will consume the borderlands."
+
+  q09:
+    id: quest9-race-against-time
+    title: Race Against Time
+    subtitle: Quest 9
+    intro: |-
+      Mentor's elixir of life is brewing — but only minutes remain
+      before it is destroyed. Reach it before the timer runs out.
+    wandering: orc
+    objective:
+      kind: reach
+      cell: [12, 2]   # placeholder
+      text: "Reach the elixir before it is destroyed."
+    defeat: "Mentor's elixir is gone forever."
+
+  q10:
+    id: quest10-castle-of-mystery
+    title: Castle of Mystery
+    subtitle: Quest 10
+    intro: |-
+      A castle of teleporting chambers — heroes appear in scattered
+      rooms numbered 2..11. Search out the True Vault and claim its
+      treasure to escape.
+    wandering: skeleton
+    objective:
+      kind: reach
+      cell: [3, 3]   # placeholder
+      text: "Search out the True Vault and claim its treasure."
+    defeat: "The castle keeps its secrets a while longer."
+
+  q11:
+    id: quest11-bastion-of-dread
+    title: Bastion of Dread
+    subtitle: Quest 11
+    intro: |-
+      Lands east of the Empire have been plagued by marauding orcs and
+      goblins allied with Zargon. They are well-protected in an
+      underground fortress — the Bastion of Dread — led by a small
+      group of Dread warriors. Fight your way in and slay every monster.
+      Bounty: 10g per goblin, 20g per orc, 30g per abomination,
+      50g per Dread warrior.
+    wandering: abomination
+    quirks:
+      - "Note A: armory — first hero to search Treasure finds a shield exactly like the one in the armory; all other weapons are unusable."
+      - "Note B: gargoyle is a stone statue that does not move until moved or attacked. The treasure chest is a trap — searching for treasure before disarming wakes the gargoyle, which springs to life and immediately attacks. Disarming first reveals what would have happened."
+      - "Note C: a Dread warrior carries Orc's Bane — whoever kills it claims the artifact."
+    objective:
+      kind: kill-all
+      text: "Slay every monster in the Bastion of Dread."
+    defeat: "The bastion stands. The marsh-folk weep."
+
+  q12:
+    id: quest12-barrow-of-the-witch-lord
+    title: Barak Tor — Barrow of the Witch Lord
+    subtitle: Quest 12
+    intro: |-
+      War with the eastern orcs is brewing. The King needs the ancient
+      Star of the West to unite the lands. The Star lies in Barak Tor,
+      resting place of the evil Witch Lord. He was defeated long ago by
+      the magical Spirit Blade — the only weapon that can harm him.
+      Reward: 200 gold split among the heroes when the Star is returned.
+    wandering: skeleton
+    quirks:
+      - "Note A: false doors — cannot be opened at all."
+      - "Note B: the Star of the West is in the zombie's hand."
+      - "Note C: special falling-block trap — collapses AUTOMATICALLY after the last hero passes by it (NOT sprung when stepped on). Once it falls it permanently blocks the path back to the stairs."
+      - "When the first hero enters the tomb room, the Witch Lord is released and the heroes must run — only the Spirit Blade can harm him. He moves 1 square per turn, rolls 2 Attack dice, and knows: summon undead, fear, command, ball of flame."
+      - "Hidden treasure: first hero to Search Treasure behind the bookcase finds the Wizard's Staff artifact."
+    objective:
+      kind: reach
+      cell: [4, 3]   # TODO refine to canonical Star of the West cell
+      text: "Reach the tomb room, confirm it's empty, and recover the Star of the West."
+    defeat: "The barrow swallows another company of heroes."
+
+  q13:
+    id: quest13-quest-for-the-spirit-blade
+    title: Quest for the Spirit Blade
+    subtitle: Quest 13
+    intro: |-
+      The Witch Lord, awakened, is the most serious threat to the King
+      in the coming war. He must be destroyed before he can bring his
+      undead army against His Majesty's forces. The Spirit Blade — forged
+      by World End Mountain dwarves and cooled in the elven Fountain of
+      Leben — is the only weapon that can harm him. It lies in an
+      ancient ruined temple.
+    wandering: dread-warrior
+    quirks:
+      - "SPECIAL falling-block rule: Heroes who step on a falling-block square roll 1 die — 4/5/6 = -1 Body. With a helmet: -1 Body only on a 6. Monsters are unaffected."
+      - "DO NOT place falling-block tiles on the gameboard for this quest. Heroes are NOT blocked by these squares."
+      - "Note A: first hero to search Treasure finds the Spirit Blade artifact. The treasure chest contains 200 gold coins."
+    objective:
+      kind: reach
+      cell: [3, 3]   # TODO refine to canonical Spirit Blade chest cell
+      text: "Reach the Sword's Tomb and recover the Spirit Blade."
+    defeat: "The Spirit Blade rests another century in the dark."
+
+  q14:
+    id: quest14-return-to-barak-tor
+    title: Return to Barak Tor
+    subtitle: Quest 14
+    intro: |-
+      Now that you have the Spirit Blade, return to Barak Tor and slay
+      the Witch Lord. The King has ridden to Darkfire Pass to meet the
+      eastern orcs — if you fail, the Witch Lord's undead army will
+      strike from the rear and nothing will stop the forces of Dread.
+    wandering: zombie
+    bossOverride:
+      # Witch Lord is represented by the Dread Sorcerer figure. Type is
+      # 'mummy' as a closest-existing-stat placeholder; the canonical
+      # Witch Lord is only harmed by the Spirit Blade — full mechanics
+      # land later.
+      type: mummy
+      at: [12, 3]   # TODO refine to canonical Witch Lord cell
+      name: "The Witch Lord"
+      attack: 5
+      defend: 5
+      body: 6
+      mind: 6
+      idAlias: witch-lord
+    quirks:
+      - "Note A: the Witch Lord's tomb is now empty."
+      - "Witch Lord: only harmed by the Spirit Blade. Stronger than in Q12 — knows summon undead, fear (cast twice), ball of flame, command, tempest. Vanishes in foul black smoke when defeated."
+    objective:
+      kind: kill
+      monsterId: witch-lord
+      text: "Slay the Witch Lord and end his reign forever."
+    defeat: "The Witch Lord laughs as his armies darken the sky."

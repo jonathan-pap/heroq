@@ -1,0 +1,58 @@
+# =====================================================================
+# CANONICAL FURNITURE / TILE FOOTPRINT REFERENCE
+#
+# Single source of truth for piece dimensions. Used by:
+#   - The XML→JSON converter (scripts/build-quest1-from-xml.js)
+#   - The footprint validator (scripts/validate-quests.js)
+#
+# Per piece:
+#   natural: { w, h }   the piece's footprint in its NATURAL orientation.
+#                       w = cells along X (width), h = cells along Y (height).
+#                       Each piece's natural orientation is the one that
+#                       matches the canonical icon (e.g. Tomb is taller
+#                       than wide → 2W × 3H vertical sarcophagus;
+#                       Bookcase is wider than tall → 3W × 1H horizontal).
+#   anchor: TL          XML's (left, top) is always the TOP-LEFT cell of
+#                       the piece. Piece extends RIGHT (w-1 cells) and
+#                       DOWN (h-1 cells) from there.
+#
+# Rotation handling (in the converter):
+#   downward / upward    → natural orientation
+#   leftward / rightward → rotated 90°: w ↔ h
+# =====================================================================
+
+pieces:
+
+  # 2 × 3 vertical sarcophagus — tomb. Per the canonical Quest 1 layout
+  # the sarcophagus stands upright, taller than wide.
+  Tomb:                { natural: { w: 2, h: 3 }, anchor: TL }
+
+  # 3 × 2 horizontal pieces — sorcerer's table, alchemist's bench, table.
+  # Wider than tall, anchor at top-left, extends right + down.
+  SorcerersTable:      { natural: { w: 3, h: 2 }, anchor: TL }
+  AlchemistsBench:     { natural: { w: 3, h: 2 }, anchor: TL }
+  Table:               { natural: { w: 3, h: 2 }, anchor: TL }
+
+  # 3 × 1 horizontal pieces — bookcase, cupboard, fireplace, weapons-rack.
+  # Long thin pieces along the wall.
+  Bookcase:            { natural: { w: 3, h: 1 }, anchor: TL }
+  Cupboard:            { natural: { w: 3, h: 1 }, anchor: TL }
+  Fireplace:           { natural: { w: 3, h: 1 }, anchor: TL }
+  WeaponsRack:         { natural: { w: 3, h: 1 }, anchor: TL }
+
+  # 2 × 3 vertical piece — skull / iron rack. Per canonical it's larger
+  # than the simple 1×3 column — same footprint as Tomb (2W × 3H) but
+  # vertical orientation (skulls / weapons stacked).
+  Rack:                { natural: { w: 2, h: 3 }, anchor: TL }
+
+  # 2 × 1 horizontal pair — double-blocked rubble.
+  DoubleBlockedSquare: { natural: { w: 2, h: 1 }, anchor: TL }
+
+  # 2 × 2 — staircase fan.
+  Stairway:            { natural: { w: 2, h: 2 }, anchor: TL }
+
+  # 1 × 1 singletons.
+  SingleBlockedSquare: { natural: { w: 1, h: 1 }, anchor: TL }
+  Throne:              { natural: { w: 1, h: 1 }, anchor: TL }
+  Door:                { natural: { w: 1, h: 1 }, anchor: TL }
+  TreasureChest:       { natural: { w: 1, h: 1 }, anchor: TL }

@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock R5 — Tabletop reframe (single-row header)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=26">
+<style>
+  .mock-label {
+    position: fixed; top: 10px; left: 10px;
+    background: rgba(20,10,4,0.85); color: var(--gold);
+    padding: 6px 12px; border-radius: 6px; z-index: 100;
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em;
+    border: 1px solid var(--gold);
+  }
+  .mock-board-stub {
+    width: 100%; aspect-ratio: 832/608;
+    background:
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.04) 0 12px, transparent 12px 24px),
+      linear-gradient(135deg, #6b4422, #3c2510);
+    border: 1px solid var(--wood-rim);
+    display: grid; place-items: center;
+    font-family: 'Cinzel', serif; font-size: 13px;
+    color: rgba(255,220,170,0.45); letter-spacing: 0.2em;
+  }
+
+  /* === R5 v3 — single-row header, options menu, heroes left ============ */
+
+  .turn-banner { display: none !important; }
+
+  /* Header becomes a 3-zone toolbar: title | actions | end + options */
+  .game-header {
+    display: grid !important;
+    grid-template-columns: minmax(220px, auto) 1fr auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid rgba(50,26,8,0.25);
+  }
+  .game-header .quest-title h1 {
+    font-size: 22px !important;
+    margin: 0 !important;
+    line-height: 1.05;
+  }
+  .game-header .quest-title .small {
+    font-size: 11px;
+  }
+  .header-actions-strip {
+    display: flex; align-items: center; gap: 10px;
+    justify-self: center;
+    flex-wrap: nowrap;
+  }
+  .header-actions-strip .pipeline-inline {
+    display: flex; gap: 3px; flex-shrink: 0;
+  }
+  .header-actions-strip .pipeline-inline .step {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 3px;
+    background: rgba(50,26,8,0.12);
+    border: 1px solid rgba(50,26,8,0.22);
+    color: var(--ink-soft);
+  }
+  .header-actions-strip .pipeline-inline .step.done {
+    background: rgba(78,155,88,0.22); border-color: var(--green-ok); color: #1e5028;
+  }
+  .header-actions-strip .pipeline-inline .step.active {
+    background: rgba(200,151,60,0.32); border-color: var(--gold); color: var(--ink);
+    box-shadow: 0 0 5px rgba(200,151,60,0.45);
+  }
+  .header-actions-strip .move-pill {
+    font-family: 'IM Fell English', serif; font-size: 13px;
+    padding: 3px 9px;
+    background: rgba(50,26,8,0.12);
+    border: 1px solid rgba(50,26,8,0.22);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .header-actions-strip .chip-row {
+    display: flex; gap: 4px; flex-shrink: 0;
+  }
+  .header-actions-strip .chip-row button {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 3px;
+    background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+    border: 1px solid var(--paper-burn);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .header-actions-strip .hand-btn {
+    margin: 0; padding: 4px 9px; min-height: 0;
+    font-size: 10px;
+  }
+  .header-actions-strip .hand-btn-count {
+    font-size: 10px; padding: 0 6px; min-width: 16px;
+  }
+  .header-actions-strip .sep {
+    width: 1px; height: 18px;
+    background: rgba(50,26,8,0.3);
+    margin: 0 2px;
+  }
+  /* End-turn + options group */
+  .header-end-group {
+    display: flex; align-items: center; gap: 6px;
+    position: relative;
+  }
+  .options-btn {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+    border: 1px solid var(--paper-burn);
+    border-radius: 5px;
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 16px;
+  }
+  /* Dropdown menu — shown open for the mockup so you can see what's inside */
+  .options-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 220px;
+    background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+    border: 1px solid var(--paper-burn);
+    border-radius: 6px;
+    padding: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 0 3px var(--wood-rim);
+    z-index: 50;
+    font-family: 'IM Fell English', serif;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .options-menu .item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .options-menu .item:hover { background: rgba(200,151,60,0.15); }
+  .options-menu .item.danger { color: var(--rust); border-top: 1px solid rgba(50,26,8,0.2); margin-top: 4px; padding-top: 10px; }
+  .options-menu .item .label {
+    font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .options-menu .item .value {
+    font-style: italic; color: var(--ink-soft); font-size: 12px;
+  }
+  .options-menu .item .toggle {
+    width: 28px; height: 14px; border-radius: 10px;
+    background: rgba(50,26,8,0.18);
+    border: 1px solid var(--paper-burn);
+    position: relative;
+  }
+  .options-menu .item .toggle::after {
+    content: ''; position: absolute;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--paper-base); border: 1px solid var(--paper-burn);
+    top: 1px; left: 1px;
+  }
+  .options-menu .item .toggle.on {
+    background: rgba(200,151,60,0.5);
+  }
+  .options-menu .item .toggle.on::after { left: 15px; background: var(--gold); }
+  .options-menu-tag {
+    position: absolute; top: -10px; left: 14px;
+    background: var(--gold); color: var(--ink);
+    font-family: 'Cinzel', serif; font-size: 9px;
+    padding: 2px 8px; border-radius: 10px; letter-spacing: 0.06em;
+  }
+
+  /* New grid: heroes / board / quest. No top action-bar row, header
+     does all that work now. */
+  .game-layout {
+    grid-template-columns: 220px minmax(0, 1fr) 220px !important;
+  }
+
+  /* Vertical hero strip on the left */
+  .hero-strip-vertical {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .hero-card-v {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px;
+    background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+    border: 1px solid var(--paper-burn);
+    border-radius: 6px;
+    color: var(--ink);
+    box-shadow: 0 1px 0 rgba(40,18,4,0.3);
+  }
+  .hero-card-v.current {
+    box-shadow: 0 0 0 2px var(--gold), 0 2px 8px rgba(200,151,60,0.45);
+  }
+  .hero-card-v .row1 {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-card-v .hero-badge {
+    width: 28px; height: 28px; font-size: 13px;
+  }
+  .hero-card-v .hero-name {
+    font-family: 'Cinzel', serif; font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  .hero-card-v .stats {
+    font-family: 'IM Fell English', serif; font-size: 12px;
+    color: var(--ink-soft); margin-left: 36px;
+  }
+  .hero-card-v .gold { color: var(--gold-deep); }
+
+  /* Right rail: bare floating cards on parchment */
+  .game-layout .side-stack-right .panel {
+    background: transparent; border: none; box-shadow: none; padding: 8px 4px;
+  }
+  .game-layout .side-stack-right .panel > h3 {
+    font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(50,26,8,0.35);
+    padding-bottom: 4px; margin-bottom: 8px;
+  }
+  .game-layout .side-stack-right .panel > h3::before { content: none; }
+  .floating-deck {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .floating-deck .card.deck {
+    width: 100px; min-height: 138px; padding: 0;
+    transform: rotate(-2deg);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.55);
+  }
+  .floating-deck .deck-caption {
+    font-family: 'IM Fell English', serif;
+    font-size: 12px; color: var(--ink-soft); font-style: italic;
+  }
+  .game-layout .side-stack-right .log {
+    background: transparent; border: none; padding: 0; max-height: 160px;
+  }
+
+  .hero-bar { display: none !important; }
+</style>
+</head>
+<body>
+<a class="mock-label" href="index.html">← Mock R5 · single-row header</a>
+
+<section id="screen-game" class="screen">
+  <div class="frame frame-game">
+    <div class="parchment game-parchment">
+
+      <!-- ===== TOP: One-row header — title | actions | end + options ===== -->
+      <header class="game-header">
+        <div class="quest-title">
+          <h1>The Trial</h1>
+          <span class="muted small">Slay Verag, the gargoyle of Fellmarg's tomb.</span>
+        </div>
+
+        <div class="header-actions-strip">
+          <div class="pipeline-inline">
+            <div class="step done">Roll</div>
+            <div class="step active">Move</div>
+            <div class="step">Action</div>
+            <div class="step">End</div>
+          </div>
+          <div class="move-pill">Move: <strong>2/7</strong></div>
+          <span class="sep"></span>
+          <div class="chip-row">
+            <button>Treasure</button>
+            <button>Traps</button>
+            <button>Secrets</button>
+          </div>
+          <span class="sep"></span>
+          <button class="hand-btn"><span class="hand-btn-label">Items</span><span class="hand-btn-count">2</span></button>
+          <button class="hand-btn"><span class="hand-btn-label">Spells</span><span class="hand-btn-count">3</span></button>
+        </div>
+
+        <div class="header-end-group">
+          <button class="primary end-turn-header">End Turn</button>
+          <button class="options-btn" title="Options">⚙</button>
+
+          <!-- Options dropdown shown OPEN so you can see what's inside -->
+          <div class="options-menu">
+            <div class="options-menu-tag">EXAMPLE OPEN</div>
+            <div class="item">
+              <span class="label">Hide rails</span>
+              <span class="toggle"></span>
+            </div>
+            <div class="item">
+              <span class="label">Zargon speed</span>
+              <span class="value">×2</span>
+            </div>
+            <div class="item">
+              <span class="label">Auto-roll move</span>
+              <span class="toggle on"></span>
+            </div>
+            <div class="item">
+              <span class="label">Reveal map</span>
+              <span class="toggle"></span>
+            </div>
+            <div class="item danger">
+              <span class="label">Leave Quest</span>
+              <span class="value">↩</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="game-layout">
+
+        <!-- LEFT: Vertical hero strip -->
+        <div class="side-stack side-stack-left">
+          <div class="hero-strip-vertical">
+            <div class="hero-card-v current">
+              <div class="row1">
+                <span class="hero-badge" style="background:#a83020">B</span>
+                <span class="hero-name">Barbarian</span>
+              </div>
+              <div class="stats">♥♥♥♥♥♡♡♡  ★★</div>
+              <div class="stats">A3 D2 · <span class="gold">0g</span></div>
+            </div>
+            <div class="hero-card-v">
+              <div class="row1">
+                <span class="hero-badge" style="background:#b8842a">D</span>
+                <span class="hero-name">Dwarf</span>
+              </div>
+              <div class="stats">♥♥♥♥♥♥♥  ★★★</div>
+              <div class="stats">A2 D2 · <span class="gold">0g</span></div>
+            </div>
+            <div class="hero-card-v">
+              <div class="row1">
+                <span class="hero-badge" style="background:#2f8050">E</span>
+                <span class="hero-name">Elf</span>
+              </div>
+              <div class="stats">♥♥♥♥♥♥  ★★★★</div>
+              <div class="stats">A2 D2 · <span class="gold">0g</span></div>
+            </div>
+            <div class="hero-card-v">
+              <div class="row1">
+                <span class="hero-badge" style="background:#3a4ab0">W</span>
+                <span class="hero-name">Wizard</span>
+              </div>
+              <div class="stats">♥♥♥♥  ★★★★★★</div>
+              <div class="stats">A1 D2 · <span class="gold">0g</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTRE: Board -->
+        <main class="board-area">
+          <div class="board-frame">
+            <div class="mock-board-stub">[ GAME BOARD ]</div>
+          </div>
+        </main>
+
+        <!-- RIGHT: Quest, bare cards on parchment -->
+        <div class="side-stack side-stack-right">
+          <div class="floating-deck">
+            <div class="card deck">
+              <img class="deck-back" src="../assets/cards/card_backs/Treasure.png" alt="">
+              <div class="deck-count-badge">22</div>
+            </div>
+            <div class="deck-caption">Treasure — 22 cards</div>
+          </div>
+          <section class="panel">
+            <h3>Quest</h3>
+            <ul class="objectives-list">
+              <li class="done"><span class="obj-box">✓</span><span class="obj-text">Find Sir Ragnar</span></li>
+              <li><span class="obj-box">·</span><span class="obj-text">Slay Verag</span></li>
+              <li class="locked"><span class="obj-box">·</span><span class="obj-text">Return to a staircase (1/4)</span></li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h3>Recent</h3>
+            <div class="log">
+              <div class="entry kill">Goblin defeated.</div>
+              <div class="entry treasure">Treasure! Gem worth 50 gold.</div>
+              <div class="entry combat">Orc attacks Dwarf — 1 damage.</div>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

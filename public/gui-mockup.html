@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeroQuest — GUI mockup (Layout B, burnt parchment)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HeroQuest — GUI mockup
+   Layout B (tabletop spread) on a burnt-parchment ground with
+   a dark wood frame around the playable canvas. Static visual
+   pass — colours / typography / spacing only.
+   ============================================================ */
+
+:root {
+  /* ---- burnt parchment palette ---------------------------- */
+  --paper-base:   #b89568;     /* warm tan — main parchment */
+  --paper-hi:     #d6b685;     /* highlight, used sparingly */
+  --paper-mid:    #a87f4f;     /* secondary fill */
+  --paper-shadow: #6e4a26;     /* fold / crease shadow */
+  --paper-burn:   #4a2c14;     /* charred edge */
+  --paper-edge:   #2c1808;     /* very dark burnt outer rim */
+
+  /* ---- wood frame ----------------------------------------- */
+  --wood-base:    #3e2614;
+  --wood-grain:   #2a160a;
+  --wood-hi:      #5a3a1c;
+  --wood-rim:     #1a0e06;
+
+  /* ---- ink ------------------------------------------------ */
+  --ink:          #2a1808;
+  --ink-soft:     #4a2c14;
+  --ink-fade:     #6e4a26;
+
+  /* ---- accents -------------------------------------------- */
+  --gold:         #c8973c;
+  --gold-deep:    #8a6420;
+  --rust:         #8a3818;
+  --bone:         #e8d4a0;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--wood-rim);
+  /* tabletop wood — the very outermost felt of the room */
+  background-image:
+    repeating-linear-gradient(
+      88deg,
+      #1c0e06 0%, #100804 2%, #220f08 4%, #1c0e06 6%),
+    radial-gradient(ellipse at center, #2c1c0e 0%, #150a04 75%);
+  color: var(--ink);
+  font-family: "IM Fell English", "EB Garamond", Georgia, serif;
+  font-size: 15px;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+/* ============================================================
+   FRAME — the outer wood border that surrounds everything
+   ============================================================ */
+.frame {
+  width: min(1280px, 100%);
+  position: relative;
+  /* dark wood with a vertical grain */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--wood-base) 0%,
+      var(--wood-grain) 1.5%,
+      var(--wood-base) 3%,
+      var(--wood-hi) 4.2%,
+      var(--wood-base) 6%),
+    var(--wood-base);
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 2px var(--wood-rim),
+    inset 0 0 22px rgba(0, 0, 0, 0.55),
+    inset 0 2px 0 rgba(255, 220, 170, 0.06),
+    0 12px 40px rgba(0, 0, 0, 0.85),
+    0 2px 0 rgba(255, 220, 170, 0.05);
+}
+/* corner studs — small bronze dots in each corner */
+.frame::before, .frame::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #d6a44a, #6e4818 70%, #2a1808);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.frame::before { top: 8px; left: 8px; }
+.frame::after  { top: 8px; right: 8px; }
+
+/* ============================================================
+   PARCHMENT — the inner paper surface
+   ============================================================ */
+.parchment {
+  position: relative;
+  background:
+    /* burnt corners bleeding inward */
+    radial-gradient(circle at 0% 0%,   rgba(74, 44, 20, 0.55), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(74, 44, 20, 0.45), transparent 28%),
+    radial-gradient(circle at 0% 100%, rgba(74, 44, 20, 0.55), transparent 28%),
+    radial-gradient(circle at 100% 100%, rgba(74, 44, 20, 0.50), transparent 28%),
+    /* centre vignette: lighter at the middle, darker outwards */
+    radial-gradient(ellipse at 45% 35%, var(--paper-hi) 0%, var(--paper-base) 45%, var(--paper-mid) 80%, var(--paper-shadow) 100%),
+    var(--paper-base);
+  padding: 18px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px var(--paper-burn),
+    inset 0 0 32px rgba(80, 40, 12, 0.35),
+    0 0 0 4px var(--wood-rim);
+  overflow: hidden;
+}
+/* paper fibre texture */
+.parchment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.20  0 0 0 0 0.10  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+/* faint horizontal age-bands */
+.parchment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 14px,
+      rgba(60, 32, 12, 0.04) 15px,
+      transparent 16px),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 26px,
+      rgba(60, 32, 12, 0.03) 27px,
+      transparent 28px);
+}
+
+/* ============================================================
+   LAYOUT GRID — Layout B: 3-column with hero bar at the bottom
+   ============================================================ */
+.layout {
+  position: relative;     /* above ::before/::after texture */
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 220px;
+  grid-template-rows:
+    auto       /* title row */
+    auto       /* dice / TOP / treasure */
+    1fr        /* inventory / BOARD / log */
+    auto;      /* hero bar */
+  gap: 14px;
+}
+
+/* ============================================================
+   PANEL — a parchment sub-panel inside the parchment ground
+   Slightly darker to read as a nested card. Each one has a
+   "burnt edge" pseudo-element for the curled-paper feel.
+   ============================================================ */
+.panel {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 35% 30%, rgba(255, 220, 170, 0.18), transparent 70%),
+    linear-gradient(180deg, #b89058 0%, #a07a48 100%);
+  border-radius: 10px 13px 11px 14px;       /* irregular = aged */
+  box-shadow:
+    inset 0 0 0 1px rgba(50, 26, 8, 0.4),
+    inset 0 0 18px rgba(80, 40, 12, 0.45),
+    inset 0 1px 0 rgba(255, 220, 170, 0.18),
+    0 2px 0 rgba(40, 18, 4, 0.3);
+  padding: 14px 16px;
+}
+.panel > h3 {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.35);
+  border-bottom: 1px solid rgba(50, 26, 8, 0.25);
+  padding-bottom: 6px;
+}
+.panel.dark {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(120, 80, 30, 0.4), transparent 70%),
+    linear-gradient(180deg, #2c1c10 0%, #1a0e06 100%);
+  color: var(--bone);
+}
+.panel.dark > h3 { color: var(--gold); border-bottom-color: rgba(200, 150, 60, 0.3); }
+
+/* ============================================================
+   TITLE
+   ============================================================ */
+.title {
+  grid-column: 1 / 4;
+  text-align: center;
+  padding: 6px 0 2px;
+}
+.title h1 {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.14em;
+  margin: 0;
+  color: var(--ink);
+  text-shadow:
+    0 1px 0 rgba(255, 220, 170, 0.4),
+    0 2px 4px rgba(40, 18, 4, 0.3);
+}
+.title .sub {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   ROW 2 — dice tray, board (top), treasure deck
+   ============================================================ */
+.dice    { grid-column: 1; grid-row: 2; }
+.treasure{ grid-column: 3; grid-row: 2; }
+
+.dice .actions {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.btn {
+  background: linear-gradient(180deg, #c89a64 0%, #8a5e2c 100%);
+  border: 1px solid var(--paper-burn);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--ink);
+  font-family: "Cinzel", serif;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.4),
+    inset 0 -2px 0 rgba(40, 18, 4, 0.35),
+    0 1px 0 rgba(40, 18, 4, 0.4);
+  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.3);
+}
+.btn.primary {
+  background: linear-gradient(180deg, #d8a44a 0%, #8a5e10 100%);
+  color: #2a1808;
+}
+.btn:hover { filter: brightness(1.08); }
+
+.dice .dice-row {
+  display: flex; gap: 6px;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+.die {
+  width: 30px; height: 30px;
+  border-radius: 5px;
+  background: linear-gradient(150deg, #f3d28a 0%, #b8804a 100%);
+  border: 1px solid var(--paper-burn);
+  display: grid; place-items: center;
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -2px 0 rgba(40, 18, 4, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.die.skull { background: linear-gradient(150deg, #5a3018 0%, #2c160a 100%); color: #d6a448; }
+
+.move-readout {
+  display: block;
+  text-align: center;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  font-size: 13px;
+}
+.move-readout strong { font-style: normal; color: var(--ink); }
+
+/* ============================================================
+   TREASURE DECK
+   ============================================================ */
+.treasure .deck-area {
+  display: flex; gap: 10px; justify-content: center;
+  margin-bottom: 8px;
+}
+.card {
+  width: 78px; height: 110px;
+  border-radius: 5px 7px 5px 7px;
+  background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-base) 100%);
+  border: 1px solid var(--paper-burn);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.4),
+    inset 0 0 12px rgba(80, 40, 12, 0.25),
+    0 2px 0 rgba(40, 18, 4, 0.3);
+  display: flex; flex-direction: column;
+  font-size: 10px;
+  color: var(--ink);
+  padding: 6px;
+  text-align: center;
+}
+.card .card-title {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  border-bottom: 1px solid rgba(50, 26, 8, 0.3);
+  padding-bottom: 3px;
+}
+.card .card-art {
+  flex: 1;
+  background: radial-gradient(circle at 50% 60%, var(--paper-mid), var(--paper-shadow));
+  border-radius: 3px;
+  margin-bottom: 4px;
+  display: grid; place-items: center;
+  color: var(--ink-fade);
+  font-style: italic;
+}
+.card .card-text {
+  font-size: 8px;
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+.card.deck {
+  background: linear-gradient(180deg, #6e3a18 0%, #3e1c0a 100%);
+  color: var(--gold);
+  position: relative;
+}
+.card.deck::before, .card.deck::after {
+  /* stacked-deck illusion: shift two extra cards behind */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--paper-burn);
+  border-radius: inherit;
+  background: inherit;
+  z-index: -1;
+}
+.card.deck::before { transform: translate(2px, 2px); }
+.card.deck::after  { transform: translate(4px, 4px); }
+.card.deck .deck-mark {
+  margin: auto;
+  font-family: "Cinzel", serif;
+  font-size: 22px;
+  color: var(--gold);
+  text-shadow: 0 1px 0 #1a0a02;
+}
+.card.deck .deck-count {
+  font-family: "IM Fell English", serif;
+  font-size: 10px;
+  color: var(--bone);
+  margin-bottom: 4px;
+}
+
+/* ============================================================
+   BOARD — the centerpiece, with a wood frame inside the panel
+   ============================================================ */
+.board-area {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+.board-frame {
+  flex: 1;
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      88deg,
+      var(--wood-base) 0%,
+      var(--wood-grain) 1.4%,
+      var(--wood-base) 2.8%,
+      var(--wood-hi) 4%,
+      var(--wood-base) 6%),
+    var(--wood-base);
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px var(--wood-rim),
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+/* corner brass nails */
+.board-frame::before, .board-frame::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #d6a44a, #6e4818 70%, #2a1808);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);
+}
+.board-frame::before { top: 4px; left: 4px;  box-shadow: inset 0 0 0 1px #1a0a02, 0 0 4px rgba(0,0,0,0.5); }
+.board-frame::after  { top: 4px; right: 4px; box-shadow: inset 0 0 0 1px #1a0a02, 0 0 4px rgba(0,0,0,0.5); }
+.board-canvas {
+  width: 100%;
+  aspect-ratio: 26 / 19;
+  background-image: url('/assets/map_qa/quest1-trial.png');
+  background-position: -36px -64px;
+  background-size: 884px 912px;     /* full PNG; offsets crop to board */
+  background-repeat: no-repeat;
+  border: 1px solid var(--wood-rim);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
+  /* visualise the canvas while the real <canvas> isn't wired */
+  image-rendering: pixelated;
+  background-color: #efe4c4;
+}
+.board-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-style: italic; color: var(--ink-soft);
+  font-size: 13px;
+}
+
+/* ============================================================
+   ROW 3 — inventory (left) and log (right) under the side panels
+   ============================================================ */
+.inv { grid-column: 1; grid-row: 3; }
+.log { grid-column: 3; grid-row: 3; }
+
+.inv .grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.inv .slot {
+  background: linear-gradient(180deg, var(--paper-hi) 0%, var(--paper-mid) 100%);
+  border: 1px solid var(--paper-burn);
+  border-radius: 4px;
+  height: 56px;
+  padding: 4px 6px;
+  font-size: 11px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  box-shadow: inset 0 1px 0 rgba(255, 220, 170, 0.3);
+}
+.inv .slot .name {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.inv .slot.empty {
+  background: rgba(50, 26, 8, 0.12);
+  border-style: dashed;
+  color: var(--ink-fade);
+  font-style: italic;
+  display: grid; place-items: center;
+  font-size: 10px;
+}
+.inv .slot .stat { color: var(--ink-soft); font-style: italic; }
+
+.log ul {
+  list-style: none; padding: 0; margin: 0;
+}
+.log li {
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(50, 26, 8, 0.15);
+  color: var(--ink);
+}
+.log li.kill   { color: var(--rust); }
+.log li.move   { color: var(--ink-soft); }
+.log li.system { color: var(--ink-fade); font-style: italic; }
+.log .obj-row { display: flex; gap: 8px; align-items: baseline; padding: 4px 0; font-style: italic; }
+.log .obj-row .check { color: var(--gold-deep); }
+
+/* ============================================================
+   HERO BAR — the bottom strip with the active hero, fanned
+   spell hand, and pips for other heroes
+   ============================================================ */
+.hero-bar {
+  grid-column: 1 / 4;
+  grid-row: 4;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 220, 170, 0.18), transparent 60%),
+    linear-gradient(180deg, #2c1c10 0%, #150a04 100%);
+  border-radius: 10px 13px 11px 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 0 22px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(200, 150, 60, 0.2),
+    0 2px 0 rgba(40, 18, 4, 0.3);
+  padding: 16px 22px;
+  color: var(--bone);
+  display: grid;
+  grid-template-columns: 200px 1fr 240px;
+  gap: 18px;
+  align-items: center;
+  min-height: 156px;
+}
+.active-hero {
+  display: flex; gap: 12px;
+  align-items: center;
+}
+.hero-portrait {
+  width: 96px; height: 110px;
+  border-radius: 6px 8px 6px 8px;
+  background:
+    radial-gradient(circle at 50% 35%, #c8a060, #6e4828 70%),
+    var(--paper-mid);
+  border: 2px solid var(--gold-deep);
+  box-shadow:
+    inset 0 0 0 1px var(--paper-burn),
+    inset 0 0 14px rgba(40, 18, 4, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  display: grid; place-items: center;
+  color: var(--ink);
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+}
+.hero-stats h4 {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  margin: 0 0 6px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero-stats .row {
+  font-family: "IM Fell English", serif;
+  font-size: 13px;
+  color: var(--bone);
+  margin: 2px 0;
+}
+.hero-stats .row .lbl { color: var(--gold); width: 52px; display: inline-block; }
+.hero-stats .row .num { color: #fff; font-weight: 600; }
+
+/* fanned spell hand */
+.spell-fan {
+  position: relative;
+  height: 130px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+}
+.spell-fan .card {
+  position: relative;
+  width: 84px; height: 120px;
+  margin: 0 -10px;
+  transition: transform 200ms ease;
+  cursor: pointer;
+}
+.spell-fan .card:nth-child(1) { transform: rotate(-9deg)  translateY(8px); }
+.spell-fan .card:nth-child(2) { transform: rotate(-4deg)  translateY(2px); }
+.spell-fan .card:nth-child(3) { transform: rotate(0deg)   translateY(0); z-index: 2; }
+.spell-fan .card:nth-child(4) { transform: rotate(4deg)   translateY(2px); }
+.spell-fan .card:nth-child(5) { transform: rotate(9deg)   translateY(8px); }
+.spell-fan .card:hover { transform: translateY(-12px) rotate(0); z-index: 5; box-shadow: 0 8px 20px rgba(0,0,0,0.7); }
+
+.other-heroes {
+  display: flex; gap: 10px;
+  justify-content: flex-end;
+}
+.other-heroes .pip {
+  width: 64px; height: 96px;
+  border-radius: 5px 7px 5px 7px;
+  background: linear-gradient(180deg, var(--paper-mid) 0%, var(--paper-shadow) 100%);
+  border: 2px solid var(--gold-deep);
+  display: grid; place-items: center;
+  text-align: center;
+  font-size: 10px;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.other-heroes .pip strong {
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 2px;
+}
+.other-heroes .pip .hp {
+  font-family: "IM Fell English", serif;
+  color: var(--ink-soft);
+}
+.other-heroes .pip.dead {
+  background: linear-gradient(180deg, #5a3018 0%, #2c160a 100%);
+  color: #6e4a26;
+  border-color: #2c160a;
+}
+
+/* ============================================================
+   Footer credit
+   ============================================================ */
+footer {
+  margin-top: 18px;
+  text-align: center;
+  color: rgba(232, 212, 160, 0.55);
+  font-size: 12px;
+  font-style: italic;
+}
+footer a { color: rgba(232, 212, 160, 0.9); }
+
+/* small — break gracefully on narrow screens */
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 180px 1fr 180px; }
+  .card { width: 64px; height: 92px; }
+  .hero-portrait { width: 80px; height: 96px; }
+  .spell-fan .card { width: 72px; height: 104px; }
+  .hero-bar { grid-template-columns: 180px 1fr 200px; }
+}
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="parchment">
+    <div class="layout">
+
+      <!-- =================================================== -->
+      <!-- TITLE                                                -->
+      <!-- =================================================== -->
+      <header class="title">
+        <h1>The Trial</h1>
+        <span class="sub">Quest 1 — Mentor sends the heroes into Fellmarg's Tomb</span>
+      </header>
+
+      <!-- =================================================== -->
+      <!-- DICE TRAY                                            -->
+      <!-- =================================================== -->
+      <section class="panel dice">
+        <h3>Dice Tray</h3>
+        <div class="dice-row">
+          <div class="die">⚔</div>
+          <div class="die">⚔</div>
+          <div class="die skull">💀</div>
+        </div>
+        <div class="actions">
+          <button class="btn primary">Roll</button>
+          <button class="btn">Move</button>
+          <button class="btn">Cast</button>
+          <button class="btn">End Turn</button>
+        </div>
+        <div class="move-readout">movement <strong>7</strong> / 8</div>
+      </section>
+
+      <!-- =================================================== -->
+      <!-- TREASURE DECK                                        -->
+      <!-- =================================================== -->
+      <section class="panel treasure">
+        <h3>Treasure</h3>
+        <div class="deck-area">
+          <div class="card deck">
+            <div class="deck-count">32</div>
+            <div class="deck-mark">⚜</div>
+            <div class="deck-count">cards</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Wandering Monster</div>
+            <div class="card-art">orc</div>
+            <div class="card-text">Place an Orc on your square. Resolve attack first.</div>
+          </div>
+        </div>
+        <div class="actions" style="justify-content:center;">
+          <button class="btn">Draw</button>
+          <button class="btn">Discard</button>
+        </div>
+      </section>
+
+      <!-- =================================================== -->
+      <!-- BOARD                                                -->
+      <!-- =================================================== -->
+      <section class="board-area">
+        <div class="board-frame">
+          <div class="board-canvas" role="img" aria-label="Quest board (mockup)"></div>
+        </div>
+        <div class="board-meta">
+          <span>Active: <strong style="color:var(--ink)">Wizard</strong> · L8T6</span>
+          <span>Round 4 · Heroes' turn</span>
+        </div>
+      </section>
+
+      <!-- =================================================== -->
+      <!-- INVENTORY (left mid)                                 -->
+      <!-- =================================================== -->
+      <section class="panel inv">
+        <h3>Inventory</h3>
+        <div class="grid">
+          <div class="slot">
+            <span class="name">Staff</span>
+            <span class="stat">+1 atk</span>
+          </div>
+          <div class="slot">
+            <span class="name">Cloak</span>
+            <span class="stat">+1 def</span>
+          </div>
+          <div class="slot">
+            <span class="name">Heal Pot.</span>
+            <span class="stat">+4 body</span>
+          </div>
+          <div class="slot empty">empty</div>
+          <div class="slot empty">empty</div>
+          <div class="slot empty">empty</div>
+        </div>
+      </section>
+
+      <!-- =================================================== -->
+      <!-- QUEST LOG (right mid)                                -->
+      <!-- =================================================== -->
+      <section class="panel log">
+        <h3>Quest Log</h3>
+        <div class="obj-row"><span class="check">◆</span><span>Slay Verag, the gargoyle of Fellmarg's tomb</span></div>
+        <ul>
+          <li class="move">▸ Wizard moves to L8T6</li>
+          <li class="kill">▸ Goblin slain by Dwarf</li>
+          <li class="move">▸ Door at L11T3 opened</li>
+          <li class="system">▸ Trap! Pit — Elf takes 1 Body damage</li>
+          <li class="move">▸ Barbarian searches the chest…</li>
+        </ul>
+      </section>
+
+      <!-- =================================================== -->
+      <!-- HERO BAR (bottom)                                    -->
+      <!-- =================================================== -->
+      <section class="hero-bar">
+        <div class="active-hero">
+          <div class="hero-portrait">Wiz</div>
+          <div class="hero-stats">
+            <h4>Wizard</h4>
+            <div class="row"><span class="lbl">Body</span><span class="num">4 / 4</span></div>
+            <div class="row"><span class="lbl">Mind</span><span class="num">6 / 6</span></div>
+            <div class="row"><span class="lbl">Atk</span><span class="num">1</span></div>
+            <div class="row"><span class="lbl">Def</span><span class="num">2</span></div>
+          </div>
+        </div>
+
+        <div class="spell-fan">
+          <div class="card">
+            <div class="card-title">Sleep</div>
+            <div class="card-art">earth</div>
+            <div class="card-text">Target a monster. Roll 4 mind. Sleeps until attacked.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Heal Body</div>
+            <div class="card-art">water</div>
+            <div class="card-text">Restore up to 4 Body to one hero.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Ball of Flame</div>
+            <div class="card-art">fire</div>
+            <div class="card-text">2 attack dice on any visible monster.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Pass Through Rock</div>
+            <div class="card-art">earth</div>
+            <div class="card-text">Move through 1 wall this turn.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Veil of Mist</div>
+            <div class="card-art">air</div>
+            <div class="card-text">+2 def dice for one hero this round.</div>
+          </div>
+        </div>
+
+        <div class="other-heroes">
+          <div class="pip">
+            <div>
+              <strong>Bar</strong>
+              <span class="hp">8/8 B · 2/2 M</span>
+            </div>
+          </div>
+          <div class="pip">
+            <div>
+              <strong>Dwf</strong>
+              <span class="hp">7/7 B · 3/3 M</span>
+            </div>
+          </div>
+          <div class="pip">
+            <div>
+              <strong>Elf</strong>
+              <span class="hp">5/6 B · 4/4 M</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  Static visual mockup · Layout B · burnt parchment palette · iterate via <code>/public/gui-mockup.html</code>
+</footer>
+
+</body>
+</html>

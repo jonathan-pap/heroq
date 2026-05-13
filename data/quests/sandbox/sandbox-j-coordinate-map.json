@@ -1,0 +1,42 @@
+{
+  "id": "sandbox-j-coordinate-map",
+  "title": "Coordinate Map (debug)",
+  "subtitle": "Sandbox J — Cell numbering reference",
+  "intro": "Every cell of the master board is labelled with its 1-based coordinate (L#T#) matching XML / rulebook conventions, plus the internal room ID (r01..r22) for our auto-extracted layout. Use this sandbox to verify cell positions when transcribing canonical quest maps. Heroes start in the SW stair area; tick 'Reveal entire map' in the lobby to flood-reveal every cell at once. NO monsters, doors, furniture, or traps — just the labelled grid.",
+  "category": "sandbox",
+  "board": "default",
+
+  "showCellCoords": true,
+  "showRoomIds": true,
+
+  "doors": [],
+  "secretDoors": [],
+  "furniture": [],
+  "traps": [],
+  "furnitureTraps": [],
+  "monsters": [],
+  "treasure": [],
+  "blocked": [],
+  "dark": [],
+
+  "heroSetup": {
+    "barbarian": { "equipped": { "weapon": "broadsword" } }
+  },
+
+  "startCells": [[1, 14], [2, 14], [1, 15], [2, 15]],
+  "stairCells": [[1, 14], [2, 14], [1, 15], [2, 15]],
+  "wanderingMonster": "goblin",
+
+  "objective": {
+    "kind": "reach",
+    "cell": [12, 8],
+    "text": "Walk to the centre (L13 T9, the canonical Verag spot) to confirm the grid lines up with XML coords."
+  },
+  "objectives": [
+    { "id": "tour-center",  "kind": "reach", "cell": [12, 8],  "text": "Reach centre L13T9 (Verag's canonical cell)" },
+    { "id": "tour-tomb",    "kind": "reach", "cell": [10, 1],  "text": "Reach the tomb area L11T2",  "optional": true },
+    { "id": "tour-NW",      "kind": "reach", "cell": [0, 1],   "text": "Reach NW corner L1T2 (canonical rubble spot)", "optional": true },
+    { "id": "tour-stairs",  "kind": "reach", "cell": [1, 14],  "text": "Confirm stairway anchor L2T15", "optional": true }
+  ],
+  "defeat": { "kind": "all-dead", "text": "Heroes can't die — empty board." }
+}

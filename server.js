@@ -23,8 +23,8 @@ const QUESTS_DIR = path.join(DATA_DIR, 'quests');
 const STATE_FILE = path.join(DATA_DIR, 'rooms.json');
 
 const SAVE_DEBOUNCE_MS = 800;
-const AI_TICK_MS       = 700;   // pause between AI monster moves so humans can follow
-const AI_TICK_JITTER   = 400;
+const AI_TICK_MS       = 350;   // pause between AI monster moves so humans can follow
+const AI_TICK_JITTER   = 200;
 
 // Bump this when the saved-state shape changes incompatibly. On load,
 // snapshots tagged with a different version are dropped to avoid
@@ -161,13 +161,17 @@ function loadQuests() {
 }
 
 function questList() {
-  // Sort by the leading quest number in the id (e.g. quest1-trial,
-  // quest10-…) so 1, 2, 3 … 14 appear in numeric order rather than the
-  // lexicographic order the filesystem returns (which would put 10
-  // before 2). Quests without a leading number drop to the bottom.
+  // Sort by the leading quest number in the id. Recognises both the
+  // legacy `quest##-…` prefix AND the new `…-q##-…` infix used by
+  // canonical-XML-derived sandboxes (e.g. sandbox-canonical-q01-…).
+  // Quests with no number drop to the bottom of their category.
   function questNum(id) {
-    const m = /^quest(\d+)/i.exec(id || '');
-    return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+    const id0 = id || '';
+    let m = /^quest(\d+)/i.exec(id0);
+    if (m) return parseInt(m[1], 10);
+    m = /-q(\d+)-/i.exec(id0);
+    if (m) return parseInt(m[1], 10);
+    return Number.MAX_SAFE_INTEGER;
   }
   return [...quests.values()]
     .map(q => ({
@@ -191,6 +195,7 @@ function questList() {
 // UTILITIES
 // ==========================================================
 function uid()  { return crypto.randomBytes(16).toString('hex'); }
+function pid()  { return crypto.randomBytes(6).toString('hex'); }  // public id (safe to expose to peers)
 function code() {
   const a = 'ABCDEFGHJKMNPQRSTUVWXYZ'; // skip I,L,O for clarity
   let s = '';
@@ -201,24 +206,11 @@ function rollD6()  { return 1 + Math.floor(Math.random() * 6); }
 function rollCombatDie() { return DICE_FACES[Math.floor(Math.random() * 6)]; }
 function rollAttackDice(n) { const r = []; for (let i = 0; i < n; i++) r.push(rollCombatDie()); return r; }
 
-function key(x, y) { return `${x},${y}`; }
-function edgeKey(a, b) {
-  // canonical edge between adjacent cells
-  const [x1, y1] = a, [x2, y2] = b;
-  if (x1 < x2 || (x1 === x2 && y1 < y2)) return `${x1},${y1}|${x2},${y2}`;
-  return `${x2},${y2}|${x1},${y1}`;
-}
-function adjacent(a, b) {
-  const dx = Math.abs(a[0] - b[0]), dy = Math.abs(a[1] - b[1]);
-  return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
-}
-function adjacentDiag(a, b) {
-  const dx = Math.abs(a[0] - b[0]), dy = Math.abs(a[1] - b[1]);
-  return (dx <= 1 && dy <= 1) && (dx + dy > 0);
-}
-function chebyshev(a, b) {
-  return Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
-}
+// Shared geometry + adjacency + wall/door rules are kept in
+// public/shared/rules.js so the server and both browser apps cannot
+// drift. Local re-exports below preserve the existing call sites.
+const HQRules = require('./public/shared/rules.js');
+const { key, edgeKey, adjacent, adjacentDiag, chebyshev } = HQRules;
 
 // Bresenham line — list of cells from `from` to `to` inclusive.
 function bresenham(from, to) {
@@ -264,11 +256,22 @@ function makeRoom(hostToken) {
       gmMode: 'ai',                 // 'ai' | 'human'
       autoRollMovement: true,       // auto-roll 2d6 at start of each hero turn
       revealAll: false,             // debug: disable fog of war (heroes see whole map)
+      aiSpeed: 1,                   // visual pacing for AI ticks: 1 | 2 | 3 | 4
     },
     seats: {                        // who controls what
       barbarian: null, dwarf: null, elf: null, wizard: null,
       gm: null,                     // null in AI mode; player token in human mode
     },
+    // Hero spell-element draft (per the 2021 rules). The wizard picks one
+    // of the four element groups, then the elf picks one of the remaining
+    // three, then the wizard auto-takes the other two. Empty arrays =
+    // not yet drafted; the YAML defaults kick in if the game starts
+    // without a finished draft.
+    spellPick: { wizardElements: [], elfElements: [] },
+    // Player-chosen art variant per hero seat (Male / Female printed
+    // tokens + cards). Defaults to 'male' on claim; resets to 'male'
+    // when the seat is released.
+    heroVariants: { barbarian: 'male', dwarf: 'male', elf: 'male', wizard: 'male' },
     state: null,
   };
   rooms.set(c, room);
@@ -329,11 +332,23 @@ function loadRooms() {
         code: r.code, hostToken: r.hostToken,
         createdAt: r.createdAt, lastActivityAt: r.lastActivityAt,
         phase: r.phase, config: r.config, seats: r.seats,
-        players: (r.players || []).map(p => ({ ...p, connected: false })),
+        players: (r.players || []).map(p => ({ ...p, pid: p.pid || pid(), connected: false })),
         sockets: new Map(),
         state: r.state,
       };
+      // Drop any half-finished AI turn cursor — it referenced a setTimeout
+      // handle from the previous process, and the monster id may be dead.
+      if (room.state) {
+        delete room.state._aiPlan;
+        delete room.state._aiCurrent;
+      }
       rooms.set(room.code, room);
+      // If we restored a room mid-GM-turn under AI, kick the scheduler
+      // ourselves — without a broadcast nothing else will.
+      if (room.phase === 'play' && room.state && room.config?.gmMode === 'ai') {
+        const cur = room.state.turnOrder?.[room.state.turnIdx];
+        if (cur && cur.kind === 'gm') scheduleAITick(room);
+      }
     }
     if (arr.length) console.log(`[persist] restored ${arr.length} room(s)`);
   } catch (e) {
@@ -395,24 +410,43 @@ function viewFor(room, token) {
   // gating call site individually.
   const isGMView = seats.isGM || room.phase === 'lobby' || !!room.config?.revealAll;
 
+  // Project server-internal token-keyed structures through a public-id
+  // mapping. Tokens are auth secrets and must NEVER be sent to peers —
+  // any player who saw another's token could impersonate them.
+  const tokenToPid = new Map(room.players.map(p => [p.token, p.pid]));
+  const projectSeats = (src) => {
+    const out = {};
+    for (const k of Object.keys(src)) out[k] = src[k] ? (tokenToPid.get(src[k]) || null) : null;
+    return out;
+  };
   const baseView = {
     code: room.code,
     phase: room.phase,
     isHost: me.token === room.hostToken,
     youName: me.name,
-    youToken: me.token,
+    youPid: me.pid,
     heroIds: seats.heroIds,
     isGM: seats.isGM,
     config: room.config,
-    seats: { ...room.seats },
+    seats: projectSeats(room.seats),
     players: room.players.map(p => ({
-      token: p.token, name: p.name, connected: p.connected, isBot: !!p.isBot,
+      pid: p.pid, name: p.name, connected: p.connected, isBot: !!p.isBot,
       isHost: p.token === room.hostToken,
     })),
     quests: questList(),
+    spellDraft: spellDraftStatus(room),
+    heroVariants: { ...(room.heroVariants || {}) },
   };
 
   if (room.phase === 'lobby') {
+    // Lobby-only metadata: lets the spell-draft picker show what each
+    // element group contains without the client having to fetch /api/.
+    baseView.spellsByElement = {};
+    for (const el of SPELL_ELEMENTS) {
+      baseView.spellsByElement[el] = (SPELLS_BY_ELEMENT[el] || []).map(sp => ({
+        id: sp.id, name: sp.name,
+      }));
+    }
     return baseView;
   }
 
@@ -426,6 +460,8 @@ function viewFor(room, token) {
     objectiveText: s.objectiveText,
     objectives: evaluateObjectives(s),
     stairCells: (s.stairCells && s.stairCells.length) ? s.stairCells : (s._startCells || []),
+    showCellCoords: !!s.showCellCoords,
+    showRoomIds: !!s.showRoomIds,
     // Furniture as discrete pieces with full footprints — the renderer
     // uses this to draw each multi-cell piece (table 2x1, tomb 2x1,
     // bookcase 2x1, etc) as ONE glyph spanning its bounding box, not
@@ -455,13 +491,16 @@ function viewFor(room, token) {
   view.tiles = [];
   for (const k of s.allTileKeys) {
     const t = s.tileMeta[k];
-    const visible = isGMView || !t.hiddenFor.heroes;
+    // Solid rock is NEVER visible — even GM and reveal-all should
+    // see it as void (it's literally not part of this quest's board).
+    const visible = !t.solidRock && (isGMView || !t.hiddenFor.heroes);
     view.tiles.push({
       x: t.x, y: t.y,
       kind: t.kind,                // 'corridor' | 'room'
       roomId: t.roomId,
       color: visible ? t.color : null,
       blocked: !!t.blocked,
+      blockedKind: t.blocked ? (t.blockedKind || 'rubble') : null,
       revealed: visible,
       hasFurniture: visible ? t.furnitureId : null,
       furnitureType: visible ? (t.furnitureType || null) : null,
@@ -478,6 +517,7 @@ function viewFor(room, token) {
   // Heroes always visible to all (they ARE the heroes)
   view.heroes = s.heroes.map(h => ({
     id: h.id, name: HEROES[h.id].name, glyph: HEROES[h.id].glyph, color: HEROES[h.id].color,
+    variant: h.variant || 'male',
     at: h.at,
     body: h.body, bodyMax: h.bodyMax,
     mind: h.mind, mindMax: h.mindMax,
@@ -494,9 +534,18 @@ function viewFor(room, token) {
 
   // Monsters: visible only if their room is revealed (or to GM)
   view.monsters = s.monsters.filter(m => !m.dead).map(m => {
-    const reveal = isGMView || (m.roomId
-      ? !s.roomState[m.roomId].hiddenFor.heroes
-      : true);
+    let reveal;
+    if (isGMView) {
+      reveal = true;
+    } else if (m.roomId) {
+      reveal = !s.roomState[m.roomId].hiddenFor.heroes;
+    } else {
+      // Corridor monster — reveal only if its specific tile has been
+      // explored. Previously these were always shown to heroes, leaking
+      // every corridor monster on the board through fog of war.
+      const t = s.tileMeta[key(m.at[0], m.at[1])];
+      reveal = !!(t && !t.hiddenFor.heroes);
+    }
     if (!reveal) return null;
     return {
       id: m.id, type: m.type, name: m.name || MONSTER_TYPES[m.type]?.name || m.type,
@@ -625,13 +674,47 @@ function buildBoardState(quest) {
   for (const f of (quest.furniture || [])) {
     for (const [x, y] of f.cells) {
       const t = tileMeta[key(x, y)];
-      if (t) { t.furnitureId = f.id; t.furnitureType = f.type || 'block'; }
+      if (t) {
+        t.furnitureId = f.id;
+        t.furnitureType = f.type || 'block';
+        t.furnitureFacing = f.facing || null;
+      }
     }
+    // Pass through every render-relevant field so the client sees the
+    // same orientation the editor does. Previously only id/type/cells
+    // were forwarded, which silently stripped facing + flip flags and
+    // made every piece render in its natural orientation.
     furniturePieces.push({
       id: f.id,
       type: f.type || 'block',
       cells: (f.cells || []).map(c => [...c]),
+      facing: f.facing || null,
+      _flipH: !!f._flipH || undefined,
+      _flipV: !!f._flipV || undefined,
+      _note:  f._note || undefined,
     });
+  }
+
+  // Rubble / blocked cells — per 2021 rulebook, the "blocked square"
+  // cardboard tiles. They render as stone-brick rubble, are impassable,
+  // and reveal under the same fog-of-war rule as room cells. Distinct
+  // from a SPRUNG falling-block trap (which renders as the red square
+  // tile from the icon legend); we mark blockedKind so the client can
+  // pick the right visual.
+  for (const [x, y] of (quest.blocked || [])) {
+    const t = tileMeta[key(x, y)];
+    if (t) { t.blocked = true; t.blockedKind = 'rubble'; }
+  }
+
+  // Solid rock / dark cells — per the canonical "Dark shaded areas on
+  // all quest maps are considered solid rock" rule. These cells are
+  // PERMANENTLY off-board for this quest: never revealed, impassable,
+  // and they break the corridor flood-fill so heroes never see what's
+  // beyond them. Render as pure void/black (matching unrevealed).
+  // Distinct from rubble (which IS visible once seen).
+  for (const [x, y] of (quest.dark || [])) {
+    const t = tileMeta[key(x, y)];
+    if (t) { t.blocked = true; t.solidRock = true; }
   }
 
   // Doors are quest-supplied. They start *unrevealed* under fog of war —
@@ -646,7 +729,7 @@ function buildBoardState(quest) {
   return { tileMeta, allTileKeys, roomState, doors, furniturePieces };
 }
 
-function buildHeroes(quest, claimedSeats) {
+function buildHeroes(quest, claimedSeats, spellPick, heroVariants) {
   const heroes = [];
   const order = ['barbarian','dwarf','elf','wizard'];
   const claimed = order.filter(id => claimedSeats[id]);
@@ -661,8 +744,17 @@ function buildHeroes(quest, claimedSeats) {
     //   - sandbox `heroSetup[id].spellHand` overrides explicitly
     //   - quest-level `showAllSpells: true` gives the Wizard one of every
     //     spell for ad-hoc testing; the Elf gets all 12 too if flagged
-    //   - otherwise: hero's default elements (3 spells each)
-    const elements = (proto.spells && proto.spells.default) || [];
+    //   - lobby spell-draft picks override the YAML default if the
+    //     wizard / elf player picked their own elements
+    //   - otherwise: hero's YAML default elements (3 wizard / 1 elf)
+    let elements = (proto.spells && proto.spells.default) || [];
+    if (spellPick) {
+      if (id === 'wizard' && Array.isArray(spellPick.wizardElements) && spellPick.wizardElements.length === 3) {
+        elements = spellPick.wizardElements.slice();
+      } else if (id === 'elf' && Array.isArray(spellPick.elfElements) && spellPick.elfElements.length === 1) {
+        elements = spellPick.elfElements.slice();
+      }
+    }
     let spellHand;
     if (Array.isArray(hsu.spellHand)) {
       spellHand = hsu.spellHand.slice();
@@ -688,8 +780,11 @@ function buildHeroes(quest, claimedSeats) {
       ? hsu.inventory.map(it => ({ ...it }))
       : [];
 
+    const variant = (heroVariants && HERO_VARIANTS.includes(heroVariants[id]))
+      ? heroVariants[id]
+      : 'male';
     heroes.push({
-      id, name: proto.name,
+      id, name: proto.name, variant,
       bodyMax: proto.body,
       body: (hsu.body != null) ? hsu.body : proto.body,
       mindMax: proto.mind,
@@ -757,7 +852,7 @@ function freshGameState(room) {
   const quest = quests.get(room.config.questId);
   if (!quest) return null;
   const board = buildBoardState(quest);
-  const heroes = buildHeroes(quest, room.seats);
+  const heroes = buildHeroes(quest, room.seats, room.spellPick, room.heroVariants);
   const monsters = buildMonsters(quest);
   const treasure = buildTreasure(quest);
   const traps = buildTraps(quest);
@@ -809,6 +904,9 @@ function freshGameState(room) {
       ? quest.stairCells.map(c => [...c])
       : (quest.startCells || []).map(c => [...c]),
     _startCells: (quest.startCells || []).map(c => [...c]),
+    // Debug overlays — show 1-based coords (L#T#) and / or room IDs.
+    showCellCoords: !!quest.showCellCoords,
+    showRoomIds: !!quest.showRoomIds,
   };
   // Initial fog-of-war reveal from each hero's start cell
   const tempRoom = { state };
@@ -899,6 +997,18 @@ function currentHero(room) {
 
 function advanceTurn(room) {
   const s = room.state;
+  // End-of-turn cleanup for the OUTGOING actor. Single-move spell
+  // statuses (passWalls / passOccupants) consume here only if the
+  // hero actually used some movement this turn — otherwise the spell
+  // sits patiently until they get to take their move.
+  const outgoing = s.turnOrder[s.turnIdx];
+  if (outgoing && outgoing.kind === 'hero' && s.movementUsed > 0) {
+    const oh = s.heroes.find(x => x.id === outgoing.heroId);
+    if (oh && oh.status) {
+      if (oh.status.passWalls)     oh.status.passWalls = false;
+      if (oh.status.passOccupants) oh.status.passOccupants = false;
+    }
+  }
   // Skip dead heroes / GM-with-no-active-monsters etc.
   for (let tries = 0; tries < s.turnOrder.length + 1; tries++) {
     s.turnIdx = (s.turnIdx + 1) % s.turnOrder.length;
@@ -927,28 +1037,63 @@ function advanceTurn(room) {
 // ==========================================================
 function tileAt(s, x, y) { return s.tileMeta[key(x, y)] || null; }
 
-// Line-of-sight per the 2021 rulebook: an unobstructed straight line from
-// caster centre to target centre. Walls, closed doors, heroes, and
-// monsters block. Endpoints don't block (caster stands on `from`, the
-// targeted creature stands on `to`).
+// Is this monster currently visible to the hero side? Used by the
+// move loop to detect "new monster came into view" reveal-stops.
+function isMonsterVisibleToHeroes(s, m) {
+  if (!m || m.dead) return false;
+  if (m.roomId) return !s.roomState[m.roomId].hiddenFor.heroes;
+  const t = s.tileMeta[key(m.at[0], m.at[1])];
+  return !!(t && !t.hiddenFor.heroes);
+}
+
+// True if the edge between two orthogonally-adjacent cells is blocked
+// for the purposes of line-of-sight: solid wall (different rooms with
+// no door), or a closed door. Open doors and same-zone neighbours
+// (same room id, or both corridor) are clear.
+function losEdgeBlocked(s, a, b) {
+  if (wallBetween(s, a, b)) return true;
+  const door = doorBetween(s, a, b);
+  if (door && door.state !== 'open') return true;
+  return false;
+}
+
+// Line-of-sight per the 2021 rulebook: an unobstructed straight line
+// from caster centre to target centre. Walls, closed doors, heroes,
+// and monsters block. The endpoints themselves don't block (the caster
+// and target stand on `from` and `to`).
+//
+// Per the canonical "even if the line just touches a corner" clause,
+// diagonal steps that pass through the meeting of four cells are
+// permissive: the line is blocked only when BOTH L-paths around the
+// corner are walled/doored shut. A single clear side keeps it visible.
 function lineOfSight(s, from, to) {
   if (from[0] === to[0] && from[1] === to[1]) return true;
   const cells = bresenham(from, to);
   for (let i = 1; i < cells.length; i++) {
     const a = cells[i - 1], b = cells[i];
-    const ta = tileAt(s, a[0], a[1]);
     const tb = tileAt(s, b[0], b[1]);
     if (!tb) return false;
-    // Wall between consecutive cells (only meaningful for orthogonal steps)
+
     if (a[0] === b[0] || a[1] === b[1]) {
-      if (!ta) return false;
-      const door = doorBetween(s, a, b);
-      const sameRoom = (ta.roomId === tb.roomId && ta.roomId !== null);
-      const bothCorridor = !ta.roomId && !tb.roomId;
-      const openDoor = door && door.state === 'open';
-      if (!(sameRoom || bothCorridor || openDoor)) return false;
+      // Orthogonal step: one wall edge to check.
+      if (losEdgeBlocked(s, a, b)) return false;
+    } else {
+      // Diagonal step: the line crosses the corner where four cells
+      // meet. Two possible L-paths around the corner:
+      //   path1: a → (a.x, b.y) → b
+      //   path2: a → (b.x, a.y) → b
+      // The diagonal is blocked only when BOTH paths are blocked at
+      // either leg. (Single clear side → still visible.)
+      const c1 = [a[0], b[1]];
+      const c2 = [b[0], a[1]];
+      const path1Open = !losEdgeBlocked(s, a, c1) && !losEdgeBlocked(s, c1, b);
+      const path2Open = !losEdgeBlocked(s, a, c2) && !losEdgeBlocked(s, c2, b);
+      if (!path1Open && !path2Open) return false;
     }
-    // Permanent block + intermediate occupant blocks
+
+    // Intermediate cell blocking — rubble (falling-block trap fired)
+    // and any hero or monster standing in the middle of the line.
+    // Endpoints (caster + target) are excluded.
     if (i < cells.length - 1) {
       if (tb.blocked) return false;
       if (occupantAt(s, b)) return false;
@@ -957,23 +1102,9 @@ function lineOfSight(s, from, to) {
   return true;
 }
 
-function doorBetween(s, a, b) {
-  return s.doors.find(d =>
-    (d.a[0] === a[0] && d.a[1] === a[1] && d.b[0] === b[0] && d.b[1] === b[1]) ||
-    (d.a[0] === b[0] && d.a[1] === b[1] && d.b[0] === a[0] && d.b[1] === a[1])
-  );
-}
-
-function wallBetween(s, a, b) {
-  // Wall exists if two tiles are in different rooms (or one is corridor and the other a different room),
-  // unless there's a door.
-  const ta = tileAt(s, a[0], a[1]);
-  const tb = tileAt(s, b[0], b[1]);
-  if (!ta || !tb) return true;
-  if (doorBetween(s, a, b)) return false;        // doors are not walls (open or closed; passability is separate)
-  if (ta.roomId !== tb.roomId) return true;
-  return false;
-}
+// Wall / door / melee predicates come from public/shared/rules.js so the
+// browser previews use the exact same rules as the server enforces.
+const { doorBetween, wallBetween, meleeBlocked } = HQRules;
 
 function passable(s, fromCell, toCell, mover) {
   // mover: { kind:'hero'|'monster', id }
@@ -985,26 +1116,39 @@ function passable(s, fromCell, toCell, mover) {
   // Permanently blocked cell (e.g. where a falling-block trap fired)
   if (tb.blocked) return false;
 
-  // Wall blocks?
+  // Movement-modifying spells: look up the hero so we can honour
+  // passWalls (Pass Through Rock) and passOccupants (Veil of Mist).
+  // These flags are set by the spell resolver and cleared at the end
+  // of the recipient's next move (advanceTurn).
+  const moverHero = (mover && mover.kind === 'hero')
+    ? s.heroes.find(x => x.id === mover.id)
+    : null;
+  const ignoreWalls     = !!(moverHero && moverHero.status && moverHero.status.passWalls);
+  const ignoreOccupants = !!(moverHero && moverHero.status && moverHero.status.passOccupants);
+
+  // Wall blocks? (Pass Through Rock skips this check.)
   const door = doorBetween(s, fromCell, toCell);
   const wall = (ta.roomId !== tb.roomId) && !door;
-  if (wall) return false;
+  if (wall && !ignoreWalls) return false;
 
-  // Closed door blocks until opened (heroes auto-open on attempted move)
+  // Closed door blocks until opened (heroes auto-open on attempted move).
+  // Even with passWalls active, a door is still a door — opens normally
+  // rather than getting bypassed.
   if (door && door.state !== 'open') return { needsOpenDoor: door };
 
-  // Furniture blocks
+  // Furniture blocks (no spell currently lets heroes phase through it)
   if (tb.furnitureId) return false;
 
-  // Occupant blocks (heroes pass through allies — same hero kind — but not enemies)
+  // Occupant blocks (heroes pass through allies — same hero kind — but
+  // not enemies, unless Veil of Mist's passOccupants is active).
   const occupant = occupantAt(s, toCell);
   if (occupant) {
-    if (mover.kind === 'hero' && occupant.kind === 'hero') {
-      // 2021 rule: heroes may not END on the same square as another hero
-      // EXCEPT when on stairs or in a sprung pit. We can't tell from
-      // here whether this is a pass-through or a stop, so we return
-      // `true` (allow movement). Final-cell occupancy is enforced in
-      // `findPath()` via its own check.
+    if (mover.kind === 'hero' && (occupant.kind === 'hero' || ignoreOccupants)) {
+      // 2021 rule: heroes may not END on the same square as another
+      // creature EXCEPT when on stairs or in a sprung pit. We can't
+      // tell from here whether this is a pass-through or a stop, so
+      // we return `true` (allow movement). Final-cell occupancy is
+      // enforced in `findPath()` via its own check.
       return true;
     }
     return false;
@@ -1034,93 +1178,38 @@ function occupantAt(s, cell) {
   return null;
 }
 
-function revealRoom(room, roomId, by) {
-  // Kept for legacy/manual reveal triggers. Normal play uses exploreFromHero.
-  const s = room.state;
-  const rs = s.roomState[roomId];
-  if (!rs || !rs.hiddenFor.heroes) return;
-  rs.hiddenFor.heroes = false;
-  for (const k of s.allTileKeys) {
-    const t = s.tileMeta[k];
-    if (t.roomId === roomId) t.hiddenFor.heroes = false;
-  }
-  for (const d of s.doors) {
-    const ta = tileAt(s, d.a[0], d.a[1]);
-    const tb = tileAt(s, d.b[0], d.b[1]);
-    if ((ta && ta.roomId === roomId) || (tb && tb.roomId === roomId)) d.revealed = true;
-  }
-  for (const m of s.monsters) {
-    if (m.roomId === roomId && !m.dead) m.active = true;
-  }
-  logEvent(room, `${rs.name} revealed!`, 'reveal');
+// Visibility / fog-of-war engine lives in game/fog.js. The wrappers
+// below adapt the server's room+log convention to the pure-state API.
+const fog = require('./game/fog.js');
+function revealRoom(room, roomId, _by) {
+  if (!room.state) return;
+  fog.revealRoomById(room.state, roomId, (text, cls) => logEvent(room, text, cls));
 }
 
 // Flood-fill visibility from a hero's current cell. Reveals every cell
 // reachable through OPEN paths (same room, same corridor segment, or
 // through an open door). Closed doors and walls block the flood.
 // Activates monsters in any newly-revealed room (the GM "wakes" them).
+// Canonical 2021 fog-of-war rule:
+//  - When a hero enters a ROOM, the WHOLE room is revealed at once.
+//  - When a hero is in a CORRIDOR, only cells in their CARDINAL LINE
+//    OF SIGHT are revealed — blocked by solid rock, walls, and closed
+//    doors.
+//  - Opening a door reveals the ROOM behind it (cascades through
+//    chained open doors).
+//
+// The previous implementation flood-filled through every adjacent
+// corridor pair which leaked the entire corridor network the moment
+// a hero stepped onto any corridor cell.
 function exploreFromHero(room, hero) {
-  if (!hero || hero.dead) return;
-  const s = room.state;
-  const newlyRevealedRooms = new Set();
-  const visited = new Set();
-  const queue = [hero.at];
-  visited.add(`${hero.at[0]},${hero.at[1]}`);
-
-  while (queue.length > 0) {
-    const cur = queue.shift();
-    const t = tileAt(s, cur[0], cur[1]);
-    if (!t) continue;
-    if (t.hiddenFor.heroes) {
-      t.hiddenFor.heroes = false;
-      if (t.roomId && s.roomState[t.roomId].hiddenFor.heroes) {
-        s.roomState[t.roomId].hiddenFor.heroes = false;
-        newlyRevealedRooms.add(t.roomId);
-      }
-    }
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const n = [cur[0]+dx, cur[1]+dy];
-      const nk = `${n[0]},${n[1]}`;
-      if (visited.has(nk)) continue;
-      const tn = tileAt(s, n[0], n[1]);
-      if (!tn) continue;
-      const door = doorBetween(s, cur, n);
-      const sameRoom = t.roomId === tn.roomId && t.roomId != null;
-      const bothCorridor = !t.roomId && !tn.roomId;
-      const openDoor = door && door.state === 'open';
-      const canTraverse = sameRoom || bothCorridor || openDoor;
-      if (!canTraverse) continue;
-      visited.add(nk);
-      queue.push(n);
-    }
-  }
-  // Doors adjacent to any visible cell become revealed (so the player can
-  // see they exist, even if the far side is still hidden behind them).
-  for (const d of s.doors) {
-    if (d.revealed) continue;
-    const ta = tileAt(s, d.a[0], d.a[1]);
-    const tb = tileAt(s, d.b[0], d.b[1]);
-    if ((ta && !ta.hiddenFor.heroes) || (tb && !tb.hiddenFor.heroes)) {
-      d.revealed = true;
-    }
-  }
-  // Activate monsters in newly-revealed rooms; surface a log line per room.
-  for (const rid of newlyRevealedRooms) {
-    const rs = s.roomState[rid];
-    for (const m of s.monsters) {
-      if (m.roomId === rid && !m.dead) m.active = true;
-    }
-    logEvent(room, `${rs.name} revealed!`, 'reveal');
-  }
+  if (!room.state) return;
+  fog.recomputeFromHero(room.state, hero, (text, cls) => logEvent(room, text, cls));
 }
 
 // Recompute visibility from all living heroes — used after door opens, etc.
 function exploreFromAllHeroes(room) {
-  const s = room.state;
-  if (!s) return;
-  for (const h of s.heroes) {
-    if (!h.dead) exploreFromHero(room, h);
-  }
+  if (!room.state) return;
+  fog.recomputeFromAllHeroes(room.state, (text, cls) => logEvent(room, text, cls));
 }
 
 function openDoor(room, door, by) {
@@ -1261,6 +1350,9 @@ function handleAttack(room, token, targetMonsterId) {
   } else if (eq && eq.diagonal && isAdjDiag) {
     // Diagonal attack with staff / longsword / shortsword / spear.
   } else if (!isAdjOrtho) {
+    return;
+  } else if (isAdjOrtho && meleeBlocked(s, h.at, m.at)) {
+    // Wall or closed door between attacker and target — no melee.
     return;
   }
 
@@ -1618,8 +1710,14 @@ function checkEndConditions(room) {
         if (h.dead) continue;
         h.body = h.bodyMax;
         h.mind = h.mindMax;
+        // Refill the spell hand from the elements the hero originally
+        // drafted (stored on the hero at quest start), not the YAML
+        // default — otherwise a wizard who drafted Air+Earth+Water
+        // would get reset back to Fire+Water+Air after the quest.
         const proto = HEROES[h.id];
-        const elements = (proto.spells && proto.spells.default) || [];
+        const elements = (Array.isArray(h.spellElements) && h.spellElements.length)
+          ? h.spellElements
+          : ((proto.spells && proto.spells.default) || []);
         const fresh = [];
         for (const el of elements) for (const sp of (SPELLS_BY_ELEMENT[el] || [])) fresh.push(sp.id);
         h.spellHand = fresh;
@@ -1944,13 +2042,21 @@ function applyTreasureCard(room, hero, card) {
 }
 
 function adjacentFreeCells(s, at) {
+  // Same room/corridor segment as `at`, no wall (or closed door) between.
+  // Used for wandering-monster placement — canonical rule is "adjacent to
+  // a hero", which the rulebook scopes to the same room or unbroken
+  // corridor. Spawning across a wall into the next room was a bug.
   const out = [];
   for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
     const c = [at[0]+dx, at[1]+dy];
     const t = tileAt(s, c[0], c[1]);
     if (!t) continue;
+    if (t.blocked) continue;
     if (t.furnitureId) continue;
     if (occupantAt(s, c)) continue;
+    if (wallBetween(s, at, c)) continue;          // different room, no door
+    const door = doorBetween(s, at, c);
+    if (door && door.state !== 'open') continue;  // closed door = no spawn
     out.push(c);
   }
   return out;
@@ -2097,8 +2203,10 @@ function triggerTrapsForCell(room, hero, cell) {
       hero.body = Math.max(0, hero.body - dmg);
       logEvent(room, `Falling block on ${hero.name}: rolled ${dice.filter(f=>f==='skull').length} skull(s) — ${dmg} damage. The cell is now permanently blocked.`, 'death');
       // Mark the cell as a permanent obstruction so no one can pass it.
+      // blockedKind = 'falling-block' makes the renderer paint the red
+      // canonical falling-block-trap tile (vs the stone-brick rubble).
       const t = tileAt(s, cell[0], cell[1]);
-      if (t) t.blocked = true;
+      if (t) { t.blocked = true; t.blockedKind = 'falling-block'; }
       halt = true;
     }
   }
@@ -2174,32 +2282,116 @@ function handleMoveTo(room, token, target) {
 
   const path = findPath(s, h, target, remaining);
   if (!path || path.length < 2) return;
+  console.log(`[move] ${room.code} ${h.name} roll=${s.movementRoll} used=${s.movementUsed} from (${h.at.join(',')}) → click (${target[0]},${target[1]}) path=${path.length - 1}`);
 
+  let stopReason = null;
   for (let i = 1; i < path.length; i++) {
     const next = path[i];
     const result = passable(s, h.at, next, { kind: 'hero', id: h.id });
-    if (!result) break;
-    if (result.needsOpenDoor) openDoor(room, result.needsOpenDoor, h);
+    if (!result) { stopReason = 'blocked'; break; }
+    if (result.needsOpenDoor) {
+      openDoor(room, result.needsOpenDoor, h);
+      console.log(`[move] ${room.code} ${h.name} opens door at (${result.needsOpenDoor.a.join(',')})-(${result.needsOpenDoor.b.join(',')})`);
+    }
+
+    // Snapshot what the heroes already see — used to detect a fresh
+    // reveal triggered by this step (canonical 2021 rule: movement ends
+    // when a new room is entered or a previously-unseen monster comes
+    // into line of sight, so the player can react).
+    const beforeRooms = new Set();
+    for (const rid in s.roomState) {
+      if (!s.roomState[rid].hiddenFor.heroes) beforeRooms.add(rid);
+    }
+    const beforeMonsters = new Set();
+    for (const m of s.monsters) {
+      if (!m.dead && isMonsterVisibleToHeroes(s, m)) beforeMonsters.add(m.id);
+    }
+
+    const fromCell = [...h.at];
     h.at = [...next];
     s.movementUsed++;
     exploreFromHero(room, h);
+    console.log(`[move] ${room.code} ${h.name} step ${s.movementUsed}/${s.movementRoll} (${fromCell.join(',')})→(${next.join(',')})`);
     const trap = triggerTrapsForCell(room, h, next);
-    if (h.dead) break;
+    if (h.dead) { stopReason = 'died'; break; }
     if (trap.endsTurn) {
       // Spear-trap skull: "This ends your turn." Drain remaining movement
       // and lock action so no further play happens this turn.
       s.movementUsed = s.movementRoll;
       s.actionUsed = true;
       lockMovementOnAction(s);
+      stopReason = 'trap-ends-turn';
       break;
     }
-    if (trap.halt) break;
+    if (trap.halt) { stopReason = 'trap'; break; }
     // (spear-dodged: trap.fired but trap.halt is false — keep walking)
     // Halt if a monster has become adjacent during this walk
     const adjFoe = s.monsters.find(m => !m.dead && m.active && adjacent(h.at, m.at));
-    if (adjFoe) break;
+    if (adjFoe) { stopReason = `monster-adjacent (${adjFoe.type})`; break; }
+
+    // Reveal-stop: did this step show the hero something new?
+    let revealedRoomName = null;
+    for (const rid in s.roomState) {
+      if (!s.roomState[rid].hiddenFor.heroes && !beforeRooms.has(rid)) {
+        revealedRoomName = s.roomState[rid].name || rid;
+        break;
+      }
+    }
+    let newMonster = null;
+    if (!revealedRoomName) {
+      for (const m of s.monsters) {
+        if (m.dead || beforeMonsters.has(m.id)) continue;
+        if (isMonsterVisibleToHeroes(s, m)) { newMonster = m; break; }
+      }
+    }
+    if (revealedRoomName || newMonster) {
+      const what = revealedRoomName
+        ? `enters ${revealedRoomName}`
+        : `spots a ${MONSTER_TYPES[newMonster.type]?.name || newMonster.type}`;
+      logEvent(room, `${h.name} ${what} — pauses to take stock.`, 'reveal');
+      stopReason = revealedRoomName ? `room-reveal (${revealedRoomName})` : `monster-reveal (${newMonster.type})`;
+      break;
+    }
+
+    // Intersection-stop: when walking down a corridor, halt as soon as
+    // we step onto a cell with more than one visible forward option.
+    // The player gets to re-evaluate (does the side branch lead anywhere
+    // good?) before committing further movement. Doesn't apply inside
+    // rooms — entering a room already triggers the reveal-stop above.
+    const tNext = tileAt(s, next[0], next[1]);
+    if (tNext && !tNext.roomId) {
+      const prev = path[i - 1];
+      const branches = countVisibleBranches(s, next, prev);
+      if (branches >= 2) {
+        logEvent(room, `${h.name} pauses at the intersection.`, 'reveal');
+        stopReason = `intersection (${branches} branches)`;
+        break;
+      }
+    }
   }
+  console.log(`[move] ${room.code} ${h.name} done — at (${h.at.join(',')}) used=${s.movementUsed}/${s.movementRoll}${stopReason ? ' stop=' + stopReason : ' stop=path-end'}`);
   broadcastRoom(room);
+}
+
+// Number of visible forward options from `here`, excluding the cell we
+// came from. A "branch" is a cardinal neighbour that the heroes can
+// actually see right now: not solid rock, not behind a wall, not behind
+// a closed door they haven't discovered yet, not hidden by fog of war.
+// Used by the corridor intersection-stop rule.
+function countVisibleBranches(s, here, prev) {
+  let n = 0;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const cand = [here[0] + dx, here[1] + dy];
+    if (prev && cand[0] === prev[0] && cand[1] === prev[1]) continue;
+    const tc = tileAt(s, cand[0], cand[1]);
+    if (!tc || tc.solidRock) continue;
+    if (tc.hiddenFor && tc.hiddenFor.heroes) continue;
+    if (wallBetween(s, here, cand)) continue;
+    const door = doorBetween(s, here, cand);
+    if (door && door.state !== 'open' && !door.revealed) continue;
+    n++;
+  }
+  return n;
 }
 
 // ==========================================================
@@ -2419,7 +2611,7 @@ function handleDisarmTrap(room, token, trapId) {
       const dmg = dice.filter(f => f === 'skull').length;
       h.body = Math.max(0, h.body - dmg);
       const t = tileAt(s, tr.at[0], tr.at[1]);
-      if (t) t.blocked = true;
+      if (t) { t.blocked = true; t.blockedKind = 'falling-block'; }
       logEvent(room, `${h.name} fumbles a falling-block trap! Took ${dmg} Body. Cell now blocked.`, 'death');
     } else if (tr.type === 'pit') {
       tr.triggered = true; tr.revealed = true;
@@ -2518,6 +2710,7 @@ function handleGMAttack(room, token, monsterId, heroId) {
   if (!m || m.dead || !m.active) return;
   if (!h || h.dead) return;
   if (!adjacent(m.at, h.at)) return;
+  if (meleeBlocked(s, m.at, h.at)) return;
   if (!s.gmAttackUsed) s.gmAttackUsed = {};
   if (s.gmAttackUsed[m.id]) return;
   resolveAttack(room, { kind: 'monster', ref: m }, { kind: 'hero', ref: h });
@@ -2557,8 +2750,19 @@ function scheduleAITick(room) {
   if (!cur) return;
   // AI runs the GM in AI mode
   if (cur.kind === 'gm' && room.config.gmMode === 'ai') {
-    const delay = AI_TICK_MS + Math.floor(Math.random() * AI_TICK_JITTER);
-    room._aiTimer = setTimeout(() => { room._aiTimer = null; runAITick(room); }, delay);
+    const speed = Math.max(1, Math.min(4, room.config.aiSpeed || 1));
+    const delay = Math.round((AI_TICK_MS + Math.random() * AI_TICK_JITTER) / speed);
+    room._aiTimer = setTimeout(() => {
+      room._aiTimer = null;
+      try { runAITick(room); }
+      catch (e) {
+        console.error('[ai] runAITick crashed:', e && e.stack || e);
+        // Don't let a dead AI freeze the GM turn — pop the current monster
+        // and try again on the next tick.
+        if (room.state) { room.state._aiCurrent = null; }
+        try { broadcastRoom(room); } catch {}
+      }
+    }, delay);
     return;
   }
 }
@@ -2574,6 +2778,19 @@ function runAITick(room) {
     // Plan: list of active monsters that haven't moved yet this turn
     s._aiPlan = s.monsters.filter(m => m.active && !m.dead).map(m => m.id);
     s._aiCurrent = null;
+    const total  = s.monsters.length;
+    const active = s.monsters.filter(m => m.active && !m.dead).length;
+    console.log(`[ai] ${room.code} GM turn: ${active}/${total} active monsters`);
+    if (active === 0) {
+      // Nothing to do — close the turn out immediately rather than
+      // burning a tick on an empty plan.
+      s._aiPlan = null;
+      s._aiCurrent = null;
+      advanceTurn(room);
+      logEvent(room, `Evil Wizard ends turn.`);
+      broadcastRoom(room);
+      return;
+    }
   }
   // Pop or start next monster
   if (!s._aiCurrent) {
@@ -2592,7 +2809,11 @@ function runAITick(room) {
     s._aiCurrent = { id, mp, mpInitial: mp, attacked: false, movedBeforeAttack: false };
   }
 
-  const action = decideMonsterTurn(s, s._aiCurrent, { adjacent, passable, occupantAt, key, tileAt });
+  const action = decideMonsterTurn(s, s._aiCurrent, { adjacent, passable, occupantAt, key, tileAt, meleeBlocked });
+  {
+    const m = s.monsters.find(x => x.id === s._aiCurrent.id);
+    console.log(`[ai] ${room.code} ${m?.type || '?'}#${s._aiCurrent.id} mp=${s._aiCurrent.mp} → ${action.type}${action.heroId ? ' '+action.heroId : ''}${action.to ? ' ('+action.to.join(',')+')' : ''}`);
+  }
 
   if (action.type === 'move') {
     const m = s.monsters.find(x => x.id === s._aiCurrent.id);
@@ -2611,7 +2832,7 @@ function runAITick(room) {
   if (action.type === 'attack') {
     const m = s.monsters.find(x => x.id === s._aiCurrent.id);
     const h = s.heroes.find(x => x.id === action.heroId);
-    if (m && h && !m.dead && !h.dead && adjacent(m.at, h.at)) {
+    if (m && h && !m.dead && !h.dead && adjacent(m.at, h.at) && !meleeBlocked(s, m.at, h.at)) {
       resolveAttack(room, { kind: 'monster', ref: m }, { kind: 'hero', ref: h });
     }
     // Mark whether the monster moved before attacking — if so, it can't
@@ -2637,7 +2858,7 @@ function onCreate(ws, msg) {
   if (!name) return send(ws, 'error', { message: 'Name required.' });
   const token = uid();
   const room = makeRoom(token);
-  room.players.push({ token, name, connected: true, isBot: false });
+  room.players.push({ token, pid: pid(), name, connected: true, isBot: false });
   room.sockets.set(token, ws);
   ws._roomCode = room.code; ws._token = token;
   send(ws, 'joined', { code: room.code, token, youName: name });
@@ -2656,7 +2877,7 @@ function onJoin(ws, msg) {
   if (room.players.length >= 6)
     return send(ws, 'error', { message: 'Room is full.' });
   const token = uid();
-  room.players.push({ token, name, connected: true, isBot: false });
+  room.players.push({ token, pid: pid(), name, connected: true, isBot: false });
   room.sockets.set(token, ws);
   ws._roomCode = room.code; ws._token = token;
   send(ws, 'joined', { code: room.code, token, youName: name });
@@ -2720,6 +2941,158 @@ function onSetConfig(ws, msg) {
   broadcastRoom(room);
 }
 
+// Anyone in the room can change the AI pacing — it's just visual,
+// non-strategic, and players want it both during the lobby and mid-quest.
+function onSetAiSpeed(ws, msg) {
+  const room = rooms.get(ws._roomCode);
+  if (!room) return;
+  const v = Math.max(1, Math.min(4, parseInt(msg.value, 10) || 1));
+  room.config.aiSpeed = v;
+  broadcastRoom(room);
+}
+
+// ==========================================================
+// HERO SPELL-ELEMENT DRAFT (2021 rules)
+// ==========================================================
+// Wizard picks one of {air, fire, water, earth}; elf picks one of the
+// remaining three; the wizard auto-takes the other two.
+
+const SPELL_ELEMENTS = ['air', 'fire', 'water', 'earth'];
+
+function spellDraftStatus(room) {
+  const wSeated = !!room.seats.wizard;
+  const eSeated = !!room.seats.elf;
+  const sp = room.spellPick || (room.spellPick = { wizardElements: [], elfElements: [] });
+  // Defensive: drop unknown / duplicate elements that may have leaked in.
+  const cleanList = (xs) => {
+    const seen = new Set(); const out = [];
+    for (const x of xs || []) if (SPELL_ELEMENTS.includes(x) && !seen.has(x)) { seen.add(x); out.push(x); }
+    return out;
+  };
+  sp.wizardElements = cleanList(sp.wizardElements);
+  sp.elfElements    = cleanList(sp.elfElements);
+
+  const taken = new Set([...sp.wizardElements, ...sp.elfElements]);
+  const available = SPELL_ELEMENTS.filter(e => !taken.has(e));
+
+  let phase, currentSeat = null, done = false;
+  if (!wSeated && !eSeated) {
+    phase = 'na';   // no spellcasters in the party — nothing to draft
+  } else if (wSeated && eSeated) {
+    if (sp.wizardElements.length === 0)        { phase = 'wizardFirst'; currentSeat = 'wizard'; }
+    else if (sp.elfElements.length === 0)      { phase = 'elf';         currentSeat = 'elf'; }
+    else if (sp.wizardElements.length < 3)     { phase = 'wizardAuto';  currentSeat = 'wizard'; }
+    else                                       { phase = 'done';        done = true; }
+  } else if (wSeated) {
+    if (sp.wizardElements.length < 3)          { phase = 'wizardOnly';  currentSeat = 'wizard'; }
+    else                                       { phase = 'done';        done = true; }
+  } else /* elf only */ {
+    if (sp.elfElements.length < 1)             { phase = 'elfOnly';     currentSeat = 'elf'; }
+    else                                       { phase = 'done';        done = true; }
+  }
+  return { phase, currentSeat, done, available, wizardElements: sp.wizardElements, elfElements: sp.elfElements };
+}
+
+// Auto-finalize: in the both-seats case, once the elf has picked, the
+// wizard's remaining two elements are filled in automatically per the
+// rule. Called after any draft mutation.
+function autoFinalizeSpellDraft(room) {
+  const sp = room.spellPick;
+  const wSeated = !!room.seats.wizard;
+  const eSeated = !!room.seats.elf;
+  if (wSeated && eSeated && sp.wizardElements.length === 1 && sp.elfElements.length === 1) {
+    const taken = new Set([...sp.wizardElements, ...sp.elfElements]);
+    for (const el of SPELL_ELEMENTS) {
+      if (!taken.has(el)) sp.wizardElements.push(el);
+    }
+  }
+}
+
+// Drop any picks that are no longer valid (seat released, etc).
+function resetSpellDraft(room) {
+  room.spellPick = { wizardElements: [], elfElements: [] };
+}
+
+function onPickSpellElement(ws, msg) {
+  const room = rooms.get(ws._roomCode);
+  if (!room) return;
+  if (room.phase !== 'lobby') return;
+  const seat = msg.seat;
+  const element = msg.element;
+  if (!['wizard', 'elf'].includes(seat)) return;
+  if (!SPELL_ELEMENTS.includes(element))
+    return send(ws, 'error', { message: 'Unknown spell element.' });
+  // Sender must own the seat they claim to be picking for.
+  if (room.seats[seat] !== ws._token)
+    return send(ws, 'error', { message: 'You do not control that seat.' });
+
+  const status = spellDraftStatus(room);
+  // Validate it's that seat's turn.
+  if (status.currentSeat !== seat)
+    return send(ws, 'error', { message: 'Not your turn to pick.' });
+  // Element must still be available.
+  if (!status.available.includes(element))
+    return send(ws, 'error', { message: 'That element is already taken.' });
+
+  if (seat === 'wizard') room.spellPick.wizardElements.push(element);
+  else                    room.spellPick.elfElements.push(element);
+  autoFinalizeSpellDraft(room);
+  broadcastRoom(room);
+}
+
+function onResetSpellDraft(ws) {
+  const room = rooms.get(ws._roomCode);
+  if (!room) return;
+  if (room.phase !== 'lobby') return;
+  // Anyone seated as wizard, elf, or host may reset the draft (lobby UX).
+  const t = ws._token;
+  const allowed = t === room.hostToken
+    || room.seats.wizard === t
+    || room.seats.elf === t;
+  if (!allowed) return;
+  resetSpellDraft(room);
+  broadcastRoom(room);
+}
+
+// Sets the printed-art variant ('male' | 'female') for one hero seat.
+// Only the player currently sitting in that seat may change their own
+// art; the host may not override another player's choice.
+const HERO_SEATS = ['barbarian', 'dwarf', 'elf', 'wizard'];
+const HERO_VARIANTS = ['male', 'female'];
+function onSetHeroVariant(ws, msg) {
+  const room = rooms.get(ws._roomCode);
+  if (!room) return;
+  if (room.phase !== 'lobby') return;
+  const seat = msg.seat;
+  const variant = msg.variant;
+  if (!HERO_SEATS.includes(seat))      return;
+  if (!HERO_VARIANTS.includes(variant)) return;
+  if (room.seats[seat] !== ws._token)
+    return send(ws, 'error', { message: 'You do not control that seat.' });
+  if (!room.heroVariants) room.heroVariants = {};
+  room.heroVariants[seat] = variant;
+  broadcastRoom(room);
+}
+
+// First-quest convenience — apply the rulebook's beginner suggestion:
+// the wizard takes Fire; the elf takes Earth; the wizard auto-fills
+// with Air and Water. Anyone seated as wizard, elf, or host can apply.
+function onSuggestSpellDraft(ws) {
+  const room = rooms.get(ws._roomCode);
+  if (!room) return;
+  if (room.phase !== 'lobby') return;
+  const t = ws._token;
+  const allowed = t === room.hostToken
+    || room.seats.wizard === t
+    || room.seats.elf === t;
+  if (!allowed) return;
+  resetSpellDraft(room);
+  if (room.seats.wizard) room.spellPick.wizardElements.push('fire');
+  if (room.seats.elf)    room.spellPick.elfElements.push('earth');
+  autoFinalizeSpellDraft(room);
+  broadcastRoom(room);
+}
+
 function onClaim(ws, msg) {
   const room = rooms.get(ws._roomCode);
   if (!room) return;
@@ -2740,6 +3113,8 @@ function onClaim(ws, msg) {
   if (room.seats[seat] && room.seats[seat] !== ws._token)
     return send(ws, 'error', { message: 'Seat already taken.' });
   room.seats[seat] = ws._token;
+  // Spellcaster seat changes invalidate any in-progress draft.
+  if (seat === 'wizard' || seat === 'elf') resetSpellDraft(room);
   broadcastRoom(room);
 }
 
@@ -2748,7 +3123,13 @@ function onRelease(ws, msg) {
   if (!room) return;
   if (room.phase !== 'lobby') return;
   const seat = msg.seat;
-  if (room.seats[seat] === ws._token) room.seats[seat] = null;
+  if (room.seats[seat] === ws._token) {
+    room.seats[seat] = null;
+    if (seat === 'wizard' || seat === 'elf') resetSpellDraft(room);
+    // Reset variant to default when the seat goes empty so the next
+    // player who claims it starts from the canonical 'male' art.
+    if (room.heroVariants && HERO_SEATS.includes(seat)) room.heroVariants[seat] = 'male';
+  }
   broadcastRoom(room);
 }
 
@@ -2764,6 +3145,12 @@ function onStart(ws) {
     return send(ws, 'error', { message: 'Human GM mode requires a GM seat.' });
   if (!room.config.questId || !quests.has(room.config.questId))
     return send(ws, 'error', { message: 'Pick a quest.' });
+  // If there's a wizard or elf in the party, the spell draft must be
+  // settled before play begins. The "Use suggested" shortcut in the
+  // lobby applies the rulebook's beginner default in one click.
+  const draft = spellDraftStatus(room);
+  if (!draft.done && draft.phase !== 'na')
+    return send(ws, 'error', { message: 'Finish the spell draft (or apply the suggested split) before starting.' });
 
   room.state = freshGameState(room);
   if (!room.state) return send(ws, 'error', { message: 'Quest failed to load.' });
@@ -2799,8 +3186,13 @@ function handleMessage(ws, raw) {
     case 'leave':     return onLeave(ws);
     case 'leaveQuest': return onRestart(ws);  // mid-quest "Leave" → back to lobby
     case 'setConfig': return onSetConfig(ws, msg);
+    case 'setAiSpeed': return onSetAiSpeed(ws, msg);
     case 'claim':     return onClaim(ws, msg);
     case 'release':   return onRelease(ws, msg);
+    case 'pickSpellElement':  return onPickSpellElement(ws, msg);
+    case 'resetSpellDraft':   return onResetSpellDraft(ws);
+    case 'suggestSpellDraft': return onSuggestSpellDraft(ws);
+    case 'setHeroVariant':    return onSetHeroVariant(ws, msg);
     case 'start':     return onStart(ws);
     case 'restart':   return onRestart(ws);
     case 'action':    return onAction(ws, msg);
@@ -2832,12 +3224,20 @@ function onAction(ws, msg) {
     case 'gmMove':         return handleGMRollAndMove(room, token, msg.monsterId, msg.target);
     case 'gmAttack':       return handleGMAttack(room, token, msg.monsterId, msg.heroId);
     case 'gmEndTurn':      return handleGMEndTurn(room, token);
-    case 'dismissCombat':
+    case 'dismissCombat': {
+      // Block dismissals from pure spectators — only seated players
+      // (hero or GM) can clear the table.
+      const s2 = seatsOf(room, token);
+      if (!s2.heroIds.length && !s2.isGM) return;
       if (room.state.combat) { room.state.combat = null; broadcastRoom(room); }
       return;
-    case 'dismissTreasureCard':
+    }
+    case 'dismissTreasureCard': {
+      const s2 = seatsOf(room, token);
+      if (!s2.heroIds.length && !s2.isGM) return;
       if (room.state.revealedTreasureCard) { room.state.revealedTreasureCard = null; broadcastRoom(room); }
       return;
+    }
     case 'choosePotion':
       return handleChoosePotion(room, token, msg.idx);
   }
@@ -2887,8 +3287,36 @@ const MIME = {
 };
 const httpServer = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
+
+  // ---- API ROUTES (used by the in-browser map editor) ----------------
+  if (urlPath.startsWith('/api/')) return handleApi(req, res, urlPath);
+
+  // ---- Whitelisted /assets/ static route (used by the editor for the
+  //      pre-rendered map_qa PNG previews and a few shared images) -----
+  if (urlPath.startsWith('/assets/')) {
+    const ASSETS_DIR = path.join(__dirname, 'assets');
+    // URL-decode so filenames with spaces / unicode resolve correctly
+    // (e.g. "Air%20Spell.png" → "Air Spell.png"). Then normalize and
+    // do the prefix-check to keep traversal blocked.
+    let rel;
+    try { rel = decodeURIComponent(urlPath.slice('/assets/'.length)); }
+    catch { res.writeHead(400); res.end('Bad Request'); return; }
+    const assetPath = path.normalize(path.join(ASSETS_DIR, rel));
+    if (!assetPath.startsWith(ASSETS_DIR)) { res.writeHead(403); res.end('Forbidden'); return; }
+    fs.readFile(assetPath, (err, data) => {
+      if (err) { res.writeHead(404); res.end('Not Found'); return; }
+      const ext = path.extname(assetPath).toLowerCase();
+      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+      res.end(data);
+    });
+    return;
+  }
+
   if (urlPath === '/') urlPath = '/index.html';
-  const filePath = path.join(PUBLIC_DIR, urlPath);
+  let publicRel;
+  try { publicRel = decodeURIComponent(urlPath); }
+  catch { res.writeHead(400); res.end('Bad Request'); return; }
+  const filePath = path.normalize(path.join(PUBLIC_DIR, publicRel));
   if (!filePath.startsWith(PUBLIC_DIR)) { res.writeHead(403); res.end('Forbidden'); return; }
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not Found'); return; }
@@ -2897,7 +3325,200 @@ const httpServer = http.createServer((req, res) => {
     res.end(data);
   });
 });
-const wss = new WebSocketServer({ server: httpServer });
+
+// ==========================================================
+// MAP-EDITOR API
+// GET  /api/quests              → list of quest files (id, title)
+// GET  /api/quests/:file        → raw quest JSON
+// PUT  /api/quests/:file        → save quest JSON (atomic)
+// POST /api/render-png/:file    → regenerate the QA PNG for one quest
+// ==========================================================
+function sendJson(res, code, obj) {
+  const body = JSON.stringify(obj);
+  res.writeHead(code, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store',
+  });
+  res.end(body);
+}
+function safeQuestFile(file) {
+  // strict: must be foo.json, no separators, no traversal, must exist
+  if (!/^[\w\-]+\.json$/.test(file)) return null;
+  const fp = path.join(QUESTS_DIR, file);
+  if (path.dirname(fp) !== QUESTS_DIR) return null;
+  return fp;
+}
+function readBody(req, max = 4 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let total = 0;
+    const chunks = [];
+    req.on('data', c => {
+      total += c.length;
+      if (total > max) { req.destroy(); reject(new Error('payload too large')); return; }
+      chunks.push(c);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+// Furniture natural-orientation overrides — persisted to disk so the
+// editor's "apply" actually saves, and the live game reads the same
+// file on boot. Shape: { "tomb": "upward", ... }
+const FURN_NATURALS_FILE = path.join(DATA_DIR, 'furniture-naturals.json');
+function readFurnNaturals() {
+  try {
+    if (!fs.existsSync(FURN_NATURALS_FILE)) return {};
+    const raw = fs.readFileSync(FURN_NATURALS_FILE, 'utf8');
+    const j = JSON.parse(raw);
+    return (j && typeof j === 'object') ? j : {};
+  } catch { return {}; }
+}
+function writeFurnNaturals(map) {
+  const tmp = FURN_NATURALS_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(map, null, 2) + '\n');
+  fs.renameSync(tmp, FURN_NATURALS_FILE);
+}
+
+function handleApi(req, res, urlPath) {
+  // GET /api/board → master board (rooms + corridor cells)
+  if (req.method === 'GET' && urlPath === '/api/board') {
+    if (!MASTER_BOARD) return sendJson(res, 404, { error: 'no master board' });
+    return sendJson(res, 200, MASTER_BOARD);
+  }
+
+  // GET / PUT /api/furn-naturals → per-type natural-orientation overrides
+  if (urlPath === '/api/furn-naturals') {
+    if (req.method === 'GET') {
+      return sendJson(res, 200, readFurnNaturals());
+    }
+    if (req.method === 'PUT') {
+      readBody(req).then(body => {
+        let parsed;
+        try { parsed = JSON.parse(body); }
+        catch (e) { return sendJson(res, 400, { error: 'bad JSON: ' + e.message }); }
+        if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+          return sendJson(res, 400, { error: 'expected an object' });
+        }
+        const VALID = new Set(['downward','upward','leftward','rightward']);
+        const cleaned = {};
+        for (const [k, v] of Object.entries(parsed)) {
+          if (typeof k === 'string' && typeof v === 'string' && VALID.has(v)) {
+            cleaned[k] = v;
+          }
+        }
+        try {
+          writeFurnNaturals(cleaned);
+          return sendJson(res, 200, { ok: true, count: Object.keys(cleaned).length });
+        } catch (e) {
+          return sendJson(res, 500, { error: String(e) });
+        }
+      }).catch(err => sendJson(res, 413, { error: err.message }));
+      return;
+    }
+    return sendJson(res, 405, { error: 'method not allowed' });
+  }
+
+  // GET /api/quests
+  if (req.method === 'GET' && urlPath === '/api/quests') {
+    const items = [];
+    for (const f of fs.readdirSync(QUESTS_DIR)) {
+      if (!f.endsWith('.json')) continue;
+      try {
+        const q = JSON.parse(fs.readFileSync(path.join(QUESTS_DIR, f), 'utf8'));
+        items.push({
+          file: f,
+          id: q.id || f.replace(/\.json$/, ''),
+          title: q.title || '',
+          subtitle: q.subtitle || '',
+          category: q.category || 'main',
+        });
+      } catch (e) { /* skip unreadable */ }
+    }
+    items.sort((a, b) => {
+      const na = parseInt((a.file.match(/quest(\d+)/) || [])[1] || 999);
+      const nb = parseInt((b.file.match(/quest(\d+)/) || [])[1] || 999);
+      return na - nb;
+    });
+    return sendJson(res, 200, { quests: items });
+  }
+
+  // GET / PUT /api/quests/<file>
+  let m = urlPath.match(/^\/api\/quests\/([^/]+)$/);
+  if (m) {
+    const fp = safeQuestFile(m[1]);
+    if (!fp) return sendJson(res, 400, { error: 'bad filename' });
+    if (req.method === 'GET') {
+      if (!fs.existsSync(fp)) return sendJson(res, 404, { error: 'not found' });
+      try {
+        const q = JSON.parse(fs.readFileSync(fp, 'utf8'));
+        return sendJson(res, 200, q);
+      } catch (e) {
+        return sendJson(res, 500, { error: 'parse error: ' + e.message });
+      }
+    }
+    if (req.method === 'PUT') {
+      readBody(req).then(body => {
+        let parsed;
+        try { parsed = JSON.parse(body); }
+        catch (e) { return sendJson(res, 400, { error: 'bad JSON: ' + e.message }); }
+        // sanity: must have monsters/furniture/doors/etc keys, even if empty
+        if (typeof parsed !== 'object' || !parsed.id) {
+          return sendJson(res, 400, { error: 'quest must have an id' });
+        }
+        // Run the canonical-footprint validator before writing. WARN-level
+        // issues mean the quest violates a 2021 spec constraint (wrong
+        // stair size, illegal furniture footprint, etc.) — block the save
+        // so the editor never silently ships a broken quest. INFO is OK.
+        if (validateQuestFn) {
+          const issues = validateQuestFn(parsed, m[1]);
+          const blockers = issues.filter(i => i.level === 'WARN');
+          if (blockers.length) {
+            return sendJson(res, 422, {
+              error: 'quest validation failed',
+              issues: blockers.map(i => i.msg),
+            });
+          }
+        }
+        const tmp = fp + '.tmp';
+        try {
+          fs.writeFileSync(tmp, JSON.stringify(parsed, null, 2) + '\n');
+          fs.renameSync(tmp, fp);
+          // hot-reload the in-memory quest table so live games & the
+          // editor stay in sync.
+          try { loadQuests(); } catch {}
+          return sendJson(res, 200, { ok: true, file: m[1] });
+        } catch (e) {
+          return sendJson(res, 500, { error: String(e) });
+        }
+      }).catch(err => sendJson(res, 413, { error: err.message }));
+      return;
+    }
+    return sendJson(res, 405, { error: 'method not allowed' });
+  }
+
+  // POST /api/render-png/<file>
+  m = urlPath.match(/^\/api\/render-png\/([^/]+)$/);
+  if (m && req.method === 'POST') {
+    const fp = safeQuestFile(m[1]);
+    if (!fp) return sendJson(res, 400, { error: 'bad filename' });
+    if (!fs.existsSync(fp)) return sendJson(res, 404, { error: 'not found' });
+    const { spawn } = require('child_process');
+    const stem = m[1].replace(/\.json$/, '');
+    const child = spawn(process.execPath,
+      [path.join(__dirname, 'scripts', 'render-quest-maps.js'), stem],
+      { cwd: __dirname });
+    let stderr = '';
+    child.stderr.on('data', c => stderr += c.toString());
+    child.on('close', code => {
+      if (code === 0) return sendJson(res, 200, { ok: true, png: `/assets/map_qa/${stem}.png` });
+      return sendJson(res, 500, { error: 'renderer failed: ' + stderr });
+    });
+    return;
+  }
+
+  return sendJson(res, 404, { error: 'not found' });
+}
+const wss = new WebSocketServer({ server: httpServer, maxPayload: 64 * 1024 });
 wss.on('connection', ws => {
   ws.on('message', raw => handleMessage(ws, raw));
   ws.on('close',  () => onLeave(ws));
@@ -2905,15 +3526,19 @@ wss.on('connection', ws => {
 });
 
 // Periodic cleanup
+function disposeRoom(c, r) {
+  if (r && r._aiTimer) { try { clearTimeout(r._aiTimer); } catch {} r._aiTimer = null; }
+  rooms.delete(c);
+}
 setInterval(() => {
   const now = Date.now();
   for (const [c, r] of rooms.entries()) {
     const idle = now - (r.lastActivityAt || r.createdAt || 0);
     const allOffline = r.players.every(p => !p.connected);
-    if (r.players.length === 0 && idle > 10 * 60 * 1000) { rooms.delete(c); continue; }
-    if (r.phase === 'lobby' && allOffline && idle > 30 * 60 * 1000) { rooms.delete(c); continue; }
-    if (r.phase === 'end' && idle > 2 * 60 * 60 * 1000) { rooms.delete(c); continue; }
-    if (idle > 24 * 60 * 60 * 1000) { rooms.delete(c); continue; }
+    if (r.players.length === 0 && idle > 10 * 60 * 1000) { disposeRoom(c, r); continue; }
+    if (r.phase === 'lobby' && allOffline && idle > 30 * 60 * 1000) { disposeRoom(c, r); continue; }
+    if (r.phase === 'end' && idle > 2 * 60 * 60 * 1000) { disposeRoom(c, r); continue; }
+    if (idle > 24 * 60 * 60 * 1000) { disposeRoom(c, r); continue; }
   }
 }, 5 * 60 * 1000);
 
@@ -2953,4 +3578,11 @@ process.on('uncaughtException', (e) => {
   console.error('[uncaughtException]', e);
   try { saveState(); } catch {}
   process.exit(1);
+});
+// Surface stray promise rejections (e.g. readBody rejecting in an async
+// handler) instead of letting them die silently. Don't exit — these
+// shouldn't be process-fatal — just log and persist current state.
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[unhandledRejection]', reason);
+  try { saveState(); } catch {}
 });
