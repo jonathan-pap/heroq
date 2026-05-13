@@ -141,17 +141,22 @@ function currentCorridorTexture() {
 }
 
 // Reference board image — decoration only, NOT consulted by render math.
+// Loads board_v2.png directly. Calibration constants are inlined (they
+// came from /assets/floors/_index.json originally but the values are
+// stable properties of board_v2.png: a 14-px black margin around the
+// art, and the playable 26×19 cells live at offset (55, 42) inside
+// the image at 40 × 39.95 px per cell).
+const REF_INDEX = {
+  srcPlayable: { x: 55, y: 42, w: 1040, h: 759 },
+  cellW: 40,
+  cellH: 759 / 19,
+};
 let REF_IMG = null;
-let REF_INDEX = null;        // _index.json from extract-room-floors.js
-async function loadReferenceImage() {
-  try {
-    const r = await fetch('/assets/floors/_index.json');
-    if (r.ok) REF_INDEX = await r.json();
-  } catch { /* no-op */ }
+function loadReferenceImage() {
   const img = new Image();
   img.onload  = () => { REF_IMG = img; draw(); };
   img.onerror = () => { REF_IMG = null; };
-  img.src = `/assets/floors/playable.png?v=${FLOORS_VER}`;
+  img.src = '/assets/board/board_v2.png';
 }
 
 async function loadMasterBoard() {
