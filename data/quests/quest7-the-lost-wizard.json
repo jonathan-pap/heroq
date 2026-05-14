@@ -1311,7 +1311,8 @@
           7
         ]
       ],
-      "facing": "rightward"
+      "facing": "rightward",
+      "_altFlipH": true
     },
     {
       "id": "f-table1",
@@ -1384,7 +1385,8 @@
           15
         ]
       ],
-      "facing": "rightward"
+      "facing": "rightward",
+      "_altFlipH": true
     },
     {
       "id": "f-weapon-rack1",

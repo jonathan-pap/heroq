@@ -1117,7 +1117,8 @@
           8
         ]
       ],
-      "facing": "leftward"
+      "facing": "leftward",
+      "_altFlipH": true
     },
     {
       "id": "f-throne1",
@@ -1128,7 +1129,7 @@
           7
         ]
       ],
-      "facing": "leftward"
+      "facing": "downward"
     },
     {
       "id": "f-table1",
