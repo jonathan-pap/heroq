@@ -165,238 +165,17 @@ document.getElementById('btn-leave').addEventListener('click', () => {
 // calls HQLobby.render(view) on each 'lobby' phase view.
 HQLobby.init({ send, getLastView: () => lastView });
 
-// ---------- Panel collapse + rails-hidden toggle ----------
-// Each panel <h3> folds its body on click. Persists per-panel id.
-// The header "☰ Panels" button hides both side rails entirely so the
-// board area gets the full width. State survives reloads.
-const PANEL_STATE_KEY    = 'hq_panel_collapsed_v1';
-const RAILS_STATE_KEY    = 'hq_rails_hidden_v1';
-const TEXTURES_STATE_KEY = 'hq_floor_textures_v1';   // '1' on / '0' off
-const LIGHT_WALLS_KEY    = 'hq_light_walls_v1';      // '1' light / '0' dark
-const OUTER_WALLS_KEY    = 'hq_outer_walls_v1';      // '1' shown / '0' hidden
-// Floor-texture preference. Default ON (string '1') if no prior choice
-// stored. Read once at boot; the options menu toggles + persists it.
-let FLOOR_TEXTURES_ON = (() => {
-  try {
-    const v = localStorage.getItem(TEXTURES_STATE_KEY);
-    return v == null ? true : v === '1';
-  } catch { return true; }
-})();
-// Wall-colour preference. Default LIGHT (cream stones, filled rects,
-// matches the editor + printed art). Off = the legacy dark brown stroke.
-let LIGHT_WALLS_ON = (() => {
-  try {
-    const v = localStorage.getItem(LIGHT_WALLS_KEY);
-    return v == null ? true : v === '1';
-  } catch { return true; }
-})();
-// Outer-perimeter wall preference. Default ON. When off, walls between
-// a revealed cell and either (a) the map edge or (b) an unrevealed
-// neighbour are skipped — the printed wall stones in the floor texture
-// provide the visual edge instead.
-let OUTER_WALLS_ON = (() => {
-  try {
-    const v = localStorage.getItem(OUTER_WALLS_KEY);
-    return v == null ? true : v === '1';
-  } catch { return true; }
-})();
-// Cross-tab live sync — if the editor toggles wall style or perimeter,
-// the game re-renders without a refresh and vice versa.
-window.addEventListener('storage', (e) => {
-  if (e.key === LIGHT_WALLS_KEY) {
-    LIGHT_WALLS_ON = e.newValue === '1' || e.newValue == null;
-    if (lastView) drawBoard(lastView);
-  } else if (e.key === OUTER_WALLS_KEY) {
-    OUTER_WALLS_ON = e.newValue === '1' || e.newValue == null;
-    if (lastView) drawBoard(lastView);
-  }
-});
+// Panel collapse + rails toggle + Options ⚙ menu + the floor/light/outer-walls
+// preference state all live in public/client/options.js — exposes
+// window.HQOptions. Init once at boot; initGameUIChrome wires the
+// game-screen chrome on first 'game' render.
+HQOptions.init({ send, getLastView: () => lastView, drawBoard: (v) => drawBoard(v) });
 
-function loadPanelState() {
-  try { return new Set(JSON.parse(localStorage.getItem(PANEL_STATE_KEY) || '[]')); }
-  catch { return new Set(); }
-}
-function savePanelState(set) {
-  try { localStorage.setItem(PANEL_STATE_KEY, JSON.stringify([...set])); } catch {}
-}
-
-const collapsedPanels = loadPanelState();
-
-function panelKey(panel) {
-  // Stable id: prefer explicit id, fall back to the first <h3>'s text.
-  if (panel.id) return panel.id;
-  const h = panel.querySelector('h3');
-  return h ? `h3:${h.textContent.trim().toLowerCase().replace(/\s+/g, '-')}` : null;
-}
-
-function wirePanelCollapse() {
-  for (const panel of document.querySelectorAll('.game-layout .panel')) {
-    const key = panelKey(panel);
-    if (!key) continue;
-    if (collapsedPanels.has(key)) panel.classList.add('collapsed');
-    const h = panel.querySelector('h3');
-    if (!h || h._wired) continue;
-    h.addEventListener('click', () => {
-      panel.classList.toggle('collapsed');
-      if (panel.classList.contains('collapsed')) collapsedPanels.add(key);
-      else collapsedPanels.delete(key);
-      savePanelState(collapsedPanels);
-    });
-    h._wired = true;
-  }
-}
-
-function applyRailsHidden(hidden) {
-  const root = document.querySelector('.game-layout');
-  if (!root) return;
-  root.classList.toggle('rails-hidden', hidden);
-  const btn = document.getElementById('btn-toggle-rails');
-  if (btn) {
-    btn.classList.toggle('active', hidden);
-    btn.textContent = hidden ? 'Show rails' : 'Hide rails';
-  }
-}
-
-document.getElementById('btn-toggle-rails')?.addEventListener('click', () => {
-  const root = document.querySelector('.game-layout');
-  const next = !root.classList.contains('rails-hidden');
-  applyRailsHidden(next);
-  try { localStorage.setItem(RAILS_STATE_KEY, next ? '1' : '0'); } catch {}
-});
-
-// Restore on first render of the game screen.
 function initGameUIChrome() {
-  wirePanelCollapse();
-  applyRailsHidden(localStorage.getItem(RAILS_STATE_KEY) === '1');
+  HQOptions.mountPanelCollapse();
+  HQOptions.applyRailsHidden(localStorage.getItem(HQOptions.RAILS_STATE_KEY) === '1');
   HQOverlays.mountHandOverlays();
-  wireOptionsMenu();
-}
-
-// ---------- Options ⚙ dropdown menu ----------
-// R5 collapses the secondary header buttons (Hide rails, Zargon speed,
-// Leave Quest) into a single ⚙ button. Anyone in the room can change
-// pacing or hide rails; Leave Quest still goes through confirm().
-function wireOptionsMenu() {
-  const btn  = document.getElementById('btn-options-menu');
-  const menu = document.getElementById('options-menu');
-  if (!btn || !menu) return;
-  if (btn._wired) return;
-  btn._wired = true;
-
-  // Lift the menu out of the parchment ancestor chain — the parchment's
-  // ::before pseudo uses mix-blend-mode which creates a stacking context
-  // that traps fixed-position descendants underneath things like the
-  // treasure deck card. Re-parenting to <body> puts the menu in the
-  // root stacking context where its z-index actually wins.
-  if (menu.parentNode !== document.body) document.body.appendChild(menu);
-
-  function positionMenu() {
-    // Anchor the right edge of the menu under the right edge of the
-    // button, hanging straight down with a 6px gap. Clamped to viewport.
-    const r = btn.getBoundingClientRect();
-    const mw = menu.offsetWidth || 230;
-    const mh = menu.offsetHeight || 200;
-    let right = window.innerWidth - r.right;
-    let top   = r.bottom + 6;
-    // If it would extend off the bottom, flip above the button.
-    if (top + mh > window.innerHeight - 4) top = Math.max(4, r.top - 6 - mh);
-    if (right < 4) right = 4;
-    menu.style.right = `${Math.round(right)}px`;
-    menu.style.left  = 'auto';
-    menu.style.top   = `${Math.round(top)}px`;
-  }
-
-  const open  = () => {
-    menu.classList.remove('hidden');
-    btn.setAttribute('aria-expanded', 'true');
-    btn.classList.add('active');
-    requestAnimationFrame(positionMenu);
-  };
-  const close = () => { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); btn.classList.remove('active'); };
-  const toggle = () => { menu.classList.contains('hidden') ? open() : close(); };
-
-  // Keep the menu pinned to the button if the window resizes while open
-  window.addEventListener('resize', () => {
-    if (!menu.classList.contains('hidden')) positionMenu();
-  });
-
-  btn.addEventListener('click', (ev) => { ev.stopPropagation(); toggle(); });
-
-  // Click outside → close. Wire once on the document.
-  document.addEventListener('click', (ev) => {
-    if (menu.classList.contains('hidden')) return;
-    if (menu.contains(ev.target) || btn.contains(ev.target)) return;
-    close();
-  });
-  document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape' && !menu.classList.contains('hidden')) close();
-  });
-
-  // Item clicks
-  menu.addEventListener('click', (ev) => {
-    const item = ev.target.closest('.item');
-    if (!item) return;
-    const opt = item.dataset.opt;
-    if (opt === 'hide-rails') {
-      const root = document.querySelector('.game-layout');
-      const next = !root.classList.contains('rails-hidden');
-      applyRailsHidden(next);
-      try { localStorage.setItem(RAILS_STATE_KEY, next ? '1' : '0'); } catch {}
-      syncOptionsMenuState(lastView);
-    } else if (opt === 'floor-textures') {
-      FLOOR_TEXTURES_ON = !FLOOR_TEXTURES_ON;
-      try { localStorage.setItem(TEXTURES_STATE_KEY, FLOOR_TEXTURES_ON ? '1' : '0'); } catch {}
-      syncOptionsMenuState(lastView);
-      if (lastView) drawBoard(lastView);
-    } else if (opt === 'light-walls') {
-      LIGHT_WALLS_ON = !LIGHT_WALLS_ON;
-      try { localStorage.setItem(LIGHT_WALLS_KEY, LIGHT_WALLS_ON ? '1' : '0'); } catch {}
-      syncOptionsMenuState(lastView);
-      if (lastView) drawBoard(lastView);
-    } else if (opt === 'outer-walls') {
-      OUTER_WALLS_ON = !OUTER_WALLS_ON;
-      try { localStorage.setItem(OUTER_WALLS_KEY, OUTER_WALLS_ON ? '1' : '0'); } catch {}
-      syncOptionsMenuState(lastView);
-      if (lastView) drawBoard(lastView);
-    } else if (opt === 'alt-furn') {
-      HQFurnitureArt.setAltOn(!HQFurnitureArt.isAltOn());
-      syncOptionsMenuState(lastView);
-    } else if (opt === 'zargon-speed') {
-      const cur = Math.max(1, Math.min(4, lastView?.config?.aiSpeed || 1));
-      const next = cur >= 4 ? 1 : cur + 1;
-      send({ type: 'setAiSpeed', value: next });
-    } else if (opt === 'leave-quest') {
-      if (confirm('Leave this quest and return to the lobby? Progress on this quest will be lost.')) {
-        send({ type: 'leaveQuest' });
-      }
-      close();
-    }
-  });
-}
-
-// Reflect the room's current settings into the menu's toggle/value
-// states. Called once per render so it stays accurate after server
-// broadcasts (other players may change pacing, etc.).
-function syncOptionsMenuState(view) {
-  const railsToggle = document.getElementById('opt-hide-rails-state');
-  if (railsToggle) {
-    const root = document.querySelector('.game-layout');
-    const hidden = !!(root && root.classList.contains('rails-hidden'));
-    railsToggle.classList.toggle('on', hidden);
-  }
-  const texToggle = document.getElementById('opt-floor-textures-state');
-  if (texToggle) texToggle.classList.toggle('on', !!FLOOR_TEXTURES_ON);
-  const lwToggle = document.getElementById('opt-light-walls-state');
-  if (lwToggle) lwToggle.classList.toggle('on', !!LIGHT_WALLS_ON);
-  const owToggle = document.getElementById('opt-outer-walls-state');
-  if (owToggle) owToggle.classList.toggle('on', !!OUTER_WALLS_ON);
-  const afToggle = document.getElementById('opt-alt-furn-state');
-  if (afToggle) afToggle.classList.toggle('on', HQFurnitureArt.isAltOn());
-  const speedVal = document.getElementById('opt-zargon-speed-value');
-  if (speedVal && view) {
-    const s = Math.max(1, Math.min(4, view.config?.aiSpeed || 1));
-    speedVal.textContent = `×${s}`;
-  }
+  HQOptions.mountOptionsMenu();
 }
 
 // Hand overlays + mobile tabs live in public/client/overlays.js — exposes
@@ -513,7 +292,7 @@ function renderGame(view) {
   if (tcCap) tcCap.textContent = (view.treasureDeckCount != null) ? view.treasureDeckCount : '—';
 
   // Sync the ⚙ options menu state (rails hidden, Zargon speed)
-  syncOptionsMenuState(view);
+  HQOptions.syncFromView(view);
 
   // Board
   drawBoard(view);
@@ -1125,7 +904,7 @@ HQTextures.init({
   ctx, CELL,
   getLastView: () => lastView,
   drawBoard:   (v) => drawBoard(v),
-  isEnabled:   () => FLOOR_TEXTURES_ON,
+  isEnabled:   () => HQOptions.floorTexturesOn(),
 });
 HQFurnitureDraw.init({ ctx, CELL });
 HQEntityDraw.init({
@@ -1375,7 +1154,7 @@ function drawTile(t, tm, rubblePairRights) {
   // them (subpixel seams expose them). Skip both when textures are on —
   // the printed art already has its own cell divisions, so we don't
   // need (or want) the procedural ones underneath.
-  if (FLOOR_TEXTURES_ON) return;
+  if (HQOptions.floorTexturesOn()) return;
   // Inner stipple — subtle pattern
   ctx.fillStyle = (t.kind === 'corridor') ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.08)';
   for (let i = 4; i < CELL; i += 8) {
@@ -1405,8 +1184,9 @@ function drawWalls(view, tm) {
   // Two styles, same toggle the editor uses:
   //   Light  → filled cream rectangle, crisp printed-art look
   //   Dark   → legacy stroked dark-brown line
-  const wallColour = LIGHT_WALLS_ON ? '#e6d9bd' : '#1c1208';
-  if (LIGHT_WALLS_ON) ctx.fillStyle = wallColour;
+  const lightOn = HQOptions.lightWallsOn();
+  const wallColour = lightOn ? '#e6d9bd' : '#1c1208';
+  if (lightOn) ctx.fillStyle = wallColour;
   else { ctx.strokeStyle = wallColour; ctx.lineWidth = WALL_THICK; }
 
   for (const t of view.tiles) {
@@ -1444,9 +1224,9 @@ function drawWalls(view, tm) {
       else if (!n.revealed) { isWall = true;  isOuter = false; }
       else                  { isWall = (n.roomId !== t.roomId); isOuter = false; }
       if (!isWall) continue;
-      if (isOuter && !OUTER_WALLS_ON) continue;
+      if (isOuter && !HQOptions.outerWallsOn()) continue;
       if (hasDoor([t.x, t.y], [t.x + s.dx, t.y + s.dy])) continue;
-      if (LIGHT_WALLS_ON) {
+      if (lightOn) {
         ctx.fillRect(s.rect[0], s.rect[1], s.rect[2], s.rect[3]);
       } else {
         ctx.beginPath();
