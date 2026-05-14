@@ -19,19 +19,18 @@ a focused pointer when working on each region.
 
 **Extraction order** (highest value first):
 
-1. ~~`game/view.js` — `viewFor`~~ **DONE** — pure projection
-   extracted with injected-deps wrapper in `server.js`. See
+1. ~~`game/view.js` — `viewFor`.~~ **DONE** — see
    [`../game/view.md`](../game/view.md).
-2. `game/quest-builder.js` — `buildBoardState` + the `build*` family
-   (line ~605, ~390 lines). Pure modulo `shuffle`. Good for
-   testability.
-3. `game/spells.js` — `resolveSpell` (line ~1714, ~170 lines). High
-   churn area; move once seams are obvious.
-4. `game/traps.js` — `triggerTrapsForCell` (line ~2071, ~70 lines).
-   Self-contained, small.
-5. `game/treasure-deck.js` — draw + effect resolver (line ~1883).
+2. ~~`game/quest-builder.js` — `buildBoardState` + the `build*`
+   family.~~ **DONE** — see
+   [`../game/quest-builder.md`](../game/quest-builder.md).
+3. `game/spells.js` — `resolveSpell` (~170 lines). High churn area;
+   move once seams are obvious.
+4. `game/traps.js` — `triggerTrapsForCell` (~70 lines). Self-contained,
+   small.
+5. `game/treasure-deck.js` — draw + effect resolver.
 6. `game/combat.js` (full) — fold damage resolution + effective dice
-   (lines ~1392 and ~1664) into the existing combat module.
+   into the existing combat module.
 
 Each extraction:
 - Targets one well-bounded region.

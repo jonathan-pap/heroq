@@ -77,17 +77,22 @@ State touched (by what remains in this region): reads everything;
 
 ---
 
-## QUEST → BOARD STATE (line ~605)
+## QUEST → BOARD STATE (line ~426)
 
-`buildBoardState`, `buildHeroes`, `buildMonsters`, `buildTreasure`,
-`buildTraps`, `buildFurnitureTraps`, `buildSecretDoors`,
-`freshGameState`. Together they convert a quest JSON + the master
-board into the runtime `state` object.
+**Extracted — see [`quest-builder.md`](quest-builder.md).** What
+remains in `server.js` is a single thin wrapper:
 
-State touched: returns a fresh state — pure modulo `shuffle`.
+```js
+function freshGameState(room) {
+  return _freshGameState(room, {
+    MASTER_BOARD, HEROES, MONSTER_TYPES, SPELLS, SPELLS_BY_ELEMENT,
+    TREASURE_DECK_TEMPLATE, quests, exploreFromHero,
+  });
+}
+```
 
-Extraction candidate: high value. Big module, no state mutation,
-pulls in master board + tables — `game/quest-builder.js`. Backlog.
+All eight `build*` helpers + the orchestrator now live in
+`game/quest-builder.js`.
 
 ---
 
@@ -326,11 +331,9 @@ Extraction candidate: low priority.
 
 Order for the next refactor pass:
 
-1. ~~**`game/view.js`** — `viewFor`. Pure projection, biggest single
-   block, immediately useful for testability.~~ **DONE** — see
-   [`view.md`](view.md).
-2. **`game/quest-builder.js`** — the `build*` family. Pure modulo
-   `shuffle`. Big block, no state mutation. Good for testability.
+1. ~~**`game/view.js`** — `viewFor`.~~ **DONE** — see [`view.md`](view.md).
+2. ~~**`game/quest-builder.js`** — the `build*` family.~~ **DONE** —
+   see [`quest-builder.md`](quest-builder.md).
 3. **`game/spells.js`** — `resolveSpell`. Biggest gameplay surface;
    high churn area. Move once the seams are obvious.
 4. **`game/traps.js`** — `triggerTrapsForCell`. Self-contained,
