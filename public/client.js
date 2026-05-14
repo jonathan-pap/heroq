@@ -910,7 +910,7 @@ HQFurnitureDraw.init({ ctx, CELL });
 HQEntityDraw.init({
   ctx, CELL,
   sprites: { monsterSprites, heroSprites, variantKey },
-  drawTileIcon: HQFurnitureArt.drawTileIcon,
+  drawTileIcon: HQTileArt.drawTileIcon,
 });
 
 // ---------- Canvas: board drawing ----------
@@ -1365,16 +1365,26 @@ const FACING_RAD = {
 // have a defined orientation (downward).
 const ROTATABLE_PIECES = new Set(['throne', 'weapon-rack']);
 
-// Furniture + tile PNG art subsystem lives in public/client/furniture-art.js.
-// Owns canonical-pieces hydration, FURN_IMG / FURN_IMG_ALT / TILE_IMG
-// caches, furn-naturals overrides, the ALT_FURN_ON pref, and the
-// per-art-set inset tables. Init once at boot.
+// Furniture PNG art subsystem lives in public/client/furniture-art.js.
+// Owns canonical-pieces hydration, FURN_IMG / FURN_IMG_ALT caches,
+// furn-naturals overrides, the ALT_FURN_ON pref, and the per-art-set
+// furniture inset tables. Overlay tiles (rubble / trap markers /
+// stairway) live in HQTileArt — see below.
 HQFurnitureArt.init({
   ctx, CELL,
   getLastView: () => lastView,
   drawBoard:   (v) => drawBoard(v),
 });
-const { getFurnImg, drawTileIcon, insetForBbox } = HQFurnitureArt;
+const { getFurnImg, insetForBbox } = HQFurnitureArt;
+
+// Overlay-tile rendering — separate module, shares the alt-art toggle.
+HQTileArt.init({
+  ctx, CELL,
+  getLastView: () => lastView,
+  drawBoard:   (v) => drawBoard(v),
+  isAltOn:     () => HQFurnitureArt.isAltOn(),
+});
+const { drawTileIcon } = HQTileArt;
 function drawFurniturePieceImage(type, px, py, pw, ph, facing, flipH, flipV) {
   const entry = getFurnImg(type);
   if (!entry || !entry.ready) return false;

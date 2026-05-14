@@ -1,7 +1,7 @@
-// HeroQuest — furniture + tile PNG art subsystem.
+// HeroQuest — furniture PNG art subsystem.
 //
-// Owns everything around the PNG-based renderer (the path that
-// supersedes the geometric fallbacks in client/furniture-draw.js):
+// Owns the PNG-based furniture renderer (the path that supersedes the
+// geometric fallbacks in client/furniture-draw.js):
 //
 //   - Canonical-pieces hydration: FURN_FILE / FURN_ALT_FILE are seeded
 //     from a hardcoded fallback and replaced on boot from
@@ -9,13 +9,16 @@
 //   - Furniture image caches: FURN_IMG (canonical) and FURN_IMG_ALT
 //     (alt printed-art set). Independent caches so toggling alt vs
 //     canonical doesn't blow away in-memory images.
-//   - Tile-icon caches: TILE_IMG (rubble + trap PNGs).
 //   - Per-art-set "natural" orientation overrides from the map editor
 //     (data/pieces/furniture-naturals.json + a localStorage fast-path).
 //   - Per-art-set inset tables (small / linear / stair / block) read
 //     from localStorage so the editor's sliders propagate to the game.
-//   - Tile-icon inset table (small / linear / block).
 //   - ALT_FURN_ON preference + cross-tab live sync.
+//
+// Overlay tiles (rubble / trap markers / stairway) live in the
+// companion module: public/client/tile-art.js (HQTileArt). The shared
+// ALT_FURN_ON pref is owned here; HQTileArt reads it via the
+// `isAltOn` callback passed at init.
 //
 // Public API (window.HQFurnitureArt):
 //   init({ ctx, CELL, getLastView, drawBoard })  — once at boot
@@ -24,11 +27,7 @@
 //   getFurnImg(type)                             — cache lookup; returns
 //                                                  { img, ready, natural }
 //                                                  or null if unmapped.
-//   drawTileIcon(kind, px, py, pw, ph)           — paint tile PNG. Returns
-//                                                  true if drawn (image
-//                                                  loaded), false otherwise.
 //   insetForBbox(cellsW, cellsH)                 — furniture inset in px
-//   tileInsetForBbox(cellsW, cellsH)             — tile-icon inset in px
 
 (function (global) {
   'use strict';
@@ -173,90 +172,11 @@
     return entry;
   }
 
-  // ----- Tile icons (rubble + trap markers + stairway) ----------------
-  // Sourced from /api/canonical-tiles (data/tiles/canonical-tiles.yaml).
-  // The hardcoded FALLBACK below keeps things rendering while the fetch
-  // is in flight, and works as a self-contained offline default. Adding
-  // a new tile is one YAML entry — the fetch on next boot picks it up.
-  //
-  // Two file maps + two image caches, mirroring the furniture path:
-  // ALT_FURN_ON drives both, so toggling the "Alt furniture art" pref
-  // swaps tiles + furniture together.
-  let TILE_FILE = {
-    // rubble / blocked
-    'rubble':         'SingleBlockedSquare.png',
-    'rubble-double':  'DoubleBlockedSquare.png',
-    'falling-block':  'FallingRock.png',
-    'block':          'FallingRock.png',
-    // traps
-    'pit':            'PitTrap.png',
-    'spear':          'SpearTrap.png',
-    'spear-trap':     'SpearTrap.png',
-    'pit-trap':       'PitTrap.png',
-    'chest-trap':     'TreasureChestTrap.png',
-    // stairway
-    'stairway':       'Stairway.png',
-  };
-  let TILE_FILE_ALT = {
-    'rubble':         'Block-Square-Single.png',
-    'rubble-double':  'Double-Block-Tile.png',
-    'stairway':       'Stair-way.png',
-  };
-  function applyCanonicalTiles(yamlData) {
-    const tiles = (yamlData && yamlData.tiles) || {};
-    const flat = {};
-    const alt  = {};
-    for (const tileId of Object.keys(tiles)) {
-      const t = tiles[tileId] || {};
-      if (!t.file || !Array.isArray(t.aliases)) continue;
-      for (const alias of t.aliases) {
-        flat[alias] = t.file;
-        if (t.altFile) alt[alias] = t.altFile;
-      }
-    }
-    if (Object.keys(flat).length) {
-      TILE_FILE = flat;
-      TILE_FILE_ALT = alt;
-      // Wipe both caches so the next draw re-resolves through the
-      // refreshed alias maps.
-      for (const k of Object.keys(TILE_IMG))     delete TILE_IMG[k];
-      for (const k of Object.keys(TILE_IMG_ALT)) delete TILE_IMG_ALT[k];
-      _redraw();
-    }
-  }
-  const TILE_IMG     = {};
-  const TILE_IMG_ALT = {};
-  function getTileImg(kind) {
-    // Alt art for tiles only kicks in when (a) the alt-art pref is on
-    // and (b) the tile has an alt file declared. Otherwise canonical.
-    const useAlt = ALT_FURN_ON && !!TILE_FILE_ALT[kind];
-    const cache = useAlt ? TILE_IMG_ALT : TILE_IMG;
-    if (cache[kind] !== undefined) return cache[kind];
-    const fn = useAlt ? TILE_FILE_ALT[kind] : TILE_FILE[kind];
-    if (!fn) { cache[kind] = null; return null; }
-    const img = new Image();
-    const entry = { img, ready: false };
-    cache[kind] = entry;
-    img.onload  = () => { entry.ready = true; _redraw(); };
-    img.onerror = () => { cache[kind] = null; };
-    img.src = `/assets/tiles/${fn}`;
-    return entry;
-  }
-  function drawTileIcon(kind, px, py, pw, ph) {
-    const e = getTileImg(kind);
-    if (!e || !e.ready) return false;
-    const img = e.img;
-    const cellsW = Math.max(1, Math.round(pw / _CELL));
-    const cellsH = Math.max(1, Math.round(ph / _CELL));
-    const inset  = tileInsetForBbox(cellsW, cellsH);
-    const slotW = pw - 2 * inset;
-    const slotH = ph - 2 * inset;
-    const ar = img.naturalWidth / img.naturalHeight;
-    let drawW = slotW, drawH = slotW / ar;
-    if (drawH > slotH) { drawH = slotH; drawW = slotH * ar; }
-    _ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
-    return true;
-  }
+  // Overlay tiles (rubble / falling-block / pit / spear / chest-trap /
+  // stairway) — the PNG-art rendering for those moved to its own module:
+  // public/client/tile-art.js exposing window.HQTileArt. This module
+  // still owns furniture insets which the renderer reads via
+  // insetForBbox below; tile insets live in HQTileArt.tileInsetForBbox.
 
   // ----- Furniture insets (per-art-set, read from editor's sliders) ---
   const FURN_INSETS_LS_KEY     = 'hq_furn_insets_v2';
@@ -286,28 +206,6 @@
     return FURN_INSETS.block;
   }
 
-  // ----- Tile-icon insets ---------------------------------------------
-  const TILE_INSETS_LS_KEY = 'hq_tile_insets_v1';
-  const DEFAULT_TILE_INSETS = { small: 4, linear: 4, block: 6 };
-  function _readTileInsets() {
-    try {
-      const j = JSON.parse(localStorage.getItem(TILE_INSETS_LS_KEY) || '{}');
-      const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
-      return {
-        small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_TILE_INSETS.small,
-        linear: Number.isFinite(j.linear) ? clamp(j.linear) : DEFAULT_TILE_INSETS.linear,
-        block:  Number.isFinite(j.block)  ? clamp(j.block)  : DEFAULT_TILE_INSETS.block,
-      };
-    } catch { return { ...DEFAULT_TILE_INSETS }; }
-  }
-  let TILE_INSETS = _readTileInsets();
-  function tileInsetForBbox(cellsW, cellsH) {
-    const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
-    if (mx <= 1) return TILE_INSETS.small;
-    if (mn <= 1) return TILE_INSETS.linear;
-    return TILE_INSETS.block;
-  }
-
   // ----- Cross-tab live sync (storage event) --------------------------
   window.addEventListener('storage', (e) => {
     if (e.key === FURN_NATURAL_LS_KEY) {
@@ -320,9 +218,6 @@
       _redraw();
     } else if (e.key === FURN_INSETS_ALT_LS_KEY) {
       FURN_INSETS_ALT = _readFurnInsetsFrom(FURN_INSETS_ALT_LS_KEY);
-      _redraw();
-    } else if (e.key === TILE_INSETS_LS_KEY) {
-      TILE_INSETS = _readTileInsets();
       _redraw();
     }
   });
@@ -342,12 +237,6 @@
         if (r.ok) applyCanonicalPieces(await r.json());
       } catch { /* offline → keep fallback */ }
     })();
-    (async () => {
-      try {
-        const r = await fetch('/api/canonical-tiles');
-        if (r.ok) applyCanonicalTiles(await r.json());
-      } catch { /* offline → keep fallback */ }
-    })();
     fetch('/api/furn-naturals').then(r => r.ok ? r.json() : null).then(j => {
       if (j && typeof j === 'object') {
         try { localStorage.setItem(FURN_NATURAL_LS_KEY, JSON.stringify(j)); } catch {}
@@ -360,8 +249,6 @@
     init,
     isAltOn, setAltOn,
     getFurnImg,
-    drawTileIcon,
     insetForBbox,
-    tileInsetForBbox,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
