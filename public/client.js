@@ -1635,129 +1635,15 @@ function renderLog(view) {
   log.scrollTop = log.scrollHeight;
 }
 
-// ---------- Floor textures (optional overlay) -------------------------
-// Same texture system the builder + map-editor use. Gated by the
-// FLOOR_TEXTURES_ON preference (Options menu → Floor textures).
-// Renders ONLY revealed cells (fog-of-war respected) by clipping to
-// the union of each room's / corridor's revealed tile rects.
-const FLOORS_VER = 3;
-function roomTextureFile(roomId) {
-  const m = String(roomId).match(/(\d+)/);
-  return m ? `room_${m[1].padStart(2, '0')}.png` : null;
-}
-const ROOM_TEX = {};   // roomId → { img, ready }
-function loadRoomTexture(roomId) {
-  if (ROOM_TEX[roomId]) return ROOM_TEX[roomId];
-  const file = roomTextureFile(roomId);
-  const img = new Image();
-  const entry = { img, ready: false };
-  ROOM_TEX[roomId] = entry;
-  if (!file) { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; return ROOM_TEX[roomId]; }
-  img.onload  = () => { entry.ready = true; if (lastView) drawBoard(lastView); };
-  img.onerror = () => { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; };
-  img.src = `/assets/room_textures/${file}?v=${FLOORS_VER}`;
-  return entry;
-}
-const CORRIDOR_TEX = {};   // file → { img, ready }
-function loadCorridorTexture(file) {
-  if (CORRIDOR_TEX[file]) return CORRIDOR_TEX[file];
-  const img = new Image();
-  const entry = { img, ready: false };
-  CORRIDOR_TEX[file] = entry;
-  img.onload  = () => { entry.ready = true; if (lastView) drawBoard(lastView); };
-  img.onerror = () => { CORRIDOR_TEX[file] = { img: null, ready: false, error: true }; };
-  img.src = `/assets/room_textures/${file}?v=${FLOORS_VER}`;
-  return entry;
-}
-// Default: corridor without walls (corridor walls live in the room
-// textures + drawWalls). If a quest ever wants the printed wall frame
-// we can expose another toggle later.
-function currentCorridorTexture() { return loadCorridorTexture('corridor_no_walls.png'); }
-
-// Room bbox cache from master board.yaml. Fetched lazily on first
-// texture render. We need the full bbox (not just revealed cells)
-// because the per-room PNG is stretched across the room's entire
-// footprint; each revealed cell then samples its correct slice.
-let ROOM_BBOX = null;             // { [roomId]: { mc, mr, spanC, spanR } }
-let ROOM_BBOX_LOADING = false;
-async function loadRoomBbox() {
-  if (ROOM_BBOX || ROOM_BBOX_LOADING) return;
-  ROOM_BBOX_LOADING = true;
-  try {
-    const r = await fetch('/api/board');
-    if (!r.ok) return;
-    const b = await r.json();
-    const bbox = {};
-    for (const room of (b.rooms || [])) {
-      let mc = 99, mr = 99, xc = -1, xr = -1;
-      for (const [c, rr] of (room.cells || [])) {
-        if (c < mc) mc = c; if (rr < mr) mr = rr;
-        if (c > xc) xc = c; if (rr > xr) xr = rr;
-      }
-      bbox[room.id] = { mc, mr, spanC: xc - mc + 1, spanR: xr - mr + 1 };
-    }
-    ROOM_BBOX = bbox;
-    if (lastView) drawBoard(lastView);
-  } catch { /* leave null — textures simply won't render until next try */ }
-  finally { ROOM_BBOX_LOADING = false; }
-}
-
-// Render textures over the base floor tiles. Called after the tile
-// loop in drawBoard. Only paints over REVEALED tiles so fog of war is
-// preserved. Each room is one drawImage stretched to its bbox area,
-// clipped to revealed cells of that room — same "blit once + clip"
-// pattern as the builder/tool.
-function drawFloorTextures(view, tm) {
-  if (!FLOOR_TEXTURES_ON) return;
-  if (!ROOM_BBOX) { loadRoomBbox(); return; }
-  const [W, H] = view.boardSize;
-
-  // Group revealed, non-blocked tiles by zone. Blocked tiles render
-  // their rubble icon over a floor base painted in drawTile (see the
-  // blocked branch there) so the floor texture is NOT drawn over the
-  // rubble.
-  const byRoom = new Map();         // roomId → [tile,...]
-  const corridorTiles = [];
-  for (const t of view.tiles) {
-    if (!t.revealed || t.blocked) continue;
-    if (t.roomId && t.kind !== 'corridor') {
-      if (!byRoom.has(t.roomId)) byRoom.set(t.roomId, []);
-      byRoom.get(t.roomId).push(t);
-    } else if (t.kind === 'corridor') {
-      corridorTiles.push(t);
-    }
-  }
-  // Rooms — one blit + clip per room
-  for (const [roomId, tiles] of byRoom) {
-    const bbox = ROOM_BBOX[roomId];
-    if (!bbox) continue;
-    const tex = loadRoomTexture(roomId);
-    if (!tex.ready || !tex.img) continue;
-    ctx.save();
-    ctx.beginPath();
-    for (const t of tiles) ctx.rect(t.x * CELL, t.y * CELL, CELL, CELL);
-    ctx.clip();
-    ctx.drawImage(tex.img,
-                  0, 0, tex.img.naturalWidth, tex.img.naturalHeight,
-                  bbox.mc * CELL, bbox.mr * CELL,
-                  bbox.spanC * CELL, bbox.spanR * CELL);
-    ctx.restore();
-  }
-  // Corridor — single blit stretched across the playable rect
-  if (corridorTiles.length) {
-    const cor = currentCorridorTexture();
-    if (cor.ready && cor.img) {
-      ctx.save();
-      ctx.beginPath();
-      for (const t of corridorTiles) ctx.rect(t.x * CELL, t.y * CELL, CELL, CELL);
-      ctx.clip();
-      ctx.drawImage(cor.img,
-                    0, 0, cor.img.naturalWidth, cor.img.naturalHeight,
-                    0, 0, W * CELL, H * CELL);
-      ctx.restore();
-    }
-  }
-}
+// Floor texture overlay lives in public/client/textures.js — exposes
+// window.HQTextures. Wire deps once; drawFloorTextures is then called
+// from drawBoard.
+HQTextures.init({
+  ctx, CELL,
+  getLastView: () => lastView,
+  drawBoard:   (v) => drawBoard(v),
+  isEnabled:   () => FLOOR_TEXTURES_ON,
+});
 
 // ---------- Canvas: board drawing ----------
 function tileMap(view) {
@@ -1810,7 +1696,7 @@ function drawBoard(view) {
   // Optional per-room / corridor texture overlay (Options → Floor
   // textures). Draws over the base floor render but UNDER walls,
   // doors, furniture, etc., so the readable game art stays on top.
-  drawFloorTextures(view, tm);
+  HQTextures.drawFloorTextures(view, tm);
   // Stair markers — group adjacent stair cells into one footprint (the
   // canonical 2x2 stairway tile renders as a single piece, not 4 tiled
   // glyphs). Only revealed cells participate so fog still hides hidden
