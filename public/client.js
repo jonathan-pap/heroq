@@ -2286,10 +2286,14 @@ const FACING_RAD = {
 const ROTATABLE_PIECES = new Set(['throne', 'weapon-rack']);
 
 // ----- Heroscribe canonical icons -----------------------------------
-// Map quest furniture `type` (kebab-case) → PNG in /assets/<dir>/
-// plus an optional `natural` orientation override and folder.
+// FURN_FILE + FURN_ALT_FILE are sourced at boot from
+// /api/canonical-pieces (which reads data/canonical-pieces.yaml). The
+// hardcoded FALLBACK keeps the game rendering while the fetch is in
+// flight, and works as a self-contained offline default. Adding a new
+// piece is now a single YAML entry — server + all three frontends
+// pick it up on reload.
 const _f = (file, natural = 'downward', dir = 'furniture') => ({ file, natural, dir });
-const FURN_FILE = {
+const FURN_FILE_FALLBACK = {
   'tomb':              _f('Tomb.png'),
   'sarcophagus':       _f('Tomb.png'),
   'sorcerer-table':    _f('SorcerersTable.png'),
@@ -2305,10 +2309,55 @@ const FURN_FILE = {
   'rack':              _f('Rack.png'),
   'chest':             _f('TreasureChest.png'),
   'throne':            _f('Throne.png'),
-  // Stair tile lives under /assets/tiles/ (heroscribe categorises it
-  // as a tile, not furniture) — the dir override points there.
   'stairway':          _f('Stairway.png', 'downward', 'tiles'),
 };
+const FURN_ALT_FILE_FALLBACK = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+let FURN_FILE     = { ...FURN_FILE_FALLBACK };
+let FURN_ALT_FILE = { ...FURN_ALT_FILE_FALLBACK };
+function applyCanonicalPieces(yamlData) {
+  const pieces = (yamlData && yamlData.pieces) || {};
+  const flat = {};
+  const alt  = {};
+  for (const pieceId of Object.keys(pieces)) {
+    const p = pieces[pieceId] || {};
+    if (!p.file || !Array.isArray(p.aliases)) continue;
+    for (const alias of p.aliases) {
+      flat[alias] = { file: p.file, natural: p.naturalDir || 'downward', dir: p.dir || 'furniture' };
+      if (p.altFile) alt[alias] = p.altFile;
+    }
+  }
+  if (Object.keys(flat).length) {
+    FURN_FILE = flat;
+    FURN_ALT_FILE = alt;
+    // Wipe per-art-set image caches so getFurnImg re-resolves with the
+    // refreshed FURN_FILE / FURN_ALT_FILE on next draw.
+    for (const k of Object.keys(FURN_IMG))     delete FURN_IMG[k];
+    for (const k of Object.keys(FURN_IMG_ALT)) delete FURN_IMG_ALT[k];
+    if (lastView) drawBoard(lastView);
+  }
+}
+(async () => {
+  try {
+    const r = await fetch('/api/canonical-pieces');
+    if (r.ok) applyCanonicalPieces(await r.json());
+  } catch { /* offline → keep fallback */ }
+})();
 
 // Furniture natural-orientation overrides — set in the map editor's
 // playground and persisted to data/furniture-naturals.json on the
@@ -2358,26 +2407,11 @@ window.addEventListener('storage', e => {
 });
 
 // Alternate furniture art — sized-name PNGs (Tomb-2x3.png, etc.).
+// FURN_ALT_FILE is populated by the canonical-pieces fetch above
+// (FURN_ALT_FILE_FALLBACK keeps things rendering in the meantime).
 // Toggleable via the Options menu's "Alt furniture art" item; shared
 // localStorage key with the editor + builder so all three surfaces
 // stay visually consistent.
-const FURN_ALT_FILE = {
-  'tomb':             'Tomb-2x3.png',
-  'sarcophagus':      'Tomb-2x3.png',
-  'sorcerer-table':   'Sorcerer Table-2x3.png',
-  'sorcerers-table':  'Sorcerer Table-2x3.png',
-  'alchemist-table':  'Alchemist Bench-2x3.png',
-  'alchemist-bench':  'Alchemist Bench-2x3.png',
-  'alchemists-bench': 'Alchemist Bench-2x3.png',
-  'table':            'Table-2x3.png',
-  'bookcase':         'Bookcase-1x3.png',
-  'cupboard':         'Cupboard-1x3.png',
-  'fireplace':        'Fireplace-1x3.png',
-  'weapon-rack':      'Weapons Rack-1x3.png',
-  'rack':             'Rack-2x3.png',
-  'chest':            'Chest-1x1.png',
-  'throne':           'Throne-1x1.png',
-};
 const FURN_ALT_KEY = 'hq_furn_alt_v1';
 let ALT_FURN_ON = (() => {
   try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }

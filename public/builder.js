@@ -204,12 +204,11 @@ function getSprite(url) {
 }
 
 // ---- Furniture icons — shared with the map-editor tool -------------
-// Same FURN_FILE_BUILTIN table, same per-type natural overrides
-// (loaded from /api/furn-naturals — same endpoint the tool writes to)
-// and same per-bucket insets (read from the same localStorage key the
-// tool writes to). This guarantees identical placement & orientation
-// between the builder and the classic editor.
-const FURN_FILE_BUILTIN = {
+// Loaded from /api/canonical-pieces (sourced from
+// data/canonical-pieces.yaml). The FALLBACK below keeps rendering
+// alive while the fetch is in flight, and stays in lock-step with
+// the YAML so an offline editor (no server) still works.
+const FURN_FILE_FALLBACK = {
   'tomb':              { file: 'Tomb.png',            natural: 'downward' },
   'sarcophagus':       { file: 'Tomb.png',            natural: 'downward' },
   'sorcerer-table':    { file: 'SorcerersTable.png',  natural: 'downward' },
@@ -227,6 +226,53 @@ const FURN_FILE_BUILTIN = {
   'throne':            { file: 'Throne.png',          natural: 'downward' },
   'stairway':          { file: 'Stairway.png',        natural: 'downward', dir: 'tiles' },
 };
+const FURN_ALT_FILE_FALLBACK = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+let FURN_FILE_BUILTIN = { ...FURN_FILE_FALLBACK };
+let FURN_ALT_FILE     = { ...FURN_ALT_FILE_FALLBACK };
+function applyCanonicalPieces(yamlData) {
+  const pieces = (yamlData && yamlData.pieces) || {};
+  const flat = {};
+  const alt  = {};
+  for (const pieceId of Object.keys(pieces)) {
+    const p = pieces[pieceId] || {};
+    if (!p.file || !Array.isArray(p.aliases)) continue;
+    for (const alias of p.aliases) {
+      flat[alias] = {
+        file:    p.file,
+        natural: p.naturalDir || 'downward',
+        dir:     p.dir || 'furniture',
+      };
+      if (p.altFile) alt[alias] = p.altFile;
+    }
+  }
+  if (Object.keys(flat).length) {
+    FURN_FILE_BUILTIN = flat;
+    FURN_ALT_FILE     = alt;
+    if (typeof draw === 'function') draw();
+  }
+}
+(async () => {
+  try {
+    const r = await fetch('/api/canonical-pieces');
+    if (r.ok) applyCanonicalPieces(await r.json());
+  } catch { /* keep fallback */ }
+})();
 const FACING_RAD_E = {
   downward:  0,
   upward:    Math.PI,
@@ -289,26 +335,11 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-// Alternate furniture art (sized-name PNGs). Shared with the editor
+// Alternate furniture art (sized-name PNGs). FURN_ALT_FILE is now
+// populated by the canonical-pieces fetch above (FURN_ALT_FILE_FALLBACK
+// keeps the toggle functional in the meantime). Shared with the editor
 // + live game via localStorage `hq_furn_alt_v1` — toggling in any
 // surface updates the others through the `storage` event.
-const FURN_ALT_FILE = {
-  'tomb':             'Tomb-2x3.png',
-  'sarcophagus':      'Tomb-2x3.png',
-  'sorcerer-table':   'Sorcerer Table-2x3.png',
-  'sorcerers-table':  'Sorcerer Table-2x3.png',
-  'alchemist-table':  'Alchemist Bench-2x3.png',
-  'alchemist-bench':  'Alchemist Bench-2x3.png',
-  'alchemists-bench': 'Alchemist Bench-2x3.png',
-  'table':            'Table-2x3.png',
-  'bookcase':         'Bookcase-1x3.png',
-  'cupboard':         'Cupboard-1x3.png',
-  'fireplace':        'Fireplace-1x3.png',
-  'weapon-rack':      'Weapons Rack-1x3.png',
-  'rack':             'Rack-2x3.png',
-  'chest':            'Chest-1x1.png',
-  'throne':           'Throne-1x1.png',
-};
 const FURN_ALT_KEY = 'hq_furn_alt_v1';
 let ALT_FURN_ON = (() => {
   try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }

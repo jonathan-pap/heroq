@@ -198,12 +198,12 @@ const ROTATABLE_FURN = new Set([
 ]);
 
 // ---- Heroscribe canonical icons + per-type natural override -----------
-// Map quest furniture `type` → PNG filename in /assets/furniture/.
-// `natural` defaults to 'downward'; this is what the live game uses
-// (see public/client.js → FURN_FILE). The editor lets you override
-// `natural` per-type in the right-hand panel; overrides persist to
-// localStorage and emit the JS code to paste back into client.js.
-const FURN_FILE_BUILTIN = {
+// Furniture metadata lives in /api/canonical-pieces (sourced from
+// data/canonical-pieces.yaml). We fetch it at boot and rebuild the
+// flat per-type lookup table the rest of this file expects. While
+// the fetch is in flight, the hardcoded FALLBACK below keeps the
+// editor functional — same shape as the YAML resolves to.
+const FURN_FILE_FALLBACK = {
   'tomb':              { file: 'Tomb.png',            natural: 'downward' },
   'sarcophagus':       { file: 'Tomb.png',            natural: 'downward' },
   'sorcerer-table':    { file: 'SorcerersTable.png',  natural: 'downward' },
@@ -219,10 +219,69 @@ const FURN_FILE_BUILTIN = {
   'rack':              { file: 'Rack.png',            natural: 'downward' },
   'chest':             { file: 'TreasureChest.png',   natural: 'downward' },
   'throne':            { file: 'Throne.png',          natural: 'downward' },
-  // Stair tile — lives under /assets/tiles/ (heroscribe categorises
-  // it as a tile, not furniture).
   'stairway':          { file: 'Stairway.png',        natural: 'downward', dir: 'tiles' },
 };
+// Alt-art fallback (sized-name icons). Populated by canonicalPieces
+// when present; kept here so the toggle still has something to swap
+// to while the fetch is pending.
+const FURN_ALT_FILE_FALLBACK = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+// Live tables, possibly replaced by canonical-pieces fetch.
+let FURN_FILE_BUILTIN = { ...FURN_FILE_FALLBACK };
+let FURN_ALT_FILE     = { ...FURN_ALT_FILE_FALLBACK };
+
+// Rebuild the flat per-type lookup from canonical-pieces YAML data.
+// Each PascalCase piece entry contributes one row per alias.
+function applyCanonicalPieces(yaml) {
+  const pieces = (yaml && yaml.pieces) || {};
+  const flat = {};
+  const alt  = {};
+  for (const pieceId of Object.keys(pieces)) {
+    const p = pieces[pieceId] || {};
+    if (!p.file || !Array.isArray(p.aliases)) continue;
+    for (const alias of p.aliases) {
+      flat[alias] = {
+        file:    p.file,
+        natural: p.naturalDir || 'downward',
+        dir:     p.dir || 'furniture',
+      };
+      if (p.altFile) alt[alias] = p.altFile;
+    }
+  }
+  if (Object.keys(flat).length) {
+    FURN_FILE_BUILTIN = flat;
+    FURN_ALT_FILE     = alt;
+    // Invalidate cached natural so the next paint re-resolves.
+    for (const t of Object.keys(FURN_IMG || {})) {
+      if (FURN_IMG[t]) FURN_IMG[t].natural = (flat[t] && flat[t].natural) || 'downward';
+    }
+    if (typeof draw === 'function') draw();
+    if (typeof renderNaturalList === 'function') {
+      try { renderNaturalList(); } catch {}
+    }
+  }
+}
+(async () => {
+  try {
+    const r = await fetch('/api/canonical-pieces');
+    if (r.ok) applyCanonicalPieces(await r.json());
+  } catch { /* offline → keep fallback */ }
+})();
 
 // Natural-orientation overrides — persisted to data/furniture-naturals.json
 // via the /api/furn-naturals endpoint. localStorage is kept as a warm
@@ -262,27 +321,13 @@ async function saveNaturalOverrides(map) {
 let NATURAL_OVERRIDES = loadNaturalOverridesLocal();
 
 // Alternate furniture art — sized-name files in /assets/furniture/
-// (Tomb-2x3.png, Bookcase-1x3.png, etc.). Toggleable via the "Alt
-// furniture art" preference (shared with the builder + live game so
-// all three surfaces stay visually consistent). Types without an alt
-// PNG fall through to the canonical file.
-const FURN_ALT_FILE = {
-  'tomb':             'Tomb-2x3.png',
-  'sarcophagus':      'Tomb-2x3.png',
-  'sorcerer-table':   'Sorcerer Table-2x3.png',
-  'sorcerers-table':  'Sorcerer Table-2x3.png',
-  'alchemist-table':  'Alchemist Bench-2x3.png',
-  'alchemist-bench':  'Alchemist Bench-2x3.png',
-  'alchemists-bench': 'Alchemist Bench-2x3.png',
-  'table':            'Table-2x3.png',
-  'bookcase':         'Bookcase-1x3.png',
-  'cupboard':         'Cupboard-1x3.png',
-  'fireplace':        'Fireplace-1x3.png',
-  'weapon-rack':      'Weapons Rack-1x3.png',
-  'rack':             'Rack-2x3.png',
-  'chest':            'Chest-1x1.png',
-  'throne':           'Throne-1x1.png',
-};
+// (Tomb-2x3.png, Bookcase-1x3.png, etc.). FURN_ALT_FILE is now
+// populated by the canonical-pieces fetch at boot (defined near
+// FURN_FILE_BUILTIN above) and the FURN_ALT_FILE_FALLBACK keeps the
+// toggle functional while the fetch is pending. Toggleable via the
+// "Alt furniture art" preference (shared with the builder + live
+// game so all three surfaces stay visually consistent). Types
+// without an alt PNG fall through to the canonical file.
 const FURN_ALT_KEY = 'hq_furn_alt_v1';
 let ALT_FURN_ON = (() => {
   try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }

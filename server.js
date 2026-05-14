@@ -125,6 +125,23 @@ let validateQuestFn = null;
 try { validateQuestFn = require('./scripts/validate-quests').validateQuest; }
 catch (e) { /* validator missing is fine */ }
 
+// Canonical-pieces YAML — single source of truth for furniture
+// metadata (file, altFile, naturalDir, aliases, footprint). Loaded
+// at boot, hot-reloaded by /api/canonical-pieces consumers via the
+// editor's PUT path (or restart on direct YAML edits).
+const CANONICAL_PIECES_PATH = path.join(__dirname, 'data', 'canonical-pieces.yaml');
+let CANONICAL_PIECES = { pieces: {} };
+function loadCanonicalPieces() {
+  try {
+    if (fs.existsSync(CANONICAL_PIECES_PATH)) {
+      CANONICAL_PIECES = loadYAML(CANONICAL_PIECES_PATH) || { pieces: {} };
+    }
+  } catch (e) {
+    console.warn('[canonical-pieces] load failed:', e.message);
+  }
+}
+loadCanonicalPieces();
+
 function loadQuests() {
   if (!fs.existsSync(QUESTS_DIR)) return;
   // Recurse one level so data/quests/sandbox/*.json (and any other
@@ -3390,6 +3407,20 @@ function handleApi(req, res, urlPath) {
   if (req.method === 'GET' && urlPath === '/api/board') {
     if (!MASTER_BOARD) return sendJson(res, 404, { error: 'no master board' });
     return sendJson(res, 200, MASTER_BOARD);
+  }
+
+  // GET /api/canonical-pieces → furniture metadata (file, altFile,
+  // naturalDir, aliases, footprint). Single source of truth for the
+  // three frontends + the XML converter + the quest validator.
+  if (req.method === 'GET' && urlPath === '/api/canonical-pieces') {
+    return sendJson(res, 200, CANONICAL_PIECES);
+  }
+  // Force a fresh YAML read without restarting the server (useful
+  // while iterating on the file). Any client can call this; we just
+  // re-parse the file and bump an in-memory copy.
+  if (req.method === 'POST' && urlPath === '/api/canonical-pieces/reload') {
+    loadCanonicalPieces();
+    return sendJson(res, 200, { ok: true, pieces: Object.keys(CANONICAL_PIECES.pieces || {}).length });
   }
 
   // GET / PUT /api/furn-naturals → per-type natural-orientation overrides

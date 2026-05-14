@@ -1,58 +1,171 @@
 # =====================================================================
-# CANONICAL FURNITURE / TILE FOOTPRINT REFERENCE
+# CANONICAL FURNITURE / TILE REFERENCE
 #
-# Single source of truth for piece dimensions. Used by:
-#   - The XML→JSON converter (scripts/build-quest1-from-xml.js)
-#   - The footprint validator (scripts/validate-quests.js)
+# Single source of truth for piece metadata. Consumed by:
+#   - The XML→JSON converter      (scripts/build-quest1-from-xml.js)
+#   - The footprint validator     (scripts/validate-quests.js)
+#   - The server's piece endpoint (server.js → /api/canonical-pieces)
+#   - All three frontends         (public/{client,map-editor,builder}.js)
 #
-# Per piece:
-#   natural: { w, h }   the piece's footprint in its NATURAL orientation.
-#                       w = cells along X (width), h = cells along Y (height).
-#                       Each piece's natural orientation is the one that
-#                       matches the canonical icon (e.g. Tomb is taller
-#                       than wide → 2W × 3H vertical sarcophagus;
-#                       Bookcase is wider than tall → 3W × 1H horizontal).
-#   anchor: TL          XML's (left, top) is always the TOP-LEFT cell of
-#                       the piece. Piece extends RIGHT (w-1 cells) and
-#                       DOWN (h-1 cells) from there.
+# Adding a new piece is ONE entry here — every surface picks it up on
+# reload (the server hot-reloads YAML on file change like quests do).
 #
-# Rotation handling (in the converter):
-#   downward / upward    → natural orientation
-#   leftward / rightward → rotated 90°: w ↔ h
+# Per piece (PascalCase key matches the heroscribe XML piece id):
+#   natural:    { w, h }    Footprint in the piece's NATURAL orientation
+#                           (width × height in cells). The natural
+#                           orientation is what the canonical PNG icon
+#                           was drawn in (e.g. Tomb is taller than wide
+#                           → 2W × 3H; Bookcase wider than tall → 3W ×
+#                           1H).
+#   anchor:     TL          XML's (left, top) is always the TOP-LEFT
+#                           cell. Piece extends RIGHT (w-1) and DOWN
+#                           (h-1) from there.
+#   file:       <name>.png  Canonical heroscribe icon under
+#                           /assets/<dir>/. `dir` defaults to
+#                           'furniture'.
+#   altFile:    <name>.png  Optional alt-art variant ("sized icons" —
+#                           Tomb-2x3.png etc.). Toggled via the Alt
+#                           furniture art preference. Falls through to
+#                           `file` when missing.
+#   naturalDir: <direction> The direction the piece FACES in its
+#                           natural PNG: downward / upward / leftward
+#                           / rightward. Used to compute rotation when
+#                           a quest places the piece with a different
+#                           `facing`.
+#   aliases:    [list]      Lower-case kebab-case type strings used in
+#                           quest JSONs that map to this piece. All
+#                           three frontends resolve through the alias
+#                           map first.
+#   dir:        <folder>    Optional override for the asset folder.
+#                           Defaults to 'furniture'; tiles like the
+#                           stairway live under /assets/tiles/ instead.
+#
+# Rotation handling (in the converter / renderers):
+#   downward / upward    → natural orientation (no w↔h swap)
+#   leftward / rightward → rotated 90° (w ↔ h)
 # =====================================================================
 
 pieces:
 
-  # 2 × 3 vertical sarcophagus — tomb. Per the canonical Quest 1 layout
-  # the sarcophagus stands upright, taller than wide.
-  Tomb:                { natural: { w: 2, h: 3 }, anchor: TL }
+  # ---------------------------------------------------------------------
+  # 2 × 3 vertical sarcophagus — tomb.
+  Tomb:
+    natural:    { w: 2, h: 3 }
+    anchor:     TL
+    file:       Tomb.png
+    altFile:    Tomb-2x3.png
+    naturalDir: downward
+    aliases:    [tomb, sarcophagus]
 
+  # ---------------------------------------------------------------------
   # 3 × 2 horizontal pieces — sorcerer's table, alchemist's bench, table.
-  # Wider than tall, anchor at top-left, extends right + down.
-  SorcerersTable:      { natural: { w: 3, h: 2 }, anchor: TL }
-  AlchemistsBench:     { natural: { w: 3, h: 2 }, anchor: TL }
-  Table:               { natural: { w: 3, h: 2 }, anchor: TL }
+  SorcerersTable:
+    natural:    { w: 3, h: 2 }
+    anchor:     TL
+    file:       SorcerersTable.png
+    altFile:    Sorcerer Table-2x3.png
+    naturalDir: downward
+    aliases:    [sorcerer-table, sorcerers-table]
 
+  AlchemistsBench:
+    natural:    { w: 3, h: 2 }
+    anchor:     TL
+    file:       AlchemistsBench.png
+    altFile:    Alchemist Bench-2x3.png
+    naturalDir: upward
+    aliases:    [alchemist-table, alchemist-bench, alchemists-bench]
+
+  Table:
+    natural:    { w: 3, h: 2 }
+    anchor:     TL
+    file:       Table.png
+    altFile:    Table-2x3.png
+    naturalDir: downward
+    aliases:    [table]
+
+  # ---------------------------------------------------------------------
   # 3 × 1 horizontal pieces — bookcase, cupboard, fireplace, weapons-rack.
-  # Long thin pieces along the wall.
-  Bookcase:            { natural: { w: 3, h: 1 }, anchor: TL }
-  Cupboard:            { natural: { w: 3, h: 1 }, anchor: TL }
-  Fireplace:           { natural: { w: 3, h: 1 }, anchor: TL }
-  WeaponsRack:         { natural: { w: 3, h: 1 }, anchor: TL }
+  Bookcase:
+    natural:    { w: 3, h: 1 }
+    anchor:     TL
+    file:       Bookcase.png
+    altFile:    Bookcase-1x3.png
+    naturalDir: downward
+    aliases:    [bookcase]
 
-  # 2 × 3 vertical piece — skull / iron rack. Per canonical it's larger
-  # than the simple 1×3 column — same footprint as Tomb (2W × 3H) but
-  # vertical orientation (skulls / weapons stacked).
-  Rack:                { natural: { w: 2, h: 3 }, anchor: TL }
+  Cupboard:
+    natural:    { w: 3, h: 1 }
+    anchor:     TL
+    file:       Cupboard.png
+    altFile:    Cupboard-1x3.png
+    naturalDir: downward
+    aliases:    [cupboard]
 
-  # 2 × 1 horizontal pair — double-blocked rubble.
-  DoubleBlockedSquare: { natural: { w: 2, h: 1 }, anchor: TL }
+  Fireplace:
+    natural:    { w: 3, h: 1 }
+    anchor:     TL
+    file:       Fireplace.png
+    altFile:    Fireplace-1x3.png
+    naturalDir: downward
+    aliases:    [fireplace]
 
-  # 2 × 2 — staircase fan.
-  Stairway:            { natural: { w: 2, h: 2 }, anchor: TL }
+  WeaponsRack:
+    natural:    { w: 3, h: 1 }
+    anchor:     TL
+    file:       WeaponsRack.png
+    altFile:    Weapons Rack-1x3.png
+    naturalDir: downward
+    aliases:    [weapon-rack, weapons-rack]
 
+  # ---------------------------------------------------------------------
+  # 2 × 3 vertical — skull / iron rack.
+  Rack:
+    natural:    { w: 2, h: 3 }
+    anchor:     TL
+    file:       Rack.png
+    altFile:    Rack-2x3.png
+    naturalDir: downward
+    aliases:    [rack]
+
+  # ---------------------------------------------------------------------
+  # 2 × 1 horizontal — double-blocked rubble (no aliases / dir / alt
+  # because it's a tile, drawn by the rubble pair-merge code path).
+  DoubleBlockedSquare:
+    natural:    { w: 2, h: 1 }
+    anchor:     TL
+
+  # ---------------------------------------------------------------------
+  # 2 × 2 — staircase fan (lives under /assets/tiles/, not /furniture/).
+  Stairway:
+    natural:    { w: 2, h: 2 }
+    anchor:     TL
+    file:       Stairway.png
+    naturalDir: downward
+    aliases:    [stairway]
+    dir:        tiles
+
+  # ---------------------------------------------------------------------
   # 1 × 1 singletons.
-  SingleBlockedSquare: { natural: { w: 1, h: 1 }, anchor: TL }
-  Throne:              { natural: { w: 1, h: 1 }, anchor: TL }
-  Door:                { natural: { w: 1, h: 1 }, anchor: TL }
-  TreasureChest:       { natural: { w: 1, h: 1 }, anchor: TL }
+  SingleBlockedSquare:
+    natural:    { w: 1, h: 1 }
+    anchor:     TL
+
+  Throne:
+    natural:    { w: 1, h: 1 }
+    anchor:     TL
+    file:       Throne.png
+    altFile:    Throne-1x1.png
+    naturalDir: downward
+    aliases:    [throne]
+
+  Door:
+    natural:    { w: 1, h: 1 }
+    anchor:     TL
+
+  TreasureChest:
+    natural:    { w: 1, h: 1 }
+    anchor:     TL
+    file:       TreasureChest.png
+    altFile:    Chest-1x1.png
+    naturalDir: downward
+    aliases:    [chest]
