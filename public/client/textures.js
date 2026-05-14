@@ -26,29 +26,36 @@
   let _getLastView = null;
   let _drawBoard = null;
   let _isEnabled = () => true;
+  let _getMode = () => 'canonical';   // 'off' | 'canonical' | 'alt'
 
   const FLOORS_VER = 3;
 
-  function roomTextureFile(roomId) {
+  function roomTextureFile(roomId, mode) {
     const m = String(roomId).match(/(\d+)/);
-    return m ? `room_${m[1].padStart(2, '0')}.png` : null;
+    if (!m) return null;
+    const n = m[1].padStart(2, '0');
+    return mode === 'alt' ? `room_${n}_alt.png` : `room_${n}.png`;
   }
 
-  // roomId → { img, ready }
-  const ROOM_TEX = {};
+  // Two caches — one per art set — so toggling alt vs canonical does
+  // not blow away images already in memory.
+  // mode → roomId → { img, ready }
+  const ROOM_TEX = { canonical: {}, alt: {} };
   function loadRoomTexture(roomId) {
-    if (ROOM_TEX[roomId]) return ROOM_TEX[roomId];
-    const file = roomTextureFile(roomId);
+    const mode = _getMode() === 'alt' ? 'alt' : 'canonical';
+    const cache = ROOM_TEX[mode];
+    if (cache[roomId]) return cache[roomId];
+    const file = roomTextureFile(roomId, mode);
     const img = new Image();
     const entry = { img, ready: false };
-    ROOM_TEX[roomId] = entry;
-    if (!file) { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; return ROOM_TEX[roomId]; }
+    cache[roomId] = entry;
+    if (!file) { cache[roomId] = { img: null, ready: false, error: true }; return cache[roomId]; }
     img.onload  = () => {
       entry.ready = true;
       const v = _getLastView && _getLastView();
       if (v && _drawBoard) _drawBoard(v);
     };
-    img.onerror = () => { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; };
+    img.onerror = () => { cache[roomId] = { img: null, ready: false, error: true }; };
     img.src = `/assets/room_textures/${file}?v=${FLOORS_VER}`;
     return entry;
   }
@@ -167,6 +174,7 @@
     _getLastView = deps.getLastView;
     _drawBoard = deps.drawBoard;
     if (typeof deps.isEnabled === 'function') _isEnabled = deps.isEnabled;
+    if (typeof deps.getMode === 'function') _getMode = deps.getMode;
   }
 
   global.HQTextures = { init, drawFloorTextures };

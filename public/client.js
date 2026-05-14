@@ -905,6 +905,7 @@ HQTextures.init({
   getLastView: () => lastView,
   drawBoard:   (v) => drawBoard(v),
   isEnabled:   () => HQOptions.floorTexturesOn(),
+  getMode:     () => HQOptions.floorTexturesMode(),
 });
 HQFurnitureDraw.init({ ctx, CELL });
 HQEntityDraw.init({

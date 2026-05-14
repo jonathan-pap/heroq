@@ -80,7 +80,14 @@
       <label style="margin-left:18px;">
         <input type="checkbox" id="layer-outerWalls" checked> Outer walls (perimeter)
       </label>
-      <label><input type="checkbox" id="layer-floors"     checked> <strong>Floor textures</strong> (per-room)</label>
+      <label>
+        <strong>Floor textures</strong>
+        <select id="layer-floors-mode" style="margin-left:6px;">
+          <option value="off">Off</option>
+          <option value="canonical" selected>Canonical PNGs</option>
+          <option value="alt">Alt PNGs</option>
+        </select>
+      </label>
       <label style="margin-left:18px;">
         <input type="checkbox" id="layer-corridorWalls"> Corridor: include walls
       </label>
@@ -186,6 +193,6 @@
 </main>
 
 <script src="shared/rules.js?v=1"></script>
-<script src="map-editor.js?v=51"></script>
+<script src="map-editor.js?v=52"></script>
 </body>
 </html>

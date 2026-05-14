@@ -401,22 +401,27 @@ function getFurnImg(type) {
 // art's tile-divider lines stay continuous within each region.
 const FLOORS_VER = 3;   // bump together with map-editor.js cache version
 
-function roomTextureFile(roomId) {
+function roomTextureFile(roomId, mode) {
   const m = String(roomId).match(/(\d+)/);
   if (!m) return null;
-  return `room_${m[1].padStart(2, '0')}.png`;
+  const n = m[1].padStart(2, '0');
+  return mode === 'alt' ? `room_${n}_alt.png` : `room_${n}.png`;
 }
 
-const ROOM_TEX = {};   // roomId → { img, ready }
+// Two caches keyed by mode so toggling alt vs canonical does not blow
+// away images already loaded for the other set.
+const ROOM_TEX = { canonical: {}, alt: {} };
 function loadRoomTexture(roomId) {
-  if (ROOM_TEX[roomId]) return ROOM_TEX[roomId];
-  const file = roomTextureFile(roomId);
+  const mode = state.layers.floors === 'alt' ? 'alt' : 'canonical';
+  const cache = ROOM_TEX[mode];
+  if (cache[roomId]) return cache[roomId];
+  const file = roomTextureFile(roomId, mode);
   const img = new Image();
   const entry = { img, ready: false };
-  ROOM_TEX[roomId] = entry;
-  if (!file) { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; return ROOM_TEX[roomId]; }
+  cache[roomId] = entry;
+  if (!file) { cache[roomId] = { img: null, ready: false, error: true }; return cache[roomId]; }
   img.onload  = () => { entry.ready = true; draw(); };
-  img.onerror = () => { ROOM_TEX[roomId] = { img: null, ready: false, error: true }; };
+  img.onerror = () => { cache[roomId] = { img: null, ready: false, error: true }; };
   img.src = `/assets/room_textures/${file}?v=${FLOORS_VER}`;
   return entry;
 }
@@ -685,7 +690,10 @@ const state = {
     secret: true, monsters: true, treasure: true, traps: true,
     blocked: true, start: true, heroes: true, darkmask: true,
     walls: true, rooms: true, roomLabels: true,
-    floors: true,
+    // `floors` is a 3-state mode shared with the live game's options
+    // menu via localStorage hq_floor_textures_v2 — 'off' / 'canonical'
+    // / 'alt'. Migrates the legacy v1 boolean on first read.
+    floors: 'canonical',
   },
   corridorWalls: false,  // false → corridor_no_walls.png (default); true → corridor.png
   roomBbox: {},         // roomId → { mc, mr, xc, xr, spanC, spanR }
@@ -697,6 +705,17 @@ const state = {
 // toggling in either place syncs the other tab through `storage` events.
 const LIGHT_WALLS_KEY = 'hq_light_walls_v1';
 const OUTER_WALLS_KEY = 'hq_outer_walls_v1';
+const TEXTURES_MODE_KEY  = 'hq_floor_textures_v2';   // 'off' / 'canonical' / 'alt'
+const TEXTURES_LEGACY_KEY = 'hq_floor_textures_v1';  // legacy boolean ('1'/'0')
+state.layers.floors = (() => {
+  try {
+    const v2 = localStorage.getItem(TEXTURES_MODE_KEY);
+    if (v2 === 'off' || v2 === 'canonical' || v2 === 'alt') return v2;
+    const v1 = localStorage.getItem(TEXTURES_LEGACY_KEY);
+    if (v1 === '0') return 'off';
+    return 'canonical';
+  } catch { return 'canonical'; }
+})();
 state.lightWalls = (() => {
   try {
     const v = localStorage.getItem(LIGHT_WALLS_KEY);
@@ -720,6 +739,13 @@ window.addEventListener('storage', (e) => {
     const el = document.getElementById('layer-outerWalls');
     if (el) el.checked = state.outerWalls;
     draw();
+  } else if (e.key === TEXTURES_MODE_KEY) {
+    if (e.newValue === 'off' || e.newValue === 'canonical' || e.newValue === 'alt') {
+      state.layers.floors = e.newValue;
+      const sel = document.getElementById('layer-floors-mode');
+      if (sel) sel.value = e.newValue;
+      draw();
+    }
   }
 });
 
@@ -793,9 +819,25 @@ function bindUi() {
   $('quest-filter').addEventListener('input', renderList);
 
   for (const k of Object.keys(state.layers)) {
+    if (k === 'floors') continue;   // 3-state dropdown — handled below
     const el = $('layer-' + k);
     if (!el) continue;
     el.addEventListener('change', () => { state.layers[k] = el.checked; draw(); });
+  }
+
+  // Floor textures — 3-state dropdown (off / canonical / alt). Synced
+  // with the live game's options menu via localStorage hq_floor_textures_v2.
+  const floorsSel = $('layer-floors-mode');
+  if (floorsSel) {
+    floorsSel.value = state.layers.floors;
+    floorsSel.addEventListener('change', () => {
+      state.layers.floors = floorsSel.value;
+      try {
+        localStorage.setItem(TEXTURES_MODE_KEY, floorsSel.value);
+        localStorage.setItem(TEXTURES_LEGACY_KEY, floorsSel.value === 'off' ? '0' : '1');
+      } catch {}
+      draw();
+    });
   }
 
   // Corridor variant toggle — not a "layer" (it's the source asset
@@ -805,7 +847,7 @@ function bindUi() {
     cwToggle.checked = state.corridorWalls;
     cwToggle.addEventListener('change', () => {
       state.corridorWalls = cwToggle.checked;
-      if (state.layers.floors) draw();
+      if (state.layers.floors !== 'off') draw();
     });
   }
 
@@ -1795,7 +1837,7 @@ function drawBoard() {
   }
   state._outerDark = outerDark;
 
-  const useFloorTex = state.layers.floors;
+  const useFloorTex = state.layers.floors !== 'off';
   // Floor render — per-room blit + clip, then corridor blit + clip.
   // Each region's texture is drawn ONCE stretched to its cell
   // footprint (or the playable rect for corridors), clipped to the

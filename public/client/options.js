@@ -40,14 +40,22 @@
   const TEXTURES_STATE_KEY = 'hq_floor_textures_v1';   // '1' on / '0' off
   const LIGHT_WALLS_KEY    = 'hq_light_walls_v1';      // '1' light / '0' dark
   const OUTER_WALLS_KEY    = 'hq_outer_walls_v1';      // '1' shown / '0' hidden
+  const TEXTURES_MODE_KEY  = 'hq_floor_textures_v2';   // 'off' / 'canonical' / 'alt'
 
   // ----- Boolean preference state -------------------------------------
-  // Read once at boot. Default ON for all three.
-  let FLOOR_TEXTURES_ON = (() => {
+  // Floor textures: 3-state ('off' / 'canonical' / 'alt'). Migrates the
+  // legacy v1 boolean (`'1'` / `'0'`) on first read so users keep their
+  // existing on/off preference; default is 'canonical' when neither key
+  // is set.
+  const TEXTURE_MODES = ['off', 'canonical', 'alt'];
+  let FLOOR_TEXTURES_MODE = (() => {
     try {
-      const v = localStorage.getItem(TEXTURES_STATE_KEY);
-      return v == null ? true : v === '1';
-    } catch { return true; }
+      const v2 = localStorage.getItem(TEXTURES_MODE_KEY);
+      if (v2 != null && TEXTURE_MODES.indexOf(v2) >= 0) return v2;
+      const v1 = localStorage.getItem(TEXTURES_STATE_KEY);
+      if (v1 === '0') return 'off';
+      return 'canonical';
+    } catch { return 'canonical'; }
   })();
   let LIGHT_WALLS_ON = (() => {
     try {
@@ -62,7 +70,17 @@
     } catch { return true; }
   })();
 
-  function floorTexturesOn() { return FLOOR_TEXTURES_ON; }
+  function floorTexturesMode() { return FLOOR_TEXTURES_MODE; }
+  function floorTexturesOn()   { return FLOOR_TEXTURES_MODE !== 'off'; }
+  function cycleFloorTextures() {
+    const idx = TEXTURE_MODES.indexOf(FLOOR_TEXTURES_MODE);
+    FLOOR_TEXTURES_MODE = TEXTURE_MODES[(idx + 1) % TEXTURE_MODES.length];
+    try {
+      localStorage.setItem(TEXTURES_MODE_KEY, FLOOR_TEXTURES_MODE);
+      // Keep the legacy boolean in sync so nothing else regresses.
+      localStorage.setItem(TEXTURES_STATE_KEY, FLOOR_TEXTURES_MODE === 'off' ? '0' : '1');
+    } catch {}
+  }
   function lightWallsOn()    { return LIGHT_WALLS_ON; }
   function outerWallsOn()    { return OUTER_WALLS_ON; }
 
@@ -190,8 +208,7 @@
         try { localStorage.setItem(RAILS_STATE_KEY, next ? '1' : '0'); } catch {}
         refresh();
       } else if (opt === 'floor-textures') {
-        FLOOR_TEXTURES_ON = !FLOOR_TEXTURES_ON;
-        try { localStorage.setItem(TEXTURES_STATE_KEY, FLOOR_TEXTURES_ON ? '1' : '0'); } catch {}
+        cycleFloorTextures();
         refresh();
         redraw();
       } else if (opt === 'light-walls') {
@@ -232,7 +249,11 @@
       railsToggle.classList.toggle('on', hidden);
     }
     const texToggle = document.getElementById('opt-floor-textures-state');
-    if (texToggle) texToggle.classList.toggle('on', !!FLOOR_TEXTURES_ON);
+    if (texToggle) {
+      const labels = { off: 'Off', canonical: 'Canon', alt: 'Alt' };
+      texToggle.textContent = labels[FLOOR_TEXTURES_MODE] || '?';
+      texToggle.classList.toggle('on', FLOOR_TEXTURES_MODE !== 'off');
+    }
     const lwToggle = document.getElementById('opt-light-walls-state');
     if (lwToggle) lwToggle.classList.toggle('on', !!LIGHT_WALLS_ON);
     const owToggle = document.getElementById('opt-outer-walls-state');
@@ -260,6 +281,11 @@
       } else if (e.key === OUTER_WALLS_KEY) {
         OUTER_WALLS_ON = e.newValue === '1' || e.newValue == null;
         const v = _getLastView(); if (v) _drawBoard(v);
+      } else if (e.key === TEXTURES_MODE_KEY) {
+        if (e.newValue && TEXTURE_MODES.indexOf(e.newValue) >= 0) {
+          FLOOR_TEXTURES_MODE = e.newValue;
+        }
+        const v = _getLastView(); if (v) _drawBoard(v);
       }
     });
 
@@ -274,7 +300,8 @@
 
   global.HQOptions = {
     init,
-    floorTexturesOn, lightWallsOn, outerWallsOn,
+    floorTexturesOn, floorTexturesMode, cycleFloorTextures,
+    lightWallsOn, outerWallsOn,
     mountPanelCollapse, applyRailsHidden, mountOptionsMenu,
     syncFromView,
     // Expose the rails-state key so initGameUIChrome can read it on first
