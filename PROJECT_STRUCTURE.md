@@ -26,9 +26,15 @@ renders to a `<canvas>` with raster sprites under `assets/`.
 HTTP / WebSocket
    ↑
    ├─ server.js (state authority, game loop, AI, fog of war)
+   │   └─ game/*.js (rules modules: combat, los, pathfinding,
+   │                 objectives, view, spells, traps, treasure-deck,
+   │                 quest-builder, util)
    ├─ bots.js   (Zargon AI helpers consumed by server.js)
    ↓
    ├─ public/client.js      (live game UI on /index.html)
+   │   └─ public/client/*.js (subsystems: sprites, audio, modals,
+   │                          textures, furniture-draw, furniture-art,
+   │                          card-preview, overlays, lobby)
    ├─ public/map-editor.js  (quest authoring on /map-editor.html)
    └─ public/builder.js     (layered-render playground on /builder.html)
 ```
@@ -74,9 +80,14 @@ HTTP / WebSocket
 
 ### Visuals
 - **Live game render** → `public/client.js` (search `drawBoard`)
-- **Floor textures** → `assets/room_textures/` + `public/client.js` `drawFloorTextures`
+- **Floor textures** → `assets/room_textures/` + `public/client/textures.js`
 - **Walls/doors** → `public/client.js` `drawWalls` / `drawDoor`
-- **Furniture art** → `data/canonical-pieces.yaml` (file/altFile/aliases)
+- **Furniture PNG layer** → `public/client/furniture-art.js` (image cache, alt-art toggle, naturals/inset overrides)
+- **Furniture pixel-art fallback** → `public/client/furniture-draw.js` (12 piece primitives)
+- **Sprites (monsters / heroes)** → `public/client/sprites.js` (`HQSprites`)
+- **Furniture metadata** → `data/canonical-pieces.yaml` (file/altFile/aliases)
+- **Sound effects (synth)** → `public/client/audio.js` (`HQAudio`)
+- **Modal dialogs** → `public/client/modals.js`
 
 ### Authoring tools
 - **Map editor (place pieces)** → `public/map-editor.js`

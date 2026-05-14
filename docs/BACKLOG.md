@@ -8,7 +8,55 @@ into the relevant folder's README as historical context).
 
 ---
 
-## ~~Continue server.js module extraction (Phases B + C)~~ DONE
+## ~~Client.js Phase B — modularize the browser client~~ DONE
+
+`public/client.js` shrunk from 3,563 → 2,202 lines (-38%) across
+nine splits. Same convention as `public/shared/rules.js` —
+classic-script IIFE on a `window.HQ<Name>` namespace, no
+`<script type="module">` switch, no build step.
+
+Modules extracted (all under [`../public/client/`](../public/client/)):
+
+| Module | Public on `window` | What it owns |
+|---|---|---|
+| `sprites.js` | `HQSprites` | monster/hero PNG tables + variant token URLs |
+| `audio.js` | `HQAudio` | Web Audio SFX synth + 🔊 / 🔇 toggle |
+| `modals.js` | `HQModals` | combat / treasure / end / save / restart dialogs |
+| `textures.js` | `HQTextures` | room + corridor floor-texture overlay |
+| `furniture-draw.js` | `HQFurnitureDraw` | 12 pixel-art furniture primitives + drawShape dispatcher |
+| `card-preview.js` | `HQCardPreview` | hover-preview popover for spell / equipment thumbs |
+| `overlays.js` | `HQOverlays` | hand overlays + mobile bottom-tab switcher |
+| `furniture-art.js` | `HQFurnitureArt` | canonical-pieces hydration + FURN_IMG / TILE_IMG / inset tables / ALT_FURN_ON pref |
+| `lobby.js` | `HQLobby` | lobby render + spell-draft picker + form-control wiring |
+
+See [`../public/FRONTEND.md`](../public/FRONTEND.md) (`Client splits`
+table) for the per-module deps contract.
+
+What remains in `client.js`: WebSocket plumbing, screens / state
+apply, game render pipeline (`drawBoard` + `drawTile` + `drawWalls`
++ `drawDoor` + hero / monster / treasure / secretDoor / trap
+painters + reachable / hover-path), turn controls, hero strip,
+header buttons, log, sidebar tabs, click handling + tooltip, panel
+collapse, options menu, boot.
+
+---
+
+## ~~Test coverage for extracted game/ modules (Phase A)~~ DONE
+
+`28dff9f` added 62 new tests across four files for the modules that
+were extracted in Phase B+C but didn't have direct unit coverage:
+
+- [`test/combat.test.js`](../test/combat.test.js) — 21 tests
+- [`test/spells.test.js`](../test/spells.test.js) — 16 tests
+- [`test/traps.test.js`](../test/traps.test.js) — 11 tests
+- [`test/treasure-deck.test.js`](../test/treasure-deck.test.js) — 14 tests
+
+Total suite: 147 → 210 passing. Uses a `stubRandom(seq)` helper to
+make dice-roll branches deterministic.
+
+---
+
+## ~~Server.js module extraction (Phases B + C)~~ DONE
 
 All six planned extractions landed. `server.js` shrunk from 3,625 →
 2,441 lines (-33%). See [`../game/RULES.md`](../game/RULES.md) for
