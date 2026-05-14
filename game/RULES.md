@@ -27,6 +27,7 @@ working on it.
 | [`los.js`](los.js) | [`los.md`](los.md) | Line-of-sight + occupant queries (`tileAt`, `occupantAt`, `lineOfSight`, `isMultiShareCell`, `isMonsterVisibleToHeroes`). |
 | [`pathfinding.js`](pathfinding.js) | [`pathfinding.md`](pathfinding.md) | BFS pathfinder + corridor branch counter. `passable` is injected by the caller. |
 | [`objectives.js`](objectives.js) | [`objectives.md`](objectives.md) | Quest-objective evaluation — `_evalObjectiveOne`, `evaluateObjectives`, `requiredObjectivesMet`. Pure; the state-mutating `checkEndConditions` stays in `server.js`. |
+| [`view.js`](view.js) | [`view.md`](view.md) | Per-tab view projection (`viewFor`). Pure read of room + state. Server.js wraps it with deps (HEROES / MONSTER_TYPES / seatsOf / currentTurn / …) supplied fresh per call. |
 | [`fog.js`](fog.js) | — | Fog-of-war logic — which cells are revealed for each hero given the current movement / LoS / open-door / blocked state. Tested in [`../test/fog.test.js`](../test/fog.test.js). |
 
 ---

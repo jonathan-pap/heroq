@@ -66,14 +66,14 @@ Extraction candidate: low priority.
 
 ## MESSAGING / VIEW FILTERING (line ~366)
 
-`send`, `broadcastRoom`, `logEvent`, `seatsOf`, `isMyTurn`,
-**`viewFor(room, token)`** — the giant projection that produces the
-per-tab payload.
+`send`, `broadcastRoom`, `logEvent`, `seatsOf`, `isMyTurn`.
 
-State touched: reads everything; emits log entries (`logEvent`).
+**`viewFor` is extracted — see [`view.md`](view.md).** The local
+`viewFor` here is a thin wrapper that supplies the YAML data tables
++ turn helpers + effective-dice resolvers fresh on every call.
 
-`viewFor` is 200+ lines and PURE in shape (state → projection). High
-extraction value as `game/view.js` — already on the backlog.
+State touched (by what remains in this region): reads everything;
+`logEvent` mutates `room.state.log`.
 
 ---
 
@@ -324,10 +324,11 @@ Extraction candidate: low priority.
 
 ## Extraction priority summary
 
-When the next refactor pass happens, this is the order I'd tackle in:
+Order for the next refactor pass:
 
-1. **`game/view.js`** — `viewFor`. Pure projection, biggest single
-   block, immediately useful for testability.
+1. ~~**`game/view.js`** — `viewFor`. Pure projection, biggest single
+   block, immediately useful for testability.~~ **DONE** — see
+   [`view.md`](view.md).
 2. **`game/quest-builder.js`** — the `build*` family. Pure modulo
    `shuffle`. Big block, no state mutation. Good for testability.
 3. **`game/spells.js`** — `resolveSpell`. Biggest gameplay surface;

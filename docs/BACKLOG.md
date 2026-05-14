@@ -19,8 +19,9 @@ a focused pointer when working on each region.
 
 **Extraction order** (highest value first):
 
-1. `game/view.js` — `viewFor` (line ~366, ~200 lines). Pure
-   projection, big block, immediately testable.
+1. ~~`game/view.js` — `viewFor`~~ **DONE** — pure projection
+   extracted with injected-deps wrapper in `server.js`. See
+   [`../game/view.md`](../game/view.md).
 2. `game/quest-builder.js` — `buildBoardState` + the `build*` family
    (line ~605, ~390 lines). Pure modulo `shuffle`. Good for
    testability.
