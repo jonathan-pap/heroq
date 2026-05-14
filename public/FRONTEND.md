@@ -81,6 +81,7 @@ pollution beyond the explicit namespace.
 |---|---|---|
 | `client/sprites.js` | `HQSprites` | Per-type PNG name tables (`MONSTER_TYPE_FILE`, `HERO_FILE`, `HERO_NAMES`, `HERO_VARIANTS`), the two mutable sprite caches (`monsterSprites`, `heroSprites`), variant URL builders, and `load({ onLoaded })` which kicks off async PNG fetches. The renderer destructures the caches once at boot so they read unprefixed. |
 | `client/audio.js` | `HQAudio` | Web Audio synth — `sfx(name)` table (door / combat / kill / spell / reveal / treasure / boss / victory / defeat), `fireSfxFromView(view)` which diffs log + combat for new events, `reset()` for screen transitions, `mount()` for the corner 🔊 / 🔇 toggle. Mute pref persists in `localStorage.hq_audio`. |
+| `client/modals.js` | `HQModals` | Combat-result, treasure-card, end-of-quest, save-or-die, and restart dialogs. `showCombatModal(combat)` / `showTreasureCardModal(card)` paint the body and reveal. `init({ send, getLastView })` once at boot to wire the dismiss buttons (they send `dismissCombat` / `dismissTreasureCard` / `restart` / `choosePotion` back to the server). |
 
 Adding another split:
 

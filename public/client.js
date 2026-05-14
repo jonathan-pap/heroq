@@ -938,7 +938,7 @@ function renderGame(view) {
   // Combat modal
   if (view.combat && view.combat.ts !== lastCombatTs) {
     lastCombatTs = view.combat.ts;
-    showCombatModal(view.combat);
+    HQModals.showCombatModal(view.combat);
   }
 
   // Treasure card reveal modal
@@ -947,7 +947,7 @@ function renderGame(view) {
     : null;
   if (tcKey && tcKey !== lastTreasureCardKey) {
     lastTreasureCardKey = tcKey;
-    showTreasureCardModal(view.revealedTreasureCard);
+    HQModals.showTreasureCardModal(view.revealedTreasureCard);
   }
 
   // Drink-to-save modal — appears when one of OUR heroes is at 0 Body
@@ -3296,70 +3296,9 @@ canvas.addEventListener('click', (e) => {
   }
 });
 
-// ---------- Combat modal ----------
-const $cmodal = document.getElementById('combat-modal');
-const $catt   = document.getElementById('combat-attack-dice');
-const $cdef   = document.getElementById('combat-defend-dice');
-const $ctitle = document.getElementById('combat-title');
-const $csum   = document.getElementById('combat-summary');
-
-function diceGlyph(face) {
-  if (face === 'skull') return '☠';        // ☠
-  if (face === 'heroShield') return '❖';   // ❖ (hero shield placeholder)
-  return '◆';                              // ◆ (monster shield placeholder)
-}
-
-function showCombatModal(combat) {
-  $ctitle.textContent = `${combat.attacker.name} attacks ${combat.defender.name}`;
-  $catt.innerHTML = '';
-  $cdef.innerHTML = '';
-  for (const f of combat.attackDice) {
-    const d = document.createElement('div');
-    d.className = `die ${f}`;
-    d.textContent = diceGlyph(f);
-    $catt.appendChild(d);
-  }
-  for (const f of combat.defendDice) {
-    const d = document.createElement('div');
-    d.className = `die ${f}`;
-    d.textContent = diceGlyph(f);
-    $cdef.appendChild(d);
-  }
-  $csum.classList.toggle('killed', !!combat.killed);
-  $csum.textContent = `${combat.skulls} skull${combat.skulls===1?'':'s'} − ${combat.blocks} block${combat.blocks===1?'':'s'} = ${combat.damage} damage` +
-                      (combat.killed ? ` — ${combat.defender.name} slain!` : '');
-  $cmodal.classList.remove('hidden');
-}
-document.getElementById('combat-ok').addEventListener('click', () => {
-  $cmodal.classList.add('hidden');
-  send({ type: 'action', action: 'dismissCombat' });
-});
-
-// Treasure card modal
-function showTreasureCardModal(card) {
-  const m = document.getElementById('treasure-modal');
-  document.getElementById('treasure-card-name').textContent = card.name;
-  document.getElementById('treasure-card-flavour').textContent = card.flavour || '';
-  m.classList.remove('hidden');
-}
-document.getElementById('treasure-card-ok')?.addEventListener('click', () => {
-  document.getElementById('treasure-modal').classList.add('hidden');
-  send({ type: 'action', action: 'dismissTreasureCard' });
-});
-
-// End modal: back to lobby
-document.getElementById('end-ok').addEventListener('click', () => {
-  if (lastView?.isHost) send({ type: 'restart' });
-  document.getElementById('end-modal').classList.add('hidden');
-});
-
-// Save modal "Accept death" — sends a -1 idx to take the death.
-document.getElementById('save-decline')?.addEventListener('click', () => {
-  send({ type: 'action', action: 'choosePotion', idx: -1 });
-});
-document.getElementById('btn-restart').addEventListener('click', () => {
-  send({ type: 'restart' });
-});
+// Modal dialogs (combat / treasure / end / save / restart) live in
+// public/client/modals.js — exposes window.HQModals. Wire it up.
+HQModals.init({ send, getLastView: () => lastView });
 
 // ---------- Mobile tabs ----------
 // At ≤768px the right sidebar collapses into a bottom drawer toggled
