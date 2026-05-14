@@ -18,9 +18,16 @@ const yaml = require('js-yaml');
 // Canonical piece-footprint reference. Each entry has:
 //   natural: { w, h }   default footprint with long axis horizontal
 //   anchor: TL|TR|BL|BR|CT   where the XML (left, top) sits in the piece
-const PIECES = yaml.load(fs.readFileSync(
+// Pieces (furniture) + tile overlays (rubble / stairway / traps) are
+// merged into one flat PIECES map so the rest of this file can index
+// by XML piece-id regardless of which yaml it came from.
+const PIECES_FROM_PIECES = yaml.load(fs.readFileSync(
   path.join(__dirname, '..', 'data', 'pieces', 'canonical-pieces.yaml'), 'utf8'
-)).pieces;
+)).pieces || {};
+const PIECES_FROM_TILES  = yaml.load(fs.readFileSync(
+  path.join(__dirname, '..', 'data', 'tiles', 'canonical-tiles.yaml'), 'utf8'
+)).tiles || {};
+const PIECES = { ...PIECES_FROM_PIECES, ...PIECES_FROM_TILES };
 
 // Compute the cell offsets relative to the anchor cell, for a piece
 // of (w × h) extent and the named anchor position.

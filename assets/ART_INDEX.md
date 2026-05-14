@@ -42,7 +42,7 @@ fetches.
 - **Monster tokens** → `MONSTER_TYPE_FILE` in `client.js` +
   `map-editor.js` (still hardcoded — backlog item).
 - **Hero tokens** → `HERO_FILE` + `HERO_NAMES` (same).
-- **Tile icons** → `TILE_FILE` (same).
+- **Tile icons** → `data/tiles/canonical-tiles.yaml` (rubble / falling-rock / pit / spear / chest-trap / stairway). The frontends hydrate `TILE_FILE` from `/api/canonical-tiles` at boot.
 - **Floor textures** → `client.js` `loadRoomTexture()` /
   `loadCorridorTexture()`; paths built from `room_NN.png` /
   `corridor*.png` directly.
@@ -59,7 +59,7 @@ fetches.
 | Alt-art variant of an existing piece | `assets/furniture/` (any filename) | Set `altFile:` on the piece's YAML entry. |
 | New monster token | `assets/monsters/<Type>-Token.png` | Add to `MONSTER_TYPE_FILE` in `client.js` + `map-editor.js` (until the monster YAML consolidation lands — see `docs/BACKLOG.md`). |
 | New hero variant token | `assets/heros/<Hero>-<Variant>-Token.png` | The `loadAllSprites()` loop already covers `Male` / `Female`. New variants need a tiny constant update. |
-| New trap / tile | `assets/tiles/` | Add to `TILE_FILE` in `client.js`. |
+| New trap / tile | `assets/tiles/` | Add an entry to `data/tiles/canonical-tiles.yaml` with `file:` + `aliases:`. POST `/api/canonical-tiles/reload` to live-update without a server restart. |
 | Replacement room-floor texture | `assets/room_textures/room_NN.png` | Bump cache buster `?v=N` in `client.js`'s loader so browsers refetch. |
 
 ---

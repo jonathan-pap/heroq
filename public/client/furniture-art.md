@@ -35,6 +35,7 @@
 | `FURN_FILE`, `FURN_ALT_FILE` | `/api/canonical-pieces` (fetched on init) | Hardcoded fallback keeps things rendering until the fetch lands. |
 | `FURN_IMG`, `FURN_IMG_ALT` | Async PNG loads | Independent caches per art set, wiped + re-resolved when `applyCanonicalPieces` lands. |
 | `TILE_IMG` | Async PNG loads | Maps `kind → { img, ready }`. |
+| `TILE_FILE` | `/api/canonical-tiles` (fetched on init) | Alias → PNG filename, derived from `data/tiles/canonical-tiles.yaml`. Hardcoded fallback keeps things rendering until the fetch lands. |
 | `FURN_NATURAL_OVERRIDES` | `/api/furn-naturals` + `localStorage.hq_furn_natural_overrides_v1` | Per-art-set natural orientation (key = `type` for canonical, `${type}:alt` for alt). |
 | `ALT_FURN_ON` | `localStorage.hq_furn_alt_v1` | Toggleable via Options menu. |
 | `FURN_INSETS_CANON`, `FURN_INSETS_ALT` | `localStorage.hq_furn_insets_v2`, `_alt_v1` | Per-bucket inset px (small / linear / stair / block). Editor sliders write these. |

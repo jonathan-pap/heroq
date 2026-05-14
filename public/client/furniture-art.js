@@ -173,8 +173,12 @@
     return entry;
   }
 
-  // ----- Tile icons (rubble + trap markers) ---------------------------
-  const TILE_FILE = {
+  // ----- Tile icons (rubble + trap markers + stairway) ----------------
+  // Sourced from /api/canonical-tiles (data/tiles/canonical-tiles.yaml).
+  // The hardcoded FALLBACK below keeps things rendering while the fetch
+  // is in flight, and works as a self-contained offline default. Adding
+  // a new tile is one YAML entry — the fetch on next boot picks it up.
+  let TILE_FILE = {
     // rubble / blocked
     'rubble':         'SingleBlockedSquare.png',
     'rubble-double':  'DoubleBlockedSquare.png',
@@ -186,7 +190,25 @@
     'spear-trap':     'SpearTrap.png',
     'pit-trap':       'PitTrap.png',
     'chest-trap':     'TreasureChestTrap.png',
+    // stairway
+    'stairway':       'Stairway.png',
   };
+  function applyCanonicalTiles(yamlData) {
+    const tiles = (yamlData && yamlData.tiles) || {};
+    const flat = {};
+    for (const tileId of Object.keys(tiles)) {
+      const t = tiles[tileId] || {};
+      if (!t.file || !Array.isArray(t.aliases)) continue;
+      for (const alias of t.aliases) flat[alias] = t.file;
+    }
+    if (Object.keys(flat).length) {
+      TILE_FILE = flat;
+      // Wipe the image cache so the next draw re-resolves through the
+      // refreshed alias map.
+      for (const k of Object.keys(TILE_IMG)) delete TILE_IMG[k];
+      _redraw();
+    }
+  }
   const TILE_IMG = {};
   function getTileImg(kind) {
     if (TILE_IMG[kind] !== undefined) return TILE_IMG[kind];
@@ -298,6 +320,12 @@
       try {
         const r = await fetch('/api/canonical-pieces');
         if (r.ok) applyCanonicalPieces(await r.json());
+      } catch { /* offline → keep fallback */ }
+    })();
+    (async () => {
+      try {
+        const r = await fetch('/api/canonical-tiles');
+        if (r.ok) applyCanonicalTiles(await r.json());
       } catch { /* offline → keep fallback */ }
     })();
     fetch('/api/furn-naturals').then(r => r.ok ? r.json() : null).then(j => {

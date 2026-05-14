@@ -90,15 +90,20 @@ Each extraction:
 
 **Why:** The furniture tables collapsed into `canonical-pieces.yaml`
 in one pass — adding a new piece is now a single YAML edit. The same
-pattern hasn't been applied to monsters, hero variant tokens, or
-tile/trap icons; those are still hardcoded in two frontend files
-each (`client.js` + `map-editor.js`).
+pattern wasn't applied to monsters or hero variant tokens; those are
+still hardcoded in two frontend files each (`client.js` +
+`map-editor.js`).
+
+Status: **`TILE_FILE` consolidation DONE** — rubble + trap markers +
+stairway now live in [`../data/tiles/canonical-tiles.yaml`](../data/tiles/canonical-tiles.yaml)
+served via `/api/canonical-tiles`. Both `HQFurnitureArt` and
+`map-editor.js` hydrate from it at boot. The two remaining
+hardcoded tables:
 
 | Table | Files | What it carries |
 |---|---|---|
-| `MONSTER_TYPE_FILE` | `client.js`, `map-editor.js` | type → token PNG (incl. boss aliases) |
-| `HERO_FILE` / `HERO_NAMES` / variant tokens | `client.js`, `map-editor.js` | hero id → token PNG (Male / Female variants) |
-| `TILE_FILE` | `client.js` | rubble / trap / stair kind → tile PNG |
+| `MONSTER_TYPE_FILE` | `public/client/sprites.js`, `map-editor.js` | type → token PNG (incl. boss aliases) |
+| `HERO_FILE` / `HERO_NAMES` / variant tokens | `public/client/sprites.js`, `map-editor.js` | hero id → token PNG (Male / Female variants) |
 
 **Proposed schema** — extend or add YAML alongside existing files:
 
@@ -111,21 +116,11 @@ monsters:
     aliases:   [grak]            # boss aliases that share this art
 ```
 
-```yaml
-# data/canonical-tiles.yaml
-tiles:
-  rubble:        { file: SingleBlockedSquare.png }
-  rubble-double: { file: DoubleBlockedSquare.png }
-  pit:           { file: PitTrap.png }
-  spear:         { file: SpearTrap.png }
-  stairway:      { file: Stairway.png }
-```
-
 **Implementation sketch:**
 
 1. Land the schema in one or two new YAML files (or extend existing).
-2. Server exposes `/api/canonical-monsters` + `/api/canonical-tiles`
-   the same way `/api/canonical-pieces` works today (see
+2. Server exposes `/api/canonical-monsters` the same way
+   `/api/canonical-pieces` / `/api/canonical-tiles` works today (see
    `server.js` for the pattern).
 3. Each frontend fetches at boot, replaces the hardcoded table with
    a live one. Keep a fallback so offline / pre-fetch rendering

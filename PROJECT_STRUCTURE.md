@@ -86,6 +86,7 @@ HTTP / WebSocket
 - **Furniture pixel-art fallback** → `public/client/furniture-draw.js` (12 piece primitives)
 - **Sprites (monsters / heroes)** → `public/client/sprites.js` (`HQSprites`)
 - **Furniture metadata** → `data/pieces/canonical-pieces.yaml` (file/altFile/aliases)
+- **Tile / overlay metadata** → `data/tiles/canonical-tiles.yaml` (rubble / traps / stairway / future overlays)
 - **Sound effects (synth)** → `public/client/audio.js` (`HQAudio`)
 - **Modal dialogs** → `public/client/modals.js`
 
@@ -126,6 +127,8 @@ HTTP / WebSocket
 | `PUT` | `/api/quests/:file` | Save quest JSON, hot-reload |
 | `GET` | `/api/canonical-pieces` | Furniture metadata YAML |
 | `POST` | `/api/canonical-pieces/reload` | Re-read YAML without restart |
+| `GET` | `/api/canonical-tiles` | Overlay-tile metadata YAML (rubble / traps / stairway) |
+| `POST` | `/api/canonical-tiles/reload` | Re-read tile YAML without restart |
 | `GET` / `PUT` | `/api/furn-naturals` | Per-type natural-orientation overrides |
 | `POST` | `/api/render-png/:file` | Re-render the QA preview PNG |
 

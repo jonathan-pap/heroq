@@ -165,6 +165,22 @@ function loadCanonicalPieces() {
 }
 loadCanonicalPieces();
 
+// Canonical-tiles YAML — companion to canonical-pieces, holds overlay
+// tile metadata (rubble / falling-block / pit / spear / chest-trap /
+// stairway / future overlay tokens). Same shape, same hot-reload path.
+const CANONICAL_TILES_PATH = path.join(__dirname, 'data', 'tiles', 'canonical-tiles.yaml');
+let CANONICAL_TILES = { tiles: {} };
+function loadCanonicalTiles() {
+  try {
+    if (fs.existsSync(CANONICAL_TILES_PATH)) {
+      CANONICAL_TILES = loadYAML(CANONICAL_TILES_PATH) || { tiles: {} };
+    }
+  } catch (e) {
+    console.warn('[canonical-tiles] load failed:', e.message);
+  }
+}
+loadCanonicalTiles();
+
 function loadQuests() {
   if (!fs.existsSync(QUESTS_DIR)) return;
   // Recurse one level so data/quests/sandbox/*.json (and any other
@@ -2237,6 +2253,17 @@ function handleApi(req, res, urlPath) {
   if (req.method === 'POST' && urlPath === '/api/canonical-pieces/reload') {
     loadCanonicalPieces();
     return sendJson(res, 200, { ok: true, pieces: Object.keys(CANONICAL_PIECES.pieces || {}).length });
+  }
+
+  // GET /api/canonical-tiles → overlay tile metadata (rubble / traps /
+  // stairway / etc.). Companion to canonical-pieces; same shape, same
+  // hot-reload story.
+  if (req.method === 'GET' && urlPath === '/api/canonical-tiles') {
+    return sendJson(res, 200, CANONICAL_TILES);
+  }
+  if (req.method === 'POST' && urlPath === '/api/canonical-tiles/reload') {
+    loadCanonicalTiles();
+    return sendJson(res, 200, { ok: true, tiles: Object.keys(CANONICAL_TILES.tiles || {}).length });
   }
 
   // GET / PUT /api/furn-naturals → per-type natural-orientation overrides

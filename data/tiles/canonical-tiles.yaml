@@ -1,0 +1,91 @@
+# =====================================================================
+# CANONICAL TILE REFERENCE
+#
+# Single source of truth for **overlay tiles** — the things that sit on
+# top of a floor cell (vs. furniture pieces that occupy footprint
+# rectangles). Companion to data/pieces/canonical-pieces.yaml.
+#
+# What's a tile vs a piece?
+#   Piece  = furniture (table / chest / throne / fireplace / ...).
+#            Lives under /assets/furniture/. See canonical-pieces.yaml.
+#   Tile   = an overlay that hangs on a single (or small) cell rect —
+#            rubble, trap markers, stairways, future quest tokens.
+#            Lives under /assets/tiles/.
+#
+# Consumed by:
+#   - The XML→JSON converter      (scripts/build-quest1-from-xml.js)
+#   - The footprint validator     (scripts/validate-quests.js)
+#   - The server's tile endpoint  (server.js → /api/canonical-tiles)
+#   - The game + map-editor       (HQFurnitureArt, map-editor.js)
+#
+# Adding a new tile is ONE entry here — every surface picks it up on
+# reload (same hot-reload story as canonical-pieces.yaml).
+#
+# Per tile (PascalCase key matches the heroscribe XML piece id):
+#   natural:    { w, h }    Footprint in cells. Most tiles are 1×1; the
+#                           Stairway is 2×2; DoubleBlockedSquare is 2×1.
+#   anchor:     TL          XML's (left, top) is the top-left cell.
+#   file:       <name>.png  Tile PNG under /assets/tiles/ (no override).
+#   naturalDir: <dir>       Optional. Direction the tile faces in its
+#                           natural PNG (matters only for the stairway —
+#                           the rubble + trap icons are direction-less).
+#   aliases:    [list]      Lower-case kebab-case kinds used in quest
+#                           JSONs / runtime state. Frontends resolve
+#                           through the alias map.
+# =====================================================================
+
+tiles:
+
+  # ---------------------------------------------------------------------
+  # Rubble — permanent blocked cells in a quest.
+  SingleBlockedSquare:
+    natural: { w: 1, h: 1 }
+    anchor:  TL
+    file:    SingleBlockedSquare.png
+    aliases: [rubble]
+
+  DoubleBlockedSquare:
+    natural: { w: 2, h: 1 }
+    anchor:  TL
+    file:    DoubleBlockedSquare.png
+    aliases: [rubble-double]
+
+  # Falling-block trap leaves permanent rubble after triggering — the
+  # cell flips `blocked: true` and renders as falling-block style rubble.
+  FallingRock:
+    natural: { w: 1, h: 1 }
+    anchor:  TL
+    file:    FallingRock.png
+    aliases: [falling-block, block]
+
+  # ---------------------------------------------------------------------
+  # Trap markers — placed on a cell, sprung when a hero steps on or
+  # gets adjacent (depending on type).
+  PitTrap:
+    natural: { w: 1, h: 1 }
+    anchor:  TL
+    file:    PitTrap.png
+    aliases: [pit, pit-trap]
+
+  SpearTrap:
+    natural: { w: 1, h: 1 }
+    anchor:  TL
+    file:    SpearTrap.png
+    aliases: [spear, spear-trap]
+
+  TreasureChestTrap:
+    natural: { w: 1, h: 1 }
+    anchor:  TL
+    file:    TreasureChestTrap.png
+    aliases: [chest-trap]
+
+  # ---------------------------------------------------------------------
+  # Stairway — 2×2 staircase fan. Quests use these as the objective
+  # exit. Future expansions will add more stair variants + other
+  # overlay tokens here.
+  Stairway:
+    natural:    { w: 2, h: 2 }
+    anchor:     TL
+    file:       Stairway.png
+    naturalDir: downward
+    aliases:    [stairway]

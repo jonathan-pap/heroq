@@ -28,12 +28,20 @@ const path = require('path');
 let FOOTPRINTS;
 try {
   const yaml = require('js-yaml');
-  const raw = yaml.load(require('fs').readFileSync(
-    require('path').join(__dirname, '..', 'data', 'pieces', 'canonical-pieces.yaml'), 'utf8'
+  const fs   = require('fs');
+  const path = require('path');
+  const pieceRaw = yaml.load(fs.readFileSync(
+    path.join(__dirname, '..', 'data', 'pieces', 'canonical-pieces.yaml'), 'utf8'
   )).pieces || {};
+  const tileRaw  = yaml.load(fs.readFileSync(
+    path.join(__dirname, '..', 'data', 'tiles', 'canonical-tiles.yaml'), 'utf8'
+  )).tiles || {};
   FOOTPRINTS = {};
-  // Map XML piece names → our internal type names.
+  // Map XML piece names → our internal type names. Pieces from
+  // canonical-pieces.yaml plus the validated overlay tiles from
+  // canonical-tiles.yaml live in one flat lookup.
   const XML_TO_TYPE = {
+    // Furniture (pieces/)
     Tomb: ['tomb', 'sarcophagus'],
     SorcerersTable: ['sorcerer-table', 'sorcerers-table'],
     AlchemistsBench: ['alchemist-bench', 'alchemists-bench'],
@@ -44,13 +52,15 @@ try {
     Rack: ['rack'],
     Table: ['table'],
     Throne: ['throne'],
-    Stairway: ['stairway'],
     TreasureChest: ['chest'],
+    Door: [],
+    // Tile overlays (tiles/)
+    Stairway: ['stairway'],
     SingleBlockedSquare: [],   // not validated as furniture
     DoubleBlockedSquare: [],
-    Door: [],
   };
-  for (const [xmlName, def] of Object.entries(raw)) {
+  const merged = { ...pieceRaw, ...tileRaw };
+  for (const [xmlName, def] of Object.entries(merged)) {
     const types = XML_TO_TYPE[xmlName] || [];
     if (!def.natural || !types.length) continue;
     const { w, h } = def.natural;
@@ -60,7 +70,7 @@ try {
     }
   }
 } catch (e) {
-  console.warn('[validator] failed to load canonical-pieces.yaml; using fallback', e.message);
+  console.warn('[validator] failed to load canonical YAMLs; using fallback', e.message);
   FOOTPRINTS = { 'chest': [{ w: 1, h: 1 }], 'throne': [{ w: 1, h: 1 }] };
 }
 

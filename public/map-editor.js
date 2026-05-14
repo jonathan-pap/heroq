@@ -438,8 +438,10 @@ function currentCorridorTexture() {
   return loadCorridorTexture(file);
 }
 
-// ----- Tile icons (rubble + traps) ----------------------------------
-const TILE_FILE = {
+// ----- Tile icons (rubble + traps + stairway) -----------------------
+// Sourced from /api/canonical-tiles (data/tiles/canonical-tiles.yaml).
+// The hardcoded FALLBACK keeps things rendering before the fetch lands.
+let TILE_FILE = {
   'rubble':         'SingleBlockedSquare.png',
   'rubble-double':  'DoubleBlockedSquare.png',
   'falling-block':  'FallingRock.png',
@@ -449,7 +451,30 @@ const TILE_FILE = {
   'spear-trap':     'SpearTrap.png',
   'pit-trap':       'PitTrap.png',
   'chest-trap':     'TreasureChestTrap.png',
+  'stairway':       'Stairway.png',
 };
+function applyCanonicalTiles(yaml) {
+  const tiles = (yaml && yaml.tiles) || {};
+  const flat = {};
+  for (const tileId of Object.keys(tiles)) {
+    const t = tiles[tileId] || {};
+    if (!t.file || !Array.isArray(t.aliases)) continue;
+    for (const alias of t.aliases) flat[alias] = t.file;
+  }
+  if (Object.keys(flat).length) {
+    TILE_FILE = flat;
+    // Wipe the image cache so the next draw re-resolves through the
+    // refreshed alias map.
+    for (const k of Object.keys(TILE_IMG || {})) delete TILE_IMG[k];
+    if (typeof draw === 'function') draw();
+  }
+}
+(async () => {
+  try {
+    const r = await fetch('/api/canonical-tiles');
+    if (r.ok) applyCanonicalTiles(await r.json());
+  } catch { /* offline → keep fallback */ }
+})();
 const TILE_IMG = {};
 function getTileImg(kind) {
   if (TILE_IMG[kind] !== undefined) return TILE_IMG[kind];

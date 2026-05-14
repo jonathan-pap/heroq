@@ -1,7 +1,11 @@
 # =====================================================================
-# CANONICAL FURNITURE / TILE REFERENCE
+# CANONICAL FURNITURE REFERENCE
 #
-# Single source of truth for piece metadata. Consumed by:
+# Single source of truth for **furniture piece** metadata. Overlay
+# tiles (rubble / stairway / trap icons) live in the companion
+# data/tiles/canonical-tiles.yaml.
+#
+# Consumed by:
 #   - The XML→JSON converter      (scripts/build-quest1-from-xml.js)
 #   - The footprint validator     (scripts/validate-quests.js)
 #   - The server's piece endpoint (server.js → /api/canonical-pieces)
@@ -37,8 +41,9 @@
 #                           three frontends resolve through the alias
 #                           map first.
 #   dir:        <folder>    Optional override for the asset folder.
-#                           Defaults to 'furniture'; tiles like the
-#                           stairway live under /assets/tiles/ instead.
+#                           Defaults to 'furniture'. (Tile overlays
+#                           live under /assets/tiles/ and are described
+#                           in data/tiles/canonical-tiles.yaml.)
 #
 # Rotation handling (in the converter / renderers):
 #   downward / upward    → natural orientation (no w↔h swap)
@@ -128,28 +133,7 @@ pieces:
     aliases:    [rack]
 
   # ---------------------------------------------------------------------
-  # 2 × 1 horizontal — double-blocked rubble (no aliases / dir / alt
-  # because it's a tile, drawn by the rubble pair-merge code path).
-  DoubleBlockedSquare:
-    natural:    { w: 2, h: 1 }
-    anchor:     TL
-
-  # ---------------------------------------------------------------------
-  # 2 × 2 — staircase fan (lives under /assets/tiles/, not /furniture/).
-  Stairway:
-    natural:    { w: 2, h: 2 }
-    anchor:     TL
-    file:       Stairway.png
-    naturalDir: downward
-    aliases:    [stairway]
-    dir:        tiles
-
-  # ---------------------------------------------------------------------
   # 1 × 1 singletons.
-  SingleBlockedSquare:
-    natural:    { w: 1, h: 1 }
-    anchor:     TL
-
   Throne:
     natural:    { w: 1, h: 1 }
     anchor:     TL

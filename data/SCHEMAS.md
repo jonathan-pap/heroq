@@ -32,6 +32,8 @@ data/
 ├── pieces/
 │   ├── canonical-pieces.yaml   furniture metadata (single SoT)
 │   └── furniture-naturals.json editor-tuned natural-orientation overrides
+├── tiles/
+│   └── canonical-tiles.yaml    overlay-tile metadata (rubble / traps / stairway / future overlays)
 ├── cards/
 │   ├── spells.yaml             hero spell deck (12 cards, 4 elements)
 │   ├── dread-spells.yaml       Zargon's spells
@@ -57,6 +59,7 @@ data/
 | `board/board.yaml` | Master board: 22 room cell-lists + corridor cells. The "geometry" every quest sits on top of. | `server.js` → `/api/board`. Editor, builder, render scripts. |
 | `pieces/canonical-pieces.yaml` | **Furniture metadata** (single source of truth): footprint, anchor, canonical PNG filename, alt-art PNG filename, natural orientation, alias list, asset folder. | `server.js` → `/api/canonical-pieces`. All three frontends. The XML converter + quest validator read footprints from here. |
 | `pieces/furniture-naturals.json` | Per-type natural-orientation overrides written by the editor's playground panel. Keyed by `type` (canonical art) or `type:alt` (alt art). | `server.js` GET/PUT `/api/furn-naturals`. |
+| `tiles/canonical-tiles.yaml` | **Overlay tile metadata** — rubble (SingleBlockedSquare, DoubleBlockedSquare), falling-rock, pit / spear / chest-trap markers, stairway, and future overlay tokens. Same shape as `canonical-pieces.yaml`. | `server.js` → `/api/canonical-tiles`. `HQFurnitureArt` (game) + `map-editor.js` hydrate their alias → PNG tables from this. The XML converter + quest validator merge tile footprints with piece footprints. |
 | `units/heroes.yaml` | Hero cards: body, mind, attack, defend, glyph, colour, starting equipment, spell-element counts, bans. | `server.js` (hero creation), `client.js` (card render). |
 | `units/monsters.yaml` | Monster stats: move, attack, defend, body, mind, glyph, colour. Boss aliases (Verag, Ulag, Witch Lord) override the base type. | `server.js` (combat + AI), `client.js` (token render). |
 | `cards/spells.yaml` | 12 hero spells (3 per element: Air, Earth, Fire, Water). Each has `effect` (engine hook), `target`, `range`. | `server.js` (spell resolver). |
@@ -90,14 +93,52 @@ pieces:
     dir:        furniture                   # optional asset folder (default 'furniture')
 ```
 
-Footprint-only entries (`Door`, `SingleBlockedSquare`,
-`DoubleBlockedSquare`) carry just `natural` + `anchor` — they're used
-by the quest validator but aren't drawn through the furniture render
-path.
+Footprint-only entries (`Door`) carry just `natural` + `anchor` —
+they're used by the quest validator but aren't drawn through the
+furniture render path. Rubble + stairway moved to
+[`tiles/canonical-tiles.yaml`](tiles/canonical-tiles.yaml) (see
+below).
 
 **Adding a new piece:** drop one block in this file → reload the
 server (or POST `/api/canonical-pieces/reload`) → every surface picks
 it up.
+
+---
+
+## `tiles/canonical-tiles.yaml` — full schema
+
+Companion to `canonical-pieces.yaml` for **overlay tiles** — anything
+that sits on a single (or small) cell rect: rubble, trap markers,
+stairways, future quest tokens. Same shape, same hot-reload, separate
+file so the two concerns don't collide.
+
+```yaml
+tiles:
+  PitTrap:
+    natural: { w: 1, h: 1 }              # footprint in cells
+    anchor:  TL                          # XML anchor
+    file:    PitTrap.png                 # PNG under /assets/tiles/
+    aliases: [pit, pit-trap]             # kebab-case kinds in quest JSON
+
+  Stairway:
+    natural:    { w: 2, h: 2 }
+    anchor:     TL
+    file:       Stairway.png
+    naturalDir: downward                 # optional; matters for the
+                                         # stairway's directional fan
+    aliases:    [stairway]
+```
+
+All files live under `/assets/tiles/` — no `dir` override needed.
+The frontends resolve `view.traps[i].type` / `tile.kind` through the
+alias map; the renderer falls back to a hardcoded baseline table
+while the `/api/canonical-tiles` fetch is in flight.
+
+**Adding a new tile:** drop one block in this file → reload the
+server (or POST `/api/canonical-tiles/reload`) → every surface picks
+it up. The XML converter + quest validator pull from BOTH yamls and
+merge them into one flat footprint table, so an XML PieceID is
+resolved regardless of which file it came from.
 
 ---
 
