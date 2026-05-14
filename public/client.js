@@ -16,94 +16,19 @@ let lastTreasureCardKey = null;  // de-dupe the card-reveal modal per draw
 let hoverCell = null;  // [x, y] currently under the cursor (for path preview / cost)
 let lastReachable = null;  // Map "x,y" -> distance, recomputed each render
 
-// Optional sprite layer — drop PNGs into public/icons/monsters/<type>.png
-// or public/icons/heroes/<id>.png and the renderer prefers them over the
-// drawn glyphs. The folder is gitignored; you can use your own art,
-// CC0 sources (Kenney.nl iso dungeon pack, Game-icons.net), commissioned
-// artwork from the heroscribe project — pulled into /assets/monsters,
-// /assets/heros, /assets/tiles by scripts/fetch-heroscribe-icons.js.
-// Filenames are PascalCase (Goblin.png, ChaosWarrior.png, Barbarian.png),
-// game data uses kebab-case (chaos-warrior, dread-warrior, etc.) so we
-// translate via a small lookup.
-const monsterSprites = {};
-const heroSprites = {};
-
-// Boss / named-monster ids in quest data → underlying creature type.
-// Falls through to whatever the type field already is for unnamed ones.
-// Prefer the new printed-style "<Type>-Token.png" art (matches the
-// physical-board token look). A few legacy names from the original
-// edition map onto the new tokens (chaos-warrior / chaos-sorcerer were
-// renamed to dread-warrior / dread-sorcerer in 2021; "familiar" became
-// "abomination"). All such aliases resolve to the new token art.
-const MONSTER_TYPE_FILE = {
-  'goblin':         'Goblin-Token.png',
-  'orc':            'Orc-Token.png',
-  'skeleton':       'Skeleton-Token.png',
-  'zombie':         'Zombie-Token.png',
-  'mummy':          'Mummy-Token.png',
-  'gargoyle':       'Gargoyle-Token.png',
-  // Old-edition names → new tokens
-  'chaos-warrior':  'Dread-Warrior-Token.png',
-  'chaos-sorcerer': 'Dread-Sorcerer-Token.png',
-  'fimir':          'Abomination-Token.png',      // old "fimir" == new "abomination"
-  // New-edition names
-  'dread-warrior':  'Dread-Warrior-Token.png',
-  'dread-sorcerer': 'Dread-Sorcerer-Token.png',
-  'abomination':    'Abomination-Token.png',
-  // Boss aliases — render as their underlying creature using the token art
-  'verag':          'Gargoyle-Token.png',
-  'ulag':           'Orc-Token.png',
-  'grak':           'Goblin-Token.png',
-  'balur':          'Dread-Warrior-Token.png',
-  'witch-lord':     'Mummy-Token.png',
-};
-const HERO_FILE = {
-  'barbarian': 'Barbarian.png',
-  'dwarf':     'Dwarf.png',
-  'elf':       'Elf.png',
-  'wizard':    'Wizard.png',
-};
-// Per-variant printed tokens — Male / Female. Loaded under composite
-// keys (`barbarian:male`, etc.) so drawHero can pick the right art.
-// Falls back to the gender-neutral default if a variant PNG fails to
-// load.
-const HERO_NAMES = { barbarian: 'Barbarian', dwarf: 'Dwarf', elf: 'Elf', wizard: 'Wizard' };
-const HERO_VARIANTS = ['male', 'female'];
-function variantKey(heroId, variant) { return `${heroId}:${variant}`; }
-function variantTokenURL(heroId, variant) {
-  const v = variant === 'female' ? 'Female' : 'Male';
-  return `/assets/heros/${HERO_NAMES[heroId]}-${v}-Token.png`;
-}
-function variantCardURL(heroId, variant) {
-  const v = variant === 'female' ? 'Female' : 'Male';
-  return `/assets/heros/${HERO_NAMES[heroId]}-${v}-Card.png`;
-}
-
-function tryLoadSprite(map, key, url) {
-  const img = new Image();
-  img.onload = () => {
-    if (img.naturalWidth > 0) {
-      map[key] = img;
-      if (lastView) drawBoard(lastView);
-    }
-  };
-  img.onerror = () => { /* missing — fall back to drawn art */ };
-  img.src = url;
-}
-function loadAllSprites() {
-  for (const [type, file] of Object.entries(MONSTER_TYPE_FILE)) {
-    tryLoadSprite(monsterSprites, type, `/assets/monsters/${file}`);
-  }
-  for (const [id, file] of Object.entries(HERO_FILE)) {
-    tryLoadSprite(heroSprites, id, `/assets/heros/${file}`);
-  }
-  for (const id of Object.keys(HERO_NAMES)) {
-    for (const v of HERO_VARIANTS) {
-      tryLoadSprite(heroSprites, variantKey(id, v), variantTokenURL(id, v));
-    }
-  }
-}
-loadAllSprites();
+// Sprite assets — see public/client/sprites.js for the per-type filename
+// table and PNG-loading internals. Names destructured here so the rest of
+// client.js can keep using them unprefixed. The maps are mutable
+// references, so as PNGs finish loading the sprite module mutates the
+// same objects this file sees.
+const {
+  monsterSprites, heroSprites,
+  HERO_NAMES, HERO_VARIANTS,
+  variantKey, variantTokenURL, variantCardURL,
+} = window.HQSprites;
+window.HQSprites.load({
+  onLoaded: () => { if (lastView) drawBoard(lastView); },
+});
 
 function wsURL() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';

@@ -37,6 +37,7 @@ Cache busters at the bottom of each HTML page (`<script src="X.js?v=N">`)
 | Path | Content |
 |---|---|
 | `shared/` | Modules loaded by multiple surfaces. `rules.js` is the canonical adjacency + wall logic used by both the editor's hover-path preview and the game's reachability. |
+| `client/` | Game-only modules pulled out of `client.js` to shrink it. Same IIFE-on-`window` convention as `shared/rules.js`. See [Client splits](#client-splits) below. |
 | `mocks/` | Static HTML mockups used during UI design phases. Not interactive. |
 
 ---
@@ -65,6 +66,27 @@ back to `server.js`, receives `view` snapshots, renders to
 
 All persisted as `'1'` / `'0'` strings. Listed in
 `PROJECT_STRUCTURE.md`. Cross-tab live sync via the `storage` event.
+
+---
+
+## Client splits (`public/client/`)
+
+`client.js` is being incrementally peeled into smaller files so each
+concern can be opened in isolation. Same shape as `shared/rules.js`:
+each file is an IIFE that hangs its public API on `window.HQ<Name>` —
+no build step, no `<script type="module">` switch, no global var
+pollution beyond the explicit namespace.
+
+| Module | Public on `window` | What it owns |
+|---|---|---|
+| `client/sprites.js` | `HQSprites` | Per-type PNG name tables (`MONSTER_TYPE_FILE`, `HERO_FILE`, `HERO_NAMES`, `HERO_VARIANTS`), the two mutable sprite caches (`monsterSprites`, `heroSprites`), variant URL builders, and `load({ onLoaded })` which kicks off async PNG fetches. The renderer destructures the caches once at boot so they read unprefixed. |
+
+Adding another split:
+
+1. New `public/client/<name>.js`. Wrap in `(function (global) { 'use strict'; ... global.HQ<Name> = { ... }; })(window);`.
+2. Add `<script src="client/<name>.js?v=1">` to `index.html` **before** `client.js`.
+3. In `client.js`, destructure the bindings the rest of the file needs: `const { foo, bar } = window.HQ<Name>;`.
+4. Bump the `client.js?v=` cache buster.
 
 ---
 
