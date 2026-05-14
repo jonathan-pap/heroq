@@ -8,29 +8,25 @@ into the relevant folder's README as historical context).
 
 ---
 
-## Continue server.js module extraction (Phases B + C)
+## ~~Continue server.js module extraction (Phases B + C)~~ DONE
 
-**Why:** Phases A landed (util / combat-dice / los / pathfinding /
-objectives) and shaved ~150 lines off `server.js`. The big wins for
-the next pass are documented in
-[`../game/SERVER_REGIONS.md`](../game/SERVER_REGIONS.md). Until
-extracted they live in `server.js` but the SKILL doc gives Claude
-a focused pointer when working on each region.
+All six planned extractions landed. `server.js` shrunk from 3,625 →
+2,441 lines (-33%). See [`../game/RULES.md`](../game/RULES.md) for
+the full module index and
+[`../game/SERVER_REGIONS.md`](../game/SERVER_REGIONS.md) for what
+remains in `server.js` (intentionally transport / state-plumbing).
 
-**Extraction order** (highest value first):
-
-1. ~~`game/view.js` — `viewFor`.~~ **DONE** — see
-   [`../game/view.md`](../game/view.md).
-2. ~~`game/quest-builder.js` — `buildBoardState` + the `build*`
-   family.~~ **DONE** — see
-   [`../game/quest-builder.md`](../game/quest-builder.md).
-3. `game/spells.js` — `resolveSpell` (~170 lines). High churn area;
-   move once seams are obvious.
-4. `game/traps.js` — `triggerTrapsForCell` (~70 lines). Self-contained,
-   small.
-5. `game/treasure-deck.js` — draw + effect resolver.
-6. `game/combat.js` (full) — fold damage resolution + effective dice
-   into the existing combat module.
+Modules extracted:
+[`../game/util.js`](../game/util.js),
+[`../game/combat.js`](../game/combat.js) (dice + effective + damage),
+[`../game/los.js`](../game/los.js),
+[`../game/pathfinding.js`](../game/pathfinding.js),
+[`../game/objectives.js`](../game/objectives.js),
+[`../game/view.js`](../game/view.js),
+[`../game/quest-builder.js`](../game/quest-builder.js),
+[`../game/spells.js`](../game/spells.js),
+[`../game/traps.js`](../game/traps.js),
+[`../game/treasure-deck.js`](../game/treasure-deck.js).
 
 Each extraction:
 - Targets one well-bounded region.

@@ -23,12 +23,15 @@ working on it.
 | Module | Skill doc | Purpose |
 |---|---|---|
 | [`util.js`](util.js) | [`util.md`](util.md) | Pure helpers — IDs, dice, geometry, array shuffle. Zero state. |
-| [`combat.js`](combat.js) | [`combat.md`](combat.md) | Combat dice (`DICE_FACES`, `rollCombatDie`, `rollAttackDice`). Damage resolution still in `server.js`. |
+| [`combat.js`](combat.js) | [`combat.md`](combat.md) | Combat dice + effective-dice (attack / defend / move) + `resolveAttack` damage pipeline (drink-to-save, lost artifacts, status decay, `state.combat` snapshot). |
 | [`los.js`](los.js) | [`los.md`](los.md) | Line-of-sight + occupant queries (`tileAt`, `occupantAt`, `lineOfSight`, `isMultiShareCell`, `isMonsterVisibleToHeroes`). |
 | [`pathfinding.js`](pathfinding.js) | [`pathfinding.md`](pathfinding.md) | BFS pathfinder + corridor branch counter. `passable` is injected by the caller. |
 | [`objectives.js`](objectives.js) | [`objectives.md`](objectives.md) | Quest-objective evaluation — `_evalObjectiveOne`, `evaluateObjectives`, `requiredObjectivesMet`. Pure; the state-mutating `checkEndConditions` stays in `server.js`. |
 | [`view.js`](view.js) | [`view.md`](view.md) | Per-tab view projection (`viewFor`). Pure read of room + state. Server.js wraps it with deps (HEROES / MONSTER_TYPES / seatsOf / currentTurn / …) supplied fresh per call. |
 | [`quest-builder.js`](quest-builder.js) | [`quest-builder.md`](quest-builder.md) | Quest JSON → runtime state (`freshGameState` + `build*` family). Pure modulo `shuffle` + injected `exploreFromHero` fog-reveal. |
+| [`spells.js`](spells.js) | [`spells.md`](spells.md) | `applySpellEffect` — heal / move buffs / pass walls / sleep / direct damage / Genie summon, with LoS gate. `handleCastSpell` (hand + Wand + broadcast) stays in `server.js`. |
+| [`traps.js`](traps.js) | [`traps.md`](traps.md) | `triggerTrapsForCell` — spear (1 die dodge), pit (-1 body, inPit), block (3 dice no defence, permanent rubble). |
+| [`treasure-deck.js`](treasure-deck.js) | [`treasure-deck.md`](treasure-deck.md) | `drawTreasureCard` + `applyTreasureCard` (gold / potion / trap / wandering monster). |
 | [`fog.js`](fog.js) | — | Fog-of-war logic — which cells are revealed for each hero given the current movement / LoS / open-door / blocked state. Tested in [`../test/fog.test.js`](../test/fog.test.js). |
 
 ---

@@ -16,7 +16,8 @@ const { decideMonsterTurn, pickBotName } = require('./bots');
 
 // Pure helper modules — see game/*.md for each module's API.
 const { uid, pid, code, rollD6, bresenham, shuffle } = require('./game/util');
-const { DICE_FACES, rollCombatDie, rollAttackDice } = require('./game/combat');
+const _combat = require('./game/combat');
+const { DICE_FACES, rollCombatDie, rollAttackDice } = _combat;
 const {
   tileAt, occupantAt, isMonsterVisibleToHeroes,
   losEdgeBlocked, lineOfSight, isMultiShareCell,
@@ -27,6 +28,9 @@ const {
 } = require('./game/objectives');
 const { viewFor: _viewFor } = require('./game/view');
 const { freshGameState: _freshGameState } = require('./game/quest-builder');
+const { triggerTrapsForCell: _triggerTrapsForCell } = require('./game/traps');
+const _td = require('./game/treasure-deck');
+const _spells = require('./game/spells');
 // Local wrapper — injects this file's `passable` predicate so callers
 // keep the older 4-arg signature.
 function findPath(s, hero, target, maxLength) {
@@ -843,93 +847,13 @@ function handleEndTurn(room, token) {
 }
 
 // ==========================================================
-// COMBAT
+// COMBAT — body in game/combat.js. Thin wrapper injects the YAML
+// tables + logEvent + checkEndConditions.
 // ==========================================================
 function resolveAttack(room, attacker, defender) {
-  const s = room.state;
-  const a = attacker.ref, d = defender.ref;
-  // Compute effective dice with equipment + status
-  const aDiceCount = (attacker.kind === 'hero')
-    ? effectiveAttack(a, defender.kind === 'monster' ? d : null)
-    : a.attack;
-  const dDiceCount = (defender.kind === 'hero') ? effectiveDefend(d) : d.defend;
-
-  const aDice = rollAttackDice(aDiceCount);
-  const dDice = rollAttackDice(dDiceCount);
-  // Sleeping defender cannot defend
-  const sleeping = d.status && d.status.sleeping;
-  const defenderBlockFace = (defender.kind === 'hero') ? 'heroShield' : 'monsterShield';
-  const skulls = aDice.filter(f => f === 'skull').length;
-  const blocks = sleeping ? 0 : dDice.filter(f => f === defenderBlockFace).length;
-  const damage = Math.max(0, skulls - blocks);
-  d.body = Math.max(0, d.body - damage);
-  // 2021 rule: a hero whose Body Points hit 0 may immediately drink any
-  // healing potion in their possession to save themselves. The player
-  // chooses which potion (or accepts death). If multiple heal-options
-  // exist we surface them as a `pendingSaveRoll` for the client; if
-  // there's exactly one we auto-drink (no decision to make).
-  if (defender.kind === 'hero' && d.body === 0) {
-    const heals = (d.inventory || [])
-      .map((it, idx) => ({ it, idx }))
-      .filter(x => x.it && (x.it.use === 'heal' || x.it.use === 'revive'));
-    if (heals.length === 1) {
-      const { it, idx } = heals[0];
-      const heal = Math.min(it.amount || 4, d.bodyMax);
-      d.body = heal;
-      d.inventory.splice(idx, 1);
-      logEvent(room, `${d.name} drinks a ${it.name} as they fall — saved with ${heal} Body!`, 'treasure');
-    } else if (heals.length > 1) {
-      // Surface a choice modal — hero is "down" until the player picks.
-      // body remains 0; we set a flag the client renders as a modal.
-      s.pendingSaveRoll = {
-        heroId: d.id,
-        options: heals.map(h => ({ idx: h.idx, name: h.it.name, use: h.it.use, amount: h.it.amount })),
-      };
-      logEvent(room, `${d.name} is down — choose a potion or perish.`, 'death');
-    }
-  }
-  if (d.body === 0) d.dead = true;
-  // Lost artifacts: when a hero dies, any monster occupying the same
-  // cell or adjacent claims their artifacts (rule: monsters steal them).
-  if (defender.kind === 'hero' && d.dead) {
-    const carriedArtifacts = ['artifactWeapon','artifactArmour','artifactItem']
-      .map(slot => d.equipped[slot]).filter(Boolean);
-    if (carriedArtifacts.length > 0) {
-      if (!s.lostArtifacts) s.lostArtifacts = [];
-      for (const aid of carriedArtifacts) {
-        s.lostArtifacts.push(aid);
-        logEvent(room, `Monsters claim the ${ARTIFACTS[aid]?.name || aid}! It will reappear in a future quest.`, 'death');
-      }
-      d.equipped.artifactWeapon = null;
-      d.equipped.artifactArmour = null;
-      d.equipped.artifactItem = null;
-    }
-  }
-
-  // Awaken on attack
-  if (sleeping) d.status.sleeping = false;
-  // Break rockSkin on hero defender wound
-  if (defender.kind === 'hero' && damage > 0 && d.status.rockSkin) d.status.rockSkin = false;
-  // Consume one-shot attack/defend bonuses
-  if (attacker.kind === 'hero' && a.status.bonusAttackOnce > 0) a.status.bonusAttackOnce = 0;
-  if (defender.kind === 'hero' && d.status.bonusDefendOnce > 0) d.status.bonusDefendOnce = 0;
-
-  const aName = (attacker.kind === 'hero') ? a.name : (a.name || MONSTER_TYPES[a.type]?.name || a.type);
-  const dName = (defender.kind === 'hero') ? d.name : (d.name || MONSTER_TYPES[d.type]?.name || d.type);
-
-  s.combat = {
-    attacker: { kind: attacker.kind, id: a.id, name: aName },
-    defender: { kind: defender.kind, id: d.id, name: dName },
-    attackDice: aDice, defendDice: dDice,
-    skulls, blocks, damage,
-    killed: d.dead,
-    sleeping,
-    ts: Date.now(),
-  };
-  logEvent(room, `${aName} attacks ${dName}: ${skulls} skull${skulls===1?'':'s'} - ${blocks} block${blocks===1?'':'s'} = ${damage} damage${d.dead ? ' — slain!' : ''}`, 'combat');
-  if (defender.kind === 'hero' && d.dead) logEvent(room, `${dName} has fallen!`, 'death');
-
-  checkEndConditions(room);
+  return _combat.resolveAttack(room, attacker, defender, {
+    EQUIPMENT, ARTIFACTS, MONSTER_TYPES, logEvent, checkEndConditions,
+  });
 }
 
 // ==========================================================
@@ -1020,53 +944,17 @@ function checkEndConditions(room) {
 }
 
 // ==========================================================
-// EFFECTIVE COMBAT DICE — base + equipment + status
+// EFFECTIVE COMBAT DICE — body in game/combat.js. Thin wrappers
+// inject the YAML EQUIPMENT + ARTIFACTS tables.
 // ==========================================================
-function effectiveAttack(hero, target /* monster | null */) {
-  let dice = hero.attackBase;
-  // Weapon
-  const w = hero.equipped.weapon ? EQUIPMENT[hero.equipped.weapon] : null;
-  if (w && w.replaceAttack) dice = w.replaceAttack;
-  // Artifact weapon — additive over weapon if present, otherwise sets
-  const aw = hero.equipped.artifactWeapon ? ARTIFACTS[hero.equipped.artifactWeapon] : null;
-  if (aw) {
-    dice = Math.max(dice, aw.attack || 0);
-    if (target && aw.bonusAttackVs && aw.bonusAttackVs.targets.includes(target.type)) {
-      dice += aw.bonusAttackVs.extraDice || 0;
-    }
-  }
-  // Status: courage / strength / one-shot
-  if (hero.status.courage) dice += 2;
-  if (hero.status.bonusAttackOnce > 0) dice += hero.status.bonusAttackOnce;
-  // 2021 rule: a hero in a pit attacks with -1 die (minimum 1).
-  if (hero.status.inPit) dice = Math.max(1, dice - 1);
-  return dice;
+function effectiveAttack(hero, target) {
+  return _combat.effectiveAttack(hero, target, { EQUIPMENT, ARTIFACTS });
 }
-
 function effectiveDefend(hero) {
-  let dice = hero.defendBase;
-  const arm = hero.equipped.bodyArmour ? EQUIPMENT[hero.equipped.bodyArmour] : null;
-  if (arm && arm.setDefend != null) dice = arm.setDefend;
-  // Helmet / shield / bracers / cloak — additive
-  for (const slot of ['helmet','shield','utility']) {
-    const it = hero.equipped[slot] ? EQUIPMENT[hero.equipped[slot]] : null;
-    if (it && it.defendBonus) dice += it.defendBonus;
-  }
-  if (arm && arm.defendBonus) dice += arm.defendBonus;
-  // Artifact armour replaces base
-  const aa = hero.equipped.artifactArmour ? ARTIFACTS[hero.equipped.artifactArmour] : null;
-  if (aa && aa.setDefend != null) dice = Math.max(dice, aa.setDefend);
-  if (hero.status.rockSkin) dice += 2;
-  if (hero.status.bonusDefendOnce > 0) dice += hero.status.bonusDefendOnce;
-  // 2021 rule: a hero in a pit defends with -1 die (minimum 1).
-  if (hero.status.inPit) dice = Math.max(1, dice - 1);
-  return dice;
+  return _combat.effectiveDefend(hero, { EQUIPMENT, ARTIFACTS });
 }
-
 function effectiveMoveDice(hero) {
-  // Plate armour drops you to 1d6 movement
-  const arm = hero.equipped.bodyArmour ? EQUIPMENT[hero.equipped.bodyArmour] : null;
-  return (arm && arm.movePenalty) ? 1 : 2;
+  return _combat.effectiveMoveDice(hero, { EQUIPMENT });
 }
 
 // ==========================================================
@@ -1107,243 +995,31 @@ function handleCastSpell(room, token, spellId, target) {
   broadcastRoom(room);
 }
 
+// `applySpellEffect` + `resolveTarget` bodies live in `game/spells.js`.
+// `handleCastSpell` (above) keeps the WebSocket plumbing — hand
+// check, Wand of Recall counter, lockMovementOnAction, broadcast.
 function applySpellEffect(room, caster, spell, target) {
-  const s = room.state;
-  // Resolve the target reference
-  const tgt = resolveTarget(s, spell.target, target);
-  if (spell.target !== 'self' && spell.target !== 'line' && !tgt) return false;
-
-  // 2021 rule: a spell may only be cast on a target the caster can SEE.
-  // Spells flagged `range: anywhere` (e.g. Genie summon, Fire of Wrath)
-  // skip the LOS check; everything else needs an unobstructed line.
-  if (tgt && spell.range !== 'anywhere' && spell.target !== 'self') {
-    const tgtCell = tgt.ref && tgt.ref.at;
-    if (tgtCell && !lineOfSight(s, caster.at, tgtCell)) {
-      logEvent(room, `${caster.name} has no line of sight to that target.`);
-      return false;
-    }
-  }
-
-  switch (spell.effect) {
-    case 'healBody': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      const heal = Math.min(spell.amount || 4, t.ref.bodyMax - t.ref.body);
-      t.ref.body += heal;
-      logEvent(room, `${t.ref.name} restored ${heal} Body.`, 'spell');
-      return true;
-    }
-    case 'doubleNextMovement': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      t.ref.status.doubleNextMovement = true;
-      return true;
-    }
-    case 'passWalls': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      t.ref.status.passWalls = true;
-      return true;
-    }
-    case 'passOccupants': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      t.ref.status.passOccupants = true;
-      return true;
-    }
-    case 'bonusDefendUntilWounded': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      t.ref.status.rockSkin = true;
-      return true;
-    }
-    case 'bonusAttackUntilSafe': {
-      const t = tgt; if (!t || t.kind !== 'hero') return false;
-      t.ref.status.courage = true;
-      return true;
-    }
-    case 'skipNextTurn': {
-      const t = tgt; if (!t) return false;
-      t.ref.status.skipNextTurn = true;
-      return true;
-    }
-    case 'directDamage': {
-      const t = tgt; if (!t) return false;
-      const dmg = spell.damage || 1;
-      const def = spell.defenceDice || 0;
-      const dDice = rollAttackDice(def);
-      const blockFace = (t.kind === 'hero') ? 'heroShield' : 'monsterShield';
-      const blocks = dDice.filter(f => f === blockFace).length;
-      const taken = Math.max(0, dmg - blocks);
-      t.ref.body = Math.max(0, t.ref.body - taken);
-      if (t.ref.body === 0) t.ref.dead = true;
-      // Show as combat-resolution payload so the existing modal can render
-      s.combat = {
-        attacker: { kind: 'hero', id: caster.id, name: caster.name + ` (${spell.name})` },
-        defender: { kind: t.kind, id: t.ref.id, name: t.ref.name || t.ref.type },
-        attackDice: Array(dmg).fill('skull'),
-        defendDice: dDice,
-        skulls: dmg, blocks, damage: taken, killed: t.ref.dead,
-        ts: Date.now(),
-      };
-      // Break rockSkin if hero defender took damage
-      if (t.kind === 'hero' && taken > 0) t.ref.status.rockSkin = false;
-      checkEndConditions(room);
-      return true;
-    }
-    case 'sleep': {
-      const t = tgt; if (!t) return false;
-      const mind = t.ref.mind || 0;
-      const dDice = rollAttackDice(mind);
-      const blockFace = (t.kind === 'hero') ? 'heroShield' : 'monsterShield';
-      const negated = dDice.some(f => f === blockFace);
-      if (negated) {
-        logEvent(room, `${t.ref.name || t.ref.type} resists the Sleep spell.`, 'spell');
-      } else {
-        t.ref.status.sleeping = true;
-        logEvent(room, `${t.ref.name || t.ref.type} falls asleep!`, 'spell');
-      }
-      return true;
-    }
-    case 'summonGenie': {
-      // Simplified: Genie attacks the chosen target with 5 attack dice
-      const t = tgt; if (!t) return false;
-      const aDice = rollAttackDice(5);
-      const blockFace = (t.kind === 'hero') ? 'heroShield' : 'monsterShield';
-      const dDice = rollAttackDice(t.ref.defend || t.ref.defendBase || 2);
-      const skulls = aDice.filter(f => f === 'skull').length;
-      const blocks = dDice.filter(f => f === blockFace).length;
-      const dmg = Math.max(0, skulls - blocks);
-      t.ref.body = Math.max(0, t.ref.body - dmg);
-      if (t.ref.body === 0) t.ref.dead = true;
-      s.combat = {
-        attacker: { kind: 'hero', id: caster.id, name: 'Genie' },
-        defender: { kind: t.kind, id: t.ref.id, name: t.ref.name || t.ref.type },
-        attackDice: aDice, defendDice: dDice,
-        skulls, blocks, damage: dmg, killed: t.ref.dead,
-        ts: Date.now(),
-      };
-      checkEndConditions(room);
-      return true;
-    }
-  }
-  return false;
+  return _spells.applySpellEffect(room, caster, spell, target, {
+    logEvent, checkEndConditions,
+  });
 }
-
-function resolveTarget(s, kind, t) {
-  if (!t) return null;
-  if (t.kind === 'hero') {
-    const h = s.heroes.find(x => x.id === t.id && !x.dead);
-    return h ? { kind: 'hero', ref: h } : null;
-  }
-  if (t.kind === 'monster') {
-    const m = s.monsters.find(x => x.id === t.id && !x.dead);
-    return m ? { kind: 'monster', ref: m } : null;
-  }
-  return null;
-}
+const resolveTarget = _spells.resolveTarget;
 
 // ==========================================================
-// TREASURE DECK — drawn when a Hero searches a clear room
+// TREASURE DECK — body in game/treasure-deck.js. Thin wrappers
+// inject logEvent + MONSTER_TYPES + resolveAttack + checkEndConditions.
 // ==========================================================
 function drawTreasureCard(room, hero) {
-  const s = room.state;
-  if (s.treasureDeck.length === 0) {
-    s.treasureDeck = shuffle(s.treasureDiscard);
-    s.treasureDiscard = [];
-  }
-  if (s.treasureDeck.length === 0) return null;
-  const card = s.treasureDeck.shift();
-  s.revealedTreasureCard = { ...card, drawnBy: hero.id };
-  applyTreasureCard(room, hero, card);
-  return card;
+  return _td.drawTreasureCard(room, hero, {
+    logEvent, MONSTER_TYPES, resolveAttack, checkEndConditions,
+  });
 }
-
 function applyTreasureCard(room, hero, card) {
-  const s = room.state;
-  switch (card.effect) {
-    case 'gold': {
-      hero.gold += card.amount || 0;
-      logEvent(room, `${hero.name} draws ${card.name}: +${card.amount} gold.`, 'treasure');
-      break;
-    }
-    case 'goldDiceTimesTen': {
-      const r = rollD6() * 10;
-      hero.gold += r;
-      hero.status.skipNextTurn = (card.sideEffect === 'missNextTurn');
-      logEvent(room, `${hero.name} draws ${card.name}: rolled ${r/10}, +${r} gold (will miss next turn).`, 'treasure');
-      break;
-    }
-    case 'keepPotion':
-    case 'keepConsumable': {
-      hero.inventory.push({ id: card.id, name: card.name, use: card.use, amount: card.amount, bonus: card.bonus });
-      logEvent(room, `${hero.name} pockets a ${card.name}.`, 'treasure');
-      break;
-    }
-    case 'nothing':
-      logEvent(room, `${hero.name} searches but finds nothing.`);
-      break;
-    case 'trapArrow': {
-      hero.body = Math.max(0, hero.body - (card.damage || 1));
-      logEvent(room, `${hero.name} springs an arrow trap! -${card.damage || 1} Body.`, 'death');
-      break;
-    }
-    case 'trapPit': {
-      hero.body = Math.max(0, hero.body - (card.damage || 1));
-      hero.status.skipNextTurn = true;
-      logEvent(room, `${hero.name} falls into a pit! -${card.damage || 1} Body, miss next turn.`, 'death');
-      break;
-    }
-    case 'wanderingMonster': {
-      // GM places: spawn quest's wandering monster adjacent to hero on a free cell
-      const proto = MONSTER_TYPES[s.wanderingMonster] || MONSTER_TYPES.goblin;
-      const free = adjacentFreeCells(s, hero.at);
-      if (free.length === 0) {
-        logEvent(room, `A wandering monster lurks but finds no space.`);
-        break;
-      }
-      const cell = free[Math.floor(Math.random() * free.length)];
-      const newId = `wm-${Date.now()}-${Math.floor(Math.random()*999)}`;
-      s.monsters.push({
-        id: newId, type: s.wanderingMonster, name: null,
-        bodyMax: proto.body, body: proto.body,
-        mindMax: proto.mind, mind: proto.mind,
-        attack: proto.attack, defend: proto.defend,
-        moveSquares: proto.move,
-        at: cell, roomId: tileAt(s, cell[0], cell[1])?.roomId || null,
-        dead: false, active: true,
-        status: { skipNextTurn: false, sleeping: false },
-      });
-      logEvent(room, `A wandering ${proto.name} appears next to ${hero.name}!`, 'reveal');
-      // The card says "attacks immediately". Resolve a single attack now.
-      const newM = s.monsters[s.monsters.length - 1];
-      resolveAttack(room, { kind: 'monster', ref: newM }, { kind: 'hero', ref: hero });
-      break;
-    }
-  }
-  if (card.returnToDeck) {
-    s.treasureDiscard.push(card);
-  } else if (!card.keep) {
-    s.treasureDiscard.push(card);
-  }
-  checkEndConditions(room);
+  return _td.applyTreasureCard(room, hero, card, {
+    logEvent, MONSTER_TYPES, resolveAttack, checkEndConditions,
+  });
 }
-
-function adjacentFreeCells(s, at) {
-  // Same room/corridor segment as `at`, no wall (or closed door) between.
-  // Used for wandering-monster placement — canonical rule is "adjacent to
-  // a hero", which the rulebook scopes to the same room or unbroken
-  // corridor. Spawning across a wall into the next room was a bug.
-  const out = [];
-  for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-    const c = [at[0]+dx, at[1]+dy];
-    const t = tileAt(s, c[0], c[1]);
-    if (!t) continue;
-    if (t.blocked) continue;
-    if (t.furnitureId) continue;
-    if (occupantAt(s, c)) continue;
-    if (wallBetween(s, at, c)) continue;          // different room, no door
-    const door = doorBetween(s, at, c);
-    if (door && door.state !== 'open') continue;  // closed door = no spawn
-    out.push(c);
-  }
-  return out;
-}
+const adjacentFreeCells = _td.adjacentFreeCells;
 
 // ==========================================================
 // USE INVENTORY ITEM
@@ -1427,74 +1103,13 @@ function handleEndShop(ws) {
 }
 
 // ==========================================================
-// TRAPS — triggered when a Hero moves into the trap square
-// ==========================================================
-// ==========================================================
-// TRAP TRIGGERS — 2021 Avalon Hill rules
-//   spear:  hero rolls 1 combat die.
-//             • skull  → -1 Body. "This ends your turn."   → halt + endsTurn
-//             • shield → dodged, trap gone forever.
-//                        "You may then continue with your move." → no halt
-//   pit:    -1 Body. Hero remains IN the pit (status.inPit=true).
-//           "Zargon stops you" → halt walk. Hero may still take an action.
-//   block:  3 combat dice rolled, each skull = -1 Body, no defence.
-//           "Zargon stops you" → halt walk. Cell becomes a PERMANENT
-//           blocked square — no hero or monster may pass through it
-//           for the rest of the quest.
-//
-// Returns { fired, halt, endsTurn } so multi-step callers can decide
-// whether to break the BFS walk loop and whether to lock the turn.
-//   fired    — true if any trap matched the cell (for any-fired callers)
-//   halt     — true if the multi-step walk must stop on this cell
-//   endsTurn — true if the trap also ends the hero's turn (spear+skull)
+// TRAPS — body in game/traps.js. Thin wrapper injects logEvent +
+// checkEndConditions.
 // ==========================================================
 function triggerTrapsForCell(room, hero, cell) {
-  const s = room.state;
-  let fired = false, halt = false, endsTurn = false;
-  for (const tr of s.traps) {
-    if (tr.disarmed || tr.triggered) continue;
-    if (tr.at[0] !== cell[0] || tr.at[1] !== cell[1]) continue;
-    fired = true;
-    if (tr.type === 'spear') {
-      // Roll 1 combat die: skull = damaged & turn ends, shield = dodge & continue
-      const die = rollCombatDie();
-      tr.revealed = true;
-      if (die === 'skull') {
-        tr.triggered = true;
-        hero.body = Math.max(0, hero.body - 1);
-        logEvent(room, `${hero.name} steps on a spear trap — pierced! -1 Body. Turn ends.`, 'death');
-        halt = true; endsTurn = true;
-      } else {
-        // Dodge: trap is gone forever AND walk continues — per rulebook
-        // p.18 "You may then continue with your move."
-        tr.triggered = true; tr.disarmed = true;
-        logEvent(room, `${hero.name} dodges a spear trap and presses on.`, 'reveal');
-        // halt stays false — BFS walk keeps going
-      }
-    } else if (tr.type === 'pit') {
-      tr.revealed = true;
-      tr.triggered = true;          // sprung but persists — pits stay on the board
-      hero.body = Math.max(0, hero.body - 1);
-      hero.status.inPit = true;
-      logEvent(room, `${hero.name} falls into a pit! -1 Body. Combat with -1 die until they climb out.`, 'death');
-      halt = true;
-    } else if (tr.type === 'block') {
-      tr.triggered = true; tr.revealed = true;
-      // Roll 3 combat dice — each skull is 1 Body damage. No defence roll.
-      const dice = rollAttackDice(3);
-      const dmg = dice.filter(f => f === 'skull').length;
-      hero.body = Math.max(0, hero.body - dmg);
-      logEvent(room, `Falling block on ${hero.name}: rolled ${dice.filter(f=>f==='skull').length} skull(s) — ${dmg} damage. The cell is now permanently blocked.`, 'death');
-      // Mark the cell as a permanent obstruction so no one can pass it.
-      // blockedKind = 'falling-block' makes the renderer paint the red
-      // canonical falling-block-trap tile (vs the stone-brick rubble).
-      const t = tileAt(s, cell[0], cell[1]);
-      if (t) { t.blocked = true; t.blockedKind = 'falling-block'; }
-      halt = true;
-    }
-  }
-  checkEndConditions(room);
-  return { fired, halt, endsTurn };
+  return _triggerTrapsForCell(room, hero, cell, {
+    logEvent, checkEndConditions,
+  });
 }
 
 // =============================================================

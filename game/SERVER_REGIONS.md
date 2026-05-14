@@ -134,15 +134,12 @@ many injected callbacks.
 
 ---
 
-## COMBAT (line ~1392)
+## COMBAT — extracted, see [`combat.md`](combat.md)
 
-Damage resolution — applies attacker skulls vs defender shields,
-calls `applyDamage`, checks for death + objective updates.
-
-State touched: hero / monster body, log events, end conditions.
-
-Extraction candidate: high value as `game/combat.js` (joins the
-already-extracted dice helpers). Backlog.
+`resolveAttack`, `effectiveAttack`, `effectiveDefend`,
+`effectiveMoveDice` all live in `game/combat.js`. Thin wrappers in
+`server.js` thread the YAML data tables + log + end-condition
+helpers.
 
 ---
 
@@ -155,40 +152,25 @@ around line ~1492.
 
 ---
 
-## EFFECTIVE COMBAT DICE (line ~1664)
+## EFFECTIVE COMBAT DICE — extracted, see [`combat.md`](combat.md)
 
-`effectiveAttack(h)`, `effectiveDefend(h)`, `effectiveBody(m)` —
-base stats + equipment bonus + spell-status modifiers.
-
-State touched: hero / monster status, equipment bag.
-
-Extraction candidate: medium. Pairs naturally with the combat module.
+Folded into `game/combat.js`.
 
 ---
 
-## SPELLS (line ~1714)
+## SPELLS — extracted, see [`spells.md`](spells.md)
 
-`resolveSpell(room, caster, spell, targetCell)` — the giant switch
-over `effect:` strings from `data/cards/spells.yaml`. Genie,
-Pass Through Rock, Veil of Mist, Heal Body, Tempest, etc.
-
-State touched: heroes, monsters, spell hand, status flags, doors.
-
-Extraction candidate: high value but risky — many spells touch
-many state shapes. `game/spells.js`. Backlog.
+`applySpellEffect` + `resolveTarget` live in `game/spells.js`.
+`handleCastSpell` (WebSocket entry — hand check, Wand of Recall
+counter, broadcast) stays in `server.js`.
 
 ---
 
-## TREASURE DECK (line ~1883)
+## TREASURE DECK — extracted, see [`treasure-deck.md`](treasure-deck.md)
 
-`drawTreasure(room, hero)` — searches a room, draws from the deck
-template, applies the card effect (gold, item, wandering monster,
-trap exposure).
-
-State touched: heroes (gold, items), monsters (wandering spawn),
-treasure deck, log.
-
-Extraction candidate: medium. `game/treasure-deck.js`. Backlog.
+`drawTreasureCard`, `applyTreasureCard`, and `adjacentFreeCells`
+live in `game/treasure-deck.js`. Thin wrappers in `server.js` thread
+the YAML tables + `resolveAttack` + log + end-conditions.
 
 ---
 
@@ -213,18 +195,10 @@ Extraction candidate: low priority.
 
 ---
 
-## TRAPS (line ~2071)
+## TRAPS — extracted, see [`traps.md`](traps.md)
 
-`triggerTrapsForCell(room, hero, cell)` — spear (1 die — skull or
-dodge), pit (-1 body + stuck), block (3 dice no defence + cell
-becomes permanently rubble).
-
-State touched: trap revealed/triggered/disarmed, hero body + status,
-tile rubble flag, log, calls `checkEndConditions`.
-
-Extraction candidate: medium. Self-contained, but needs
-`logEvent` + `checkEndConditions` + `tileAt` + dice helpers
-injected. `game/traps.js`. Backlog.
+`triggerTrapsForCell` lives in `game/traps.js`. Thin wrapper in
+`server.js` injects `logEvent` + `checkEndConditions`.
 
 ---
 
@@ -329,17 +303,20 @@ Extraction candidate: low priority.
 
 ## Extraction priority summary
 
-Order for the next refactor pass:
+**All six originally-planned extractions are DONE.**
 
-1. ~~**`game/view.js`** — `viewFor`.~~ **DONE** — see [`view.md`](view.md).
-2. ~~**`game/quest-builder.js`** — the `build*` family.~~ **DONE** —
-   see [`quest-builder.md`](quest-builder.md).
-3. **`game/spells.js`** — `resolveSpell`. Biggest gameplay surface;
-   high churn area. Move once the seams are obvious.
-4. **`game/traps.js`** — `triggerTrapsForCell`. Self-contained,
-   small.
-5. **`game/treasure-deck.js`** — draw + effect resolver.
-6. **`game/combat.js` (full)** — fold damage resolution + effective
-   dice into the existing module.
+1. ~~`game/view.js` — `viewFor`.~~ DONE
+2. ~~`game/quest-builder.js` — `build*` family.~~ DONE
+3. ~~`game/spells.js` — `applySpellEffect`.~~ DONE
+4. ~~`game/traps.js` — `triggerTrapsForCell`.~~ DONE
+5. ~~`game/treasure-deck.js` — `drawTreasureCard` + effect resolver.~~ DONE
+6. ~~`game/combat.js` (full) — fold in damage resolution + effective
+   dice.~~ DONE
 
-These are tracked in [`../docs/BACKLOG.md`](../docs/BACKLOG.md).
+`server.js` shrunk from **3,625 → 2,441 lines** (-33%).
+
+What remains in `server.js` is intentionally transport / state-plumbing:
+WebSocket protocol, room lifecycle, persistence, lobby actions,
+hero spell-element draft, AI scheduler, HTTP static server, map-editor
+REST routes. Those are coupled to room state mutation + WebSocket and
+don't benefit from extraction.
