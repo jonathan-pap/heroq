@@ -188,13 +188,16 @@ function viewFor(room, token, deps) {
     };
   }).filter(Boolean);
 
-  // Treasure: GM always sees; heroes see revealed-room treasure only
-  view.treasure = s.treasure.filter(t => !t.taken).map(t => {
-    const tile = s.tileMeta[key(t.at[0], t.at[1])];
-    const reveal = isGMView || (tile && (!tile.hiddenFor.heroes));
-    if (!reveal) return null;
-    return { at: t.at, kind: t.kind, amount: t.amount, potion: t.potion };
-  }).filter(Boolean);
+  // Treasure: GM only. Heroes find treasure by searching a room or a
+  // chest — the marker dot would otherwise tip them off where the
+  // quest-stashed gold is before they even step in. The map editor
+  // still shows the dots because it renders straight from the quest
+  // JSON, not from `view`.
+  view.treasure = isGMView
+    ? s.treasure.filter(t => !t.taken).map(t => ({
+        at: t.at, kind: t.kind, amount: t.amount, potion: t.potion,
+      }))
+    : [];
 
   // Traps — GM sees all; heroes only see revealed traps in revealed rooms
   view.traps = (s.traps || []).filter(tr => !tr.disarmed && !tr.triggered).map(tr => {
