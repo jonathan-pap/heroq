@@ -8,6 +8,42 @@ into the relevant folder's README as historical context).
 
 ---
 
+## Quest edits don't propagate into running rooms
+
+**Why:** When a quest starts, the server bakes the quest JSON into the
+room's runtime state (`data/runtime/rooms.json`). Subsequent edits to
+the quest file via the map editor (flip, rotate, move furniture,
+relocate a stair, etc.) update the disk file and the in-memory
+`quests` Map, but the running room's snapshot is unchanged. The
+editor's author has to leave the quest from the lobby and re-enter
+for a fresh quest start to see their edits in-game.
+
+**Three paths, pick when prioritised:**
+
+1. **Auto-rebake** — on `PUT /api/quests/<file>`, find any running
+   rooms tied to that quest and re-bake their snapshot from disk.
+   Riskiest option: mid-quest reveals / picked-up items / killed
+   monsters can collide with the new layout. Would need to selectively
+   preserve player-progress fields (hero positions, fog, killed
+   monsters, picked treasure) while replacing layout fields
+   (furniture, doors, stairs, traps).
+
+2. **Manual rebake button** — add a "Refresh from disk" action in the
+   ⚙ menu. Opt-in, so authoring is one click but normal play sessions
+   are unaffected. Lowest blast radius; matches the existing
+   "POST /api/canonical-pieces/reload" hot-reload pattern.
+
+3. **Status nudge** — when a saved quest no longer matches its
+   in-room snapshot, the lobby (or the in-game header) surfaces a
+   "this quest has been edited since you started — restart to apply"
+   message. Doesn't change behavior, just removes the surprise.
+
+Option 2 is probably the right starting point — it's the smallest
+diff and the manual gate keeps players safe from mid-session layout
+swaps. Option 3 layers on top of either path as the visible signal.
+
+---
+
 ## ~~Client.js Phase B — modularize the browser client~~ DONE
 
 `public/client.js` shrunk from 3,563 → 2,202 lines (-38%) across
