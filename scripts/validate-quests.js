@@ -99,16 +99,66 @@ function describeFootprint(cells) {
   return { w, h, count: cells.length, isRect };
 }
 
-function checkStair(cells) {
-  const fp = describeFootprint(cells);
-  if (!fp) return { level: 'WARN', msg: 'stair: missing or empty' };
-  if (fp.error) return { level: 'WARN', msg: 'stair: malformed cell entry' };
-  if (!fp.isRect) {
-    return { level: 'WARN',
-      msg: `stair: ${fp.count} cells form a non-rectangular shape (${fp.w}x${fp.h} bbox); canonical is 2x2 contiguous` };
+// Group cells into 4-connected components (orthogonal neighbours
+// belong to the same component). Quests can have multiple staircases
+// — e.g. Q10 has two — so we validate each component as its own 2×2
+// piece rather than treating the union as a single footprint.
+function connectedComponents(cells) {
+  if (!Array.isArray(cells) || cells.length === 0) return [];
+  const set = new Set();
+  const byKey = new Map();
+  for (const c of cells) {
+    if (!Array.isArray(c) || c.length !== 2) continue;
+    const k = `${c[0]},${c[1]}`;
+    set.add(k);
+    byKey.set(k, c);
   }
-  if (fp.w !== 2 || fp.h !== 2) {
-    return { level: 'WARN', msg: `stair: footprint is ${fp.w}x${fp.h}; canonical 2021 spec is 2x2` };
+  const seen = new Set();
+  const groups = [];
+  for (const startKey of set) {
+    if (seen.has(startKey)) continue;
+    const group = [];
+    const stack = [startKey];
+    while (stack.length) {
+      const k = stack.pop();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const c = byKey.get(k);
+      group.push(c);
+      const [x, y] = c;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nk = `${x+dx},${y+dy}`;
+        if (set.has(nk) && !seen.has(nk)) stack.push(nk);
+      }
+    }
+    groups.push(group);
+  }
+  return groups;
+}
+
+function checkStair(cells) {
+  if (!Array.isArray(cells) || cells.length === 0) {
+    return { level: 'WARN', msg: 'stair: missing or empty' };
+  }
+  // Split into connected groups first — each is one staircase piece.
+  const groups = connectedComponents(cells);
+  if (groups.length === 0) {
+    return { level: 'WARN', msg: 'stair: malformed cell entries' };
+  }
+  for (let i = 0; i < groups.length; i++) {
+    const fp = describeFootprint(groups[i]);
+    if (!fp || fp.error) {
+      return { level: 'WARN', msg: 'stair: malformed cell entry' };
+    }
+    const which = groups.length > 1 ? ` group ${i + 1}/${groups.length}` : '';
+    if (!fp.isRect) {
+      return { level: 'WARN',
+        msg: `stair${which}: ${fp.count} cells form a non-rectangular shape (${fp.w}x${fp.h} bbox); canonical is 2x2 contiguous` };
+    }
+    if (fp.w !== 2 || fp.h !== 2) {
+      return { level: 'WARN',
+        msg: `stair${which}: footprint is ${fp.w}x${fp.h}; canonical 2021 spec is 2x2` };
+    }
   }
   return null;
 }
