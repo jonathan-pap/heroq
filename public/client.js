@@ -504,7 +504,7 @@ function renderGame(view) {
   renderObjectives(view);
 
   // Log
-  renderLog(view);
+  HQSidebar.renderLog(view);
 
   // Treasure deck badge — number of cards remaining on top of the deck back.
   const tcCount = document.getElementById('treasure-deck-count');
@@ -827,9 +827,9 @@ function renderTurnControls(view) {
   const el = document.getElementById('turn-controls-body');
   el.innerHTML = '';
   // Always update the spells/items panes too — they're now their own tabs.
-  renderSpellsPane(view);
-  renderItemsPane(view);
-  updateTabCounts(view);
+  HQSidebar.renderSpells(view);
+  HQSidebar.renderItems(view);
+  HQSidebar.updateTabCounts(view);
   const cur = view.currentTurn;
   const strip = document.getElementById('header-actions-strip');
   if (strip) strip.classList.remove('actions-strip-mine', 'actions-strip-other', 'actions-strip-end');
@@ -1108,115 +1108,15 @@ function renderTurnControls(view) {
   }
 }
 
-// ----- Sidebar tab panes (Spells / Items) -----------------------------
-// These were previously stuffed into the Actions card as sub-sections.
-// Splitting them out reduces the right-rail to one focused panel at a
-// time (Drucker: cut to essential; Doumont: hierarchy by frequency).
-function renderSpellsPane(view) {
-  const el = document.getElementById('spells-body');
-  if (!el) return;
-  el.innerHTML = '';
-  const cur = view.currentTurn;
-  if (cur?.kind !== 'hero' || !view.myTurn) {
-    el.innerHTML = '<p class="muted small">No spells available right now.</p>';
-    return;
-  }
-  const h = view.heroes.find(x => x.id === cur.heroId);
-  if (!h || !h.spellHand || h.spellHand.length === 0) {
-    el.innerHTML = '<p class="muted small">No spells in hand.</p>';
-    return;
-  }
-  const sg = document.createElement('div');
-  sg.className = 'spell-grid';
-  for (const sp of h.spellHand) {
-    const b = document.createElement('button');
-    b.className = `spell-card el-${sp.element}`;
-    if (pendingSpell && pendingSpell.id === sp.id) b.classList.add('active');
-    b.innerHTML = `<div class="sp-name">${sp.name}</div><div class="sp-el">${sp.element.toUpperCase()}</div>`;
-    b.title = sp.text || '';
-    b.disabled = view.actionUsed && !(h.equipped.artifactItem === 'wand-of-recall');
-    b.addEventListener('click', () => onSpellClick(sp, h, view));
-    sg.appendChild(b);
-  }
-  el.appendChild(sg);
-}
-
-function renderItemsPane(view) {
-  const el = document.getElementById('items-body');
-  if (!el) return;
-  el.innerHTML = '';
-  const cur = view.currentTurn;
-  if (cur?.kind !== 'hero' || !view.myTurn) {
-    el.innerHTML = '<p class="muted small">No inventory available right now.</p>';
-    return;
-  }
-  const h = view.heroes.find(x => x.id === cur.heroId);
-  if (!h || !h.inventory || h.inventory.length === 0) {
-    el.innerHTML = '<p class="muted small">Inventory is empty.</p>';
-    return;
-  }
-  for (const it of h.inventory) {
-    const ib = document.createElement('button');
-    ib.className = 'inv-row';
-    ib.textContent = it.name;
-    ib.title = `Use ${it.name}`;
-    ib.addEventListener('click', () => action('useItem', { itemIndex: it.idx }));
-    el.appendChild(ib);
-  }
-}
-
-function updateTabCounts(view) {
-  const sc = document.getElementById('spells-count');
-  const ic = document.getElementById('items-count');
-  const cur = view.currentTurn;
-  let spells = 0, items = 0;
-  if (cur?.kind === 'hero') {
-    const h = view.heroes.find(x => x.id === cur.heroId);
-    if (h) {
-      spells = (h.spellHand || []).length;
-      items = (h.inventory || []).length;
-    }
-  }
-  if (sc) sc.textContent = spells > 0 ? `(${spells})` : '';
-  if (ic) ic.textContent = items > 0 ? `(${items})` : '';
-  // Mirror the counts onto the action-panel buttons that open the
-  // Inventory / Spellbook overlays.
-  const bi = document.getElementById('btn-items-count');
-  const bs = document.getElementById('btn-spells-count');
-  if (bi) bi.textContent = items;
-  if (bs) bs.textContent = spells;
-  // Dim the buttons when there's nothing inside (still clickable, but
-  // visually quiet — your hero might not have anything yet).
-  const btnItems  = document.getElementById('btn-open-items');
-  const btnSpells = document.getElementById('btn-open-spells');
-  if (btnItems)  btnItems.classList.toggle('empty', items === 0);
-  if (btnSpells) btnSpells.classList.toggle('empty', spells === 0);
-}
-
-// Sidebar tab switcher — purely visual (Actions / Spells / Items / Log).
-function setSidebarTab(name) {
-  for (const b of document.querySelectorAll('#sidebar-tabs button')) {
-    b.classList.toggle('active', b.dataset.stab === name);
-  }
-  for (const p of document.querySelectorAll('[data-stab-content]')) {
-    p.classList.toggle('hidden', p.dataset.stabContent !== name);
-  }
-}
-for (const b of document.querySelectorAll('#sidebar-tabs button')) {
-  b.addEventListener('click', () => setSidebarTab(b.dataset.stab));
-}
-
-function renderLog(view) {
-  const log = document.getElementById('log');
-  log.innerHTML = '';
-  for (const e of view.log) {
-    const div = document.createElement('div');
-    div.className = `entry ${e.cls || ''}`;
-    div.textContent = e.text;
-    log.appendChild(div);
-  }
-  log.scrollTop = log.scrollHeight;
-}
+// Sidebar tab panes (Spells / Items / Log) live in public/client/sidebar.js.
+// Public surface: HQSidebar.renderSpells / .renderItems / .renderLog /
+// .updateTabCounts / .setSidebarTab. Init wires the tab switcher + stores
+// the cross-module callbacks (pendingSpell, onSpellClick, action).
+HQSidebar.init({
+  getPendingSpell: () => pendingSpell,
+  onSpellClick:    (sp, h, view) => onSpellClick(sp, h, view),
+  action,
+});
 
 // Floor texture overlay lives in public/client/textures.js — exposes
 // window.HQTextures. Wire deps once; drawFloorTextures is then called
@@ -1228,6 +1128,11 @@ HQTextures.init({
   isEnabled:   () => FLOOR_TEXTURES_ON,
 });
 HQFurnitureDraw.init({ ctx, CELL });
+HQEntityDraw.init({
+  ctx, CELL,
+  sprites: { monsterSprites, heroSprites, variantKey },
+  drawTileIcon: HQFurnitureArt.drawTileIcon,
+});
 
 // ---------- Canvas: board drawing ----------
 function tileMap(view) {
@@ -1312,15 +1217,15 @@ function drawBoard(view) {
   }
   // Treasure (revealed only)
   for (const t of view.treasure) {
-    drawTreasure(t);
+    HQEntityDraw.drawTreasure(t);
   }
   // Secret doors
   for (const d of (view.secretDoors || [])) {
-    drawSecretDoor(d);
+    HQEntityDraw.drawSecretDoor(d);
   }
   // Traps (revealed only — gmOnly traps for GM view are dimmed)
   for (const tr of (view.traps || [])) {
-    drawTrap(tr);
+    HQEntityDraw.drawTrap(tr);
   }
   // Movement-reachable highlight
   if (view.myTurn && view.currentTurn?.kind === 'hero' && view.movementRoll != null) {
@@ -1331,9 +1236,9 @@ function drawBoard(view) {
     }
   }
   // Heroes
-  for (const h of view.heroes) drawHero(h, view.currentTurn?.kind === 'hero' && view.currentTurn.heroId === h.id);
+  for (const h of view.heroes) HQEntityDraw.drawHero(h, view.currentTurn?.kind === 'hero' && view.currentTurn.heroId === h.id);
   // Monsters
-  for (const m of view.monsters) drawMonster(m, selectedGMMonsterId === m.id);
+  for (const m of view.monsters) HQEntityDraw.drawMonster(m, selectedGMMonsterId === m.id);
 
   // Debug overlay — show L#T# coordinates on each revealed cell when
   // the quest sets showCellCoords. Useful for transcribing canonical
@@ -1772,144 +1677,6 @@ function drawFurniture(t) {
   HQFurnitureDraw.drawShape(type, x, y);
 }
 
-function drawTreasure(t) {
-  const x = t.at[0] * CELL + CELL / 2;
-  const y = t.at[1] * CELL + CELL / 2;
-  ctx.fillStyle = '#c5a14e';
-  ctx.beginPath();
-  ctx.arc(x, y - 6, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,216,112,0.5)';
-  ctx.font = '8px serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('★', x, y + 6);
-}
-
-function drawSecretDoor(d) {
-  const cx = (d.a[0] + d.b[0] + 1) * CELL / 2;
-  const cy = (d.a[1] + d.b[1] + 1) * CELL / 2;
-  const horizontal = (d.a[1] === d.b[1]);
-  ctx.save();
-  ctx.setLineDash([4, 3]);
-  ctx.strokeStyle = '#8b4ca0';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  if (horizontal) {
-    ctx.moveTo(cx, cy - 14);
-    ctx.lineTo(cx, cy + 14);
-  } else {
-    ctx.moveTo(cx - 14, cy);
-    ctx.lineTo(cx + 14, cy);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawTrap(tr) {
-  const x = tr.at[0] * CELL;
-  const y = tr.at[1] * CELL;
-  const cx = x + CELL / 2;
-  const cy = y + CELL / 2;
-  ctx.save();
-  if (tr.gmOnly) ctx.globalAlpha = 0.45;
-  // Prefer canonical heroscribe PNG when available
-  if (drawTileIcon(tr.type || tr.kind || 'pit', x, y, CELL, CELL)) {
-    ctx.restore();
-    return;
-  }
-  // Pixel-art fallback (used while the trap PNG loads or for unknown kinds)
-  if (tr.type === 'pit') {
-    ctx.fillStyle = '#1a1208';
-    ctx.beginPath();
-    ctx.arc(cx, cy, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#d8a040';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  } else {
-    ctx.strokeStyle = '#d8a040';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx - 8, cy - 8); ctx.lineTo(cx + 8, cy + 8);
-    ctx.moveTo(cx + 8, cy - 8); ctx.lineTo(cx - 8, cy + 8);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawHero(h, isCurrent) {
-  if (h.dead) return;
-  const cx = h.at[0] * CELL + CELL / 2;
-  const cy = h.at[1] * CELL + CELL / 2;
-  // Prefer the player's chosen variant token; fall back to the
-  // gender-neutral default if the variant PNG hasn't loaded yet.
-  const sprite = heroSprites[variantKey(h.id, h.variant || 'male')] || heroSprites[h.id];
-  if (isCurrent) {
-    ctx.strokeStyle = 'rgba(255,216,112,0.9)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(cx, cy, CELL / 2 - 1, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  if (sprite) {
-    ctx.drawImage(sprite, cx - CELL/2 + 3, cy - CELL/2 + 3, CELL - 6, CELL - 6);
-  } else {
-    ctx.fillStyle = h.color;
-    ctx.beginPath();
-    ctx.arc(cx, cy, CELL / 2 - 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 16px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(h.glyph, cx, cy + 1);
-  }
-}
-
-function drawMonster(m, isSelected) {
-  const cx = m.at[0] * CELL + CELL / 2;
-  const cy = m.at[1] * CELL + CELL / 2;
-  const sprite = monsterSprites[m.type];
-  if (isSelected) {
-    ctx.strokeStyle = 'rgba(255,80,80,0.9)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(cx, cy, CELL / 2 - 1, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  if (sprite) {
-    ctx.drawImage(sprite, cx - CELL/2 + 3, cy - CELL/2 + 3, CELL - 6, CELL - 6);
-  } else {
-    // Diamond shape — programmer-art fallback
-    ctx.fillStyle = m.color;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - CELL/2 + 4);
-    ctx.lineTo(cx + CELL/2 - 4, cy);
-    ctx.lineTo(cx, cy + CELL/2 - 4);
-    ctx.lineTo(cx - CELL/2 + 4, cy);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 14px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(m.glyph, cx, cy + 1);
-  }
-  // HP indicator if wounded — drawn over either sprite or glyph
-  if (m.body < m.bodyMax) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(cx - 10, cy + CELL/2 - 8, 20, 4);
-    ctx.fillStyle = '#c83030';
-    ctx.fillRect(cx - 10, cy + CELL/2 - 8, 20 * (m.body / m.bodyMax), 4);
-  }
-}
-
 function drawReachable(view, h) {
   // BFS from hero across passable cells (treating closed-but-revealed doors
   // as walkable, since the server auto-opens them on move). Stores the
@@ -2016,176 +1783,20 @@ function drawHoverPath(view, h) {
   ctx.restore();
 }
 
-// ---------- Canvas: click handling ----------
-// Mouse hover: track cell under cursor for path preview, set cursor style,
-// and surface a small floating tooltip with the move cost or attack target.
-canvas.addEventListener('mousemove', (e) => {
-  if (!lastView) return;
-  const [x, y] = screenToCell(e);
-  if (hoverCell && hoverCell[0] === x && hoverCell[1] === y) {
-    moveTooltip(e); return;
-  }
-  hoverCell = [x, y];
-  updateHoverCursor(e);
-  drawBoard(lastView);
-});
-canvas.addEventListener('mouseleave', () => {
-  hoverCell = null;
-  canvas.style.cursor = 'default';
-  hideTooltip();
-  if (lastView) drawBoard(lastView);
-});
-
-function statLine(o) {
-  // "B 1/1 · A2 D1 M10" for a monster, similar for a hero
-  const bm = (o.bodyMax != null) ? `${o.body}/${o.bodyMax}` : `${o.body}`;
-  const parts = [`Body ${bm}`];
-  if (o.mind != null && o.mindMax != null) parts.push(`Mind ${o.mind}/${o.mindMax}`);
-  if (o.attack != null) parts.push(`A${o.attack}`);
-  if (o.defend != null) parts.push(`D${o.defend}`);
-  if (o.moveSquares != null) parts.push(`Mv${o.moveSquares}`);
-  return parts.join(' · ');
-}
-
-function updateHoverCursor(e) {
-  if (!lastView || !hoverCell) return;
-  const cur = lastView.currentTurn;
-  let cursorStyle = 'default';
-  let label = '';
-  const [x, y] = hoverCell;
-
-  // Inspection tooltips work even when it's NOT your turn — hovering a
-  // monster or ally shows their stats card-equivalent (P1.2: lite version
-  // of "click to inspect", per the panel synthesis).
-  const monster = lastView.monsters.find(m => m.at[0] === x && m.at[1] === y);
-  const heroOnCell = lastView.heroes.find(hh => !hh.dead && hh.at[0] === x && hh.at[1] === y);
-
-  if (lastView.myTurn && cur?.kind === 'hero') {
-    const h = lastView.heroes.find(hh => hh.id === cur.heroId);
-    if (h) {
-      const trap = (lastView.traps || []).find(t => t.at[0] === x && t.at[1] === y && t.revealed);
-      if (monster && (Math.abs(h.at[0]-x) + Math.abs(h.at[1]-y) === 1)) {
-        cursorStyle = 'crosshair';
-        label = `Attack ${monster.name} — ${statLine(monster)}`;
-      } else if (monster) {
-        // Non-adjacent monster: inspect tooltip (no cursor for click — server
-        // will validate range/LOS if they click)
-        cursorStyle = 'help';
-        label = `${monster.name} — ${statLine(monster)}`;
-      } else if (heroOnCell && heroOnCell.id !== h.id) {
-        cursorStyle = 'help';
-        label = `${heroOnCell.name} — ${statLine(heroOnCell)}`;
-      } else if (trap && (Math.abs(h.at[0]-x) + Math.abs(h.at[1]-y) <= 1)) {
-        cursorStyle = 'help';
-        label = `Disarm ${trap.type} trap`;
-      } else if (lastReachable && lastReachable.dist.has(`${x},${y}`)) {
-        const d = lastReachable.dist.get(`${x},${y}`);
-        if (d === 0) { cursorStyle = 'default'; label = ''; }
-        else { cursorStyle = 'pointer'; label = `Move (${d} sq)`; }
-      } else {
-        cursorStyle = 'not-allowed';
-      }
-    }
-  } else {
-    // Spectator / GM-AI turn / your hero waiting — still let hovering
-    // monsters and heroes surface their stats. No cursor change.
-    if (monster) {
-      cursorStyle = 'help';
-      label = `${monster.name} — ${statLine(monster)}`;
-    } else if (heroOnCell) {
-      cursorStyle = 'help';
-      label = `${heroOnCell.name} — ${statLine(heroOnCell)}`;
-    }
-  }
-  canvas.style.cursor = cursorStyle;
-  if (label) showTooltip(e, label); else hideTooltip();
-}
-
-let _tipEl = null;
-function tipEl() {
-  if (!_tipEl) {
-    _tipEl = document.createElement('div');
-    _tipEl.className = 'hover-tip';
-    document.body.appendChild(_tipEl);
-  }
-  return _tipEl;
-}
-function showTooltip(e, text) {
-  const t = tipEl();
-  t.textContent = text;
-  t.style.display = 'block';
-  moveTooltip(e);
-}
-function moveTooltip(e) {
-  if (!_tipEl || _tipEl.style.display === 'none') return;
-  _tipEl.style.left = (e.clientX + 14) + 'px';
-  _tipEl.style.top  = (e.clientY + 14) + 'px';
-}
-function hideTooltip() { if (_tipEl) _tipEl.style.display = 'none'; }
-
-canvas.addEventListener('click', (e) => {
-  if (!lastView) return;
-  const [x, y] = screenToCell(e);
-  if (!lastView.myTurn) return;
-
-  const cur = lastView.currentTurn;
-
-  // Spell-target picker mode
-  if (pendingSpell) {
-    const targetMonster = lastView.monsters.find(m => m.at[0] === x && m.at[1] === y);
-    const targetHero = lastView.heroes.find(h => !h.dead && h.at[0] === x && h.at[1] === y);
-    if (targetMonster && (pendingSpell.target === 'enemy' || pendingSpell.target === 'anyone' || pendingSpell.target === 'line')) {
-      sendCast(pendingSpell.id, { kind: 'monster', id: targetMonster.id });
-      return;
-    }
-    if (targetHero && (pendingSpell.target === 'ally' || pendingSpell.target === 'anyone' || pendingSpell.target === 'line')) {
-      sendCast(pendingSpell.id, { kind: 'hero', id: targetHero.id });
-      return;
-    }
-    // Click elsewhere cancels
-    pendingSpell = null;
-    drawBoard(lastView);
-    return;
-  }
-
-  if (cur?.kind === 'hero') {
-    const h = lastView.heroes.find(h => h.id === cur.heroId);
-    if (!h) return;
-    // Click a revealed trap when adjacent → disarm (Dwarf or Tool Kit)
-    const trap = (lastView.traps || []).find(t => t.at[0] === x && t.at[1] === y && t.revealed);
-    if (trap && (Math.abs(h.at[0]-x) + Math.abs(h.at[1]-y) <= 1)) {
-      if (confirm(`Attempt to disarm ${trap.type} trap?`)) {
-        send({ type: 'action', action: 'disarmTrap', trapId: trap.id });
-        return;
-      }
-    }
-    // Click a monster → attack. Range / diagonal allowed depends on
-    // the equipped weapon — the server validates and rejects out-of-
-    // range. We send the action for any monster click and let server
-    // be the source of truth.
-    const targetMonster = lastView.monsters.find(m => m.at[0] === x && m.at[1] === y);
-    if (targetMonster) {
-      action('attack', { targetMonsterId: targetMonster.id });
-      return;
-    }
-    // Otherwise pathfind: server walks the BFS path one cell at a time,
-    // halting on traps / new monster encounters / out-of-MP.
-    action('moveTo', { target: [x, y] });
-    return;
-  }
-
-  if (cur?.kind === 'gm' && lastView.config.gmMode === 'human') {
-    if (!selectedGMMonsterId) return;
-    const m = lastView.monsters.find(x => x.id === selectedGMMonsterId);
-    if (!m) return;
-    const targetHero = lastView.heroes.find(h => !h.dead && h.at[0] === x && h.at[1] === y);
-    if (targetHero && Math.abs(m.at[0]-x) + Math.abs(m.at[1]-y) === 1) {
-      send({ type: 'action', action: 'gmAttack', monsterId: m.id, heroId: targetHero.id });
-      return;
-    }
-    send({ type: 'action', action: 'gmMove', monsterId: m.id, target: [x, y] });
-    return;
-  }
+// Canvas hover + click handling and the floating tooltip live in
+// public/client/board-input.js. The module borrows state via accessors
+// so the canvas renderer + the input listeners read the same hoverCell
+// / pendingSpell / lastReachable / selectedGMMonsterId.
+HQBoardInput.init({
+  canvas, screenToCell, drawBoard,
+  getLastView:            () => lastView,
+  getLastReachable:       () => lastReachable,
+  getPendingSpell:        () => pendingSpell,
+  setPendingSpell:        (v) => { pendingSpell = v; },
+  getHoverCell:           () => hoverCell,
+  setHoverCell:           (v) => { hoverCell = v; },
+  getSelectedGMMonsterId: () => selectedGMMonsterId,
+  sendCast, action, send,
 });
 
 // Modal dialogs (combat / treasure / end / save / restart) live in
