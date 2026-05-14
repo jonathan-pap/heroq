@@ -25,7 +25,7 @@ Run any with `node scripts/<name>.js` from the repo root.
 | Script | What it does | Inputs / outputs |
 |---|---|---|
 | `build-quest1-from-xml.js` | Convert a heroscribe XML quest into our JSON shape (canonical-pieces footprints applied, monsters & traps mapped, naturals resolved). | In: `assets/maps/HQBase-NN-*.xml`. Out: `data/quests/<id>.json`. |
-| `install-canonical-batch.js` | Run the XML→JSON converter across a list of quests in one go. | Reads `data/canonical-quests-meta.yaml`. |
+| `install-canonical-batch.js` | Run the XML→JSON converter across a list of quests in one go. | Reads `data/quests/_meta.yaml`. |
 | `install-canonical-q01.js` / `q02` / `q03` | One-off install scripts retained for reference. | Per-quest fixups. |
 | `dump-q1-pieces.js` | Print the pieces of Quest 1 grouped by type — used while debugging XML conversion. | Stdout only. |
 | `fetch-heroscribe-icons.js` | Pull canonical heroscribe PNGs from their public CDN. | Writes into `assets/furniture/`, `assets/tiles/`, `assets/monsters/`. |
@@ -36,8 +36,8 @@ Run any with `node scripts/<name>.js` from the repo root.
 
 | Script | What it does | Inputs / outputs |
 |---|---|---|
-| `extract-board-from-mask.js` | Walks `assets/board/board3.png` (red-mask reference) and emits `data/board.yaml` with room cell-lists + corridor cells. Primary path. | In: `board3.png`. Out: `data/board.yaml`. |
-| `extract-board-from-jpg.js` | Older path — detects rooms from a photo `assets/board/board.jpg`. Less reliable, kept as fallback. | In: `board.jpg` or `board2.png`. Out: `data/board.yaml`. |
+| `extract-board-from-mask.js` | Walks `assets/board/board3.png` (red-mask reference) and emits `data/board/board.yaml` with room cell-lists + corridor cells. Primary path. | In: `board3.png`. Out: `data/board/board.yaml`. |
+| `extract-board-from-jpg.js` | Older path — detects rooms from a photo `assets/board/board.jpg`. Less reliable, kept as fallback. | In: `board.jpg` or `board2.png`. Out: `data/generated/board.generated.yaml`. |
 | `extract-board.js` | Wrapper script that picks between the two extractors. | Calls one of the above. |
 | `extract-floor-tiles.js` | Crops small floor-texture samples from `board2.png` for use in the texture pipeline. | In: `board2.png`. Out: PNGs under `assets/floors/`. |
 | `extract-room-floors.js` | Cell-aligned crop of each room from `board_v2.png` → per-room PNGs + a manifest (`_index.json`). Used by the builder + originally by the game. | In: `board_v2.png`. Out: `assets/floors/r<NN>.png`, `assets/floors/playable.png`, `assets/floors/_index.json`. |

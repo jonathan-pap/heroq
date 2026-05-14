@@ -36,7 +36,7 @@ fetches.
 
 ## How code references these
 
-- **Furniture filenames** → `data/canonical-pieces.yaml`
+- **Furniture filenames** → `data/pieces/canonical-pieces.yaml`
   (`file`, `altFile`, optional `dir`). Don't hardcode in JS — the
   three frontends fetch the YAML and resolve through it.
 - **Monster tokens** → `MONSTER_TYPE_FILE` in `client.js` +
@@ -55,7 +55,7 @@ fetches.
 
 | Want to add a … | Drop the PNG into … | Then |
 |---|---|---|
-| New furniture piece | `assets/furniture/` | Add an entry to `data/canonical-pieces.yaml` with `file:` (and `altFile:` if applicable). |
+| New furniture piece | `assets/furniture/` | Add an entry to `data/pieces/canonical-pieces.yaml` with `file:` (and `altFile:` if applicable). |
 | Alt-art variant of an existing piece | `assets/furniture/` (any filename) | Set `altFile:` on the piece's YAML entry. |
 | New monster token | `assets/monsters/<Type>-Token.png` | Add to `MONSTER_TYPE_FILE` in `client.js` + `map-editor.js` (until the monster YAML consolidation lands — see `docs/BACKLOG.md`). |
 | New hero variant token | `assets/heros/<Hero>-<Variant>-Token.png` | The `loadAllSprites()` loop already covers `Male` / `Female`. New variants need a tiny constant update. |

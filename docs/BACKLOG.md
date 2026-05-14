@@ -103,7 +103,7 @@ each (`client.js` + `map-editor.js`).
 **Proposed schema** — extend or add YAML alongside existing files:
 
 ```yaml
-# data/canonical-monsters.yaml  (or extend data/monsters.yaml)
+# data/units/canonical-monsters.yaml  (or extend data/units/monsters.yaml)
 monsters:
   goblin:
     tokenFile: Goblin-Token.png

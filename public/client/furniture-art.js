@@ -5,13 +5,13 @@
 //
 //   - Canonical-pieces hydration: FURN_FILE / FURN_ALT_FILE are seeded
 //     from a hardcoded fallback and replaced on boot from
-//     /api/canonical-pieces (data/canonical-pieces.yaml).
+//     /api/canonical-pieces (data/pieces/canonical-pieces.yaml).
 //   - Furniture image caches: FURN_IMG (canonical) and FURN_IMG_ALT
 //     (alt printed-art set). Independent caches so toggling alt vs
 //     canonical doesn't blow away in-memory images.
 //   - Tile-icon caches: TILE_IMG (rubble + trap PNGs).
 //   - Per-art-set "natural" orientation overrides from the map editor
-//     (data/furniture-naturals.json + a localStorage fast-path).
+//     (data/pieces/furniture-naturals.json + a localStorage fast-path).
 //   - Per-art-set inset tables (small / linear / stair / block) read
 //     from localStorage so the editor's sliders propagate to the game.
 //   - Tile-icon inset table (small / linear / block).
@@ -108,7 +108,7 @@
 
   // ----- Furniture-naturals overrides ---------------------------------
   // Set in the map editor's playground and persisted to
-  // data/furniture-naturals.json on the server. Applied on top of the
+  // data/pieces/furniture-naturals.json on the server. Applied on top of the
   // hardcoded FURN_FILE defaults so the live game inherits whatever the
   // user dialled in via the editor.
   const FURN_NATURAL_LS_KEY = 'hq_furn_natural_overrides_v1';

@@ -2,9 +2,9 @@
 
 > **Purpose:** Documents every YAML / JSON file that holds static
 > game content — what each file carries, how the
-> [`canonical-pieces.yaml`](canonical-pieces.yaml) schema works, and
-> the per-quest JSON shape (cells / facing / flip / dark / blocked /
-> etc.).
+> [`pieces/canonical-pieces.yaml`](pieces/canonical-pieces.yaml)
+> schema works, and the per-quest JSON shape (cells / facing / flip
+> / dark / blocked / etc.).
 >
 > **Related:**
 > [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
@@ -19,30 +19,60 @@ is editable through the map editor and hot-reloaded on save.
 
 ---
 
+## Layout
+
+```
+data/
+├── SCHEMAS.md                  this file
+├── board/
+│   └── board.yaml              master board geometry
+├── units/
+│   ├── heroes.yaml             hero cards
+│   └── monsters.yaml           monster stats
+├── pieces/
+│   ├── canonical-pieces.yaml   furniture metadata (single SoT)
+│   └── furniture-naturals.json editor-tuned natural-orientation overrides
+├── cards/
+│   ├── spells.yaml             hero spell deck (12 cards, 4 elements)
+│   ├── dread-spells.yaml       Zargon's spells
+│   ├── equipment.yaml          weapons + armour
+│   ├── treasure.yaml           treasure deck
+│   └── artifacts.yaml          one-of-a-kind rewards
+├── quests/
+│   ├── _meta.yaml              per-quest title / subtitle / boss / objectives
+│   ├── <questN>.json           per-quest content (board overlays)
+│   └── sandbox/                test quests, separated from the book
+├── generated/                  gitignored — script outputs
+│   └── board.generated.yaml    extract-board-from-jpg output
+└── runtime/                    gitignored — server-written state
+    └── rooms.json              multi-room session persistence
+```
+
+---
+
 ## Files
 
 | File | What it carries | Consumed by |
 |---|---|---|
-| `board.yaml` | Master board: 22 room cell-lists + corridor cells. The "geometry" every quest sits on top of. | `server.js` → `/api/board`. Editor, builder, render scripts. |
-| `canonical-pieces.yaml` | **Furniture metadata** (single source of truth): footprint, anchor, canonical PNG filename, alt-art PNG filename, natural orientation, alias list, asset folder. | `server.js` → `/api/canonical-pieces`. All three frontends. The XML converter + quest validator read footprints from here. |
-| `canonical-quests-meta.yaml` | Per-quest title / subtitle / category metadata. | Quest installer scripts. |
-| `heroes.yaml` | Hero cards: body, mind, attack, defend, glyph, colour, starting equipment, spell-element counts, bans. | `server.js` (hero creation), `client.js` (card render). |
-| `monsters.yaml` | Monster stats: move, attack, defend, body, mind, glyph, colour. Boss aliases (Verag, Ulag, Witch Lord) override the base type. | `server.js` (combat + AI), `client.js` (token render). |
+| `board/board.yaml` | Master board: 22 room cell-lists + corridor cells. The "geometry" every quest sits on top of. | `server.js` → `/api/board`. Editor, builder, render scripts. |
+| `pieces/canonical-pieces.yaml` | **Furniture metadata** (single source of truth): footprint, anchor, canonical PNG filename, alt-art PNG filename, natural orientation, alias list, asset folder. | `server.js` → `/api/canonical-pieces`. All three frontends. The XML converter + quest validator read footprints from here. |
+| `pieces/furniture-naturals.json` | Per-type natural-orientation overrides written by the editor's playground panel. Keyed by `type` (canonical art) or `type:alt` (alt art). | `server.js` GET/PUT `/api/furn-naturals`. |
+| `units/heroes.yaml` | Hero cards: body, mind, attack, defend, glyph, colour, starting equipment, spell-element counts, bans. | `server.js` (hero creation), `client.js` (card render). |
+| `units/monsters.yaml` | Monster stats: move, attack, defend, body, mind, glyph, colour. Boss aliases (Verag, Ulag, Witch Lord) override the base type. | `server.js` (combat + AI), `client.js` (token render). |
 | `cards/spells.yaml` | 12 hero spells (3 per element: Air, Earth, Fire, Water). Each has `effect` (engine hook), `target`, `range`. | `server.js` (spell resolver). |
 | `cards/dread-spells.yaml` | Zargon's spell deck. | `server.js`. |
 | `cards/equipment.yaml` | Weapons + armour for the shop. | `server.js` + `client.js`. |
 | `cards/treasure.yaml` | Treasure-deck cards (gold, wandering monsters, items). | `server.js` (treasure deck), `client.js`. |
 | `cards/artifacts.yaml` | One-of-a-kind artifact rewards. | `server.js`. |
-| `furniture-naturals.json` | Per-type natural-orientation overrides written by the editor's playground panel. Keyed by `type` (canonical art) or `type:alt` (alt art). | `server.js` GET/PUT `/api/furn-naturals`. |
-| `quests/*.json` | Per-quest content: rooms revealed, dark cells, furniture placements, monsters, treasure, traps, doors, secret doors, start cells, objectives. | `server.js` (live game), editor (load/save). |
+| `quests/_meta.yaml` | Per-quest title / subtitle / category metadata. | Quest installer scripts. |
+| `quests/<id>.json` | Per-quest content: rooms revealed, dark cells, furniture placements, monsters, treasure, traps, doors, secret doors, start cells, objectives. | `server.js` (live game), editor (load/save). |
 | `quests/sandbox/*.json` | Sandbox quests for testing (separated from the main quest book). | Same as above. |
-| `rooms.json` | Legacy room reference. | (Likely unused by the runtime — kept for now.) |
-| `board.generated.yaml` | Output of an extraction script. Gitignored. | Scripts only. |
-| `board.legacy.yaml.bak` | Pre-2026 board layout backup. | Reference only. |
+| `generated/board.generated.yaml` | Output of `scripts/extract-board-from-jpg.js`. Gitignored. Drop-in replacement candidate for `board/board.yaml`. | Scripts only. |
+| `runtime/rooms.json` | Persisted multi-room game state (hostToken, players, view snapshot, etc.). Gitignored. | `server.js` reads on boot, debounced atomic-writes on state change. |
 
 ---
 
-## `canonical-pieces.yaml` — full schema
+## `pieces/canonical-pieces.yaml` — full schema
 
 Single entry per heroscribe PascalCase piece id. The frontends use
 the `aliases` list to map kebab-case quest-JSON type strings to the

@@ -43,7 +43,7 @@ const PORT       = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR   = path.join(__dirname, 'data');
 const QUESTS_DIR = path.join(DATA_DIR, 'quests');
-const STATE_FILE = path.join(DATA_DIR, 'rooms.json');
+const STATE_FILE = path.join(DATA_DIR, 'runtime', 'rooms.json');
 
 const SAVE_DEBOUNCE_MS = 800;
 const AI_TICK_MS       = 350;   // pause between AI monster moves so humans can follow
@@ -77,7 +77,7 @@ function expandRect(r) {
 }
 
 function loadMasterBoard() {
-  const p = path.join(DATA_DIR, 'board.yaml');
+  const p = path.join(DATA_DIR, 'board', 'board.yaml');
   if (!fs.existsSync(p)) { MASTER_BOARD = null; return; }
   const raw = loadYAML(p);
   const corridorCells = [];
@@ -91,8 +91,8 @@ function loadMasterBoard() {
 }
 
 function loadGameData() {
-  HEROES = loadYAML(path.join(DATA_DIR, 'heroes.yaml'));
-  MONSTER_TYPES = loadYAML(path.join(DATA_DIR, 'monsters.yaml'));
+  HEROES = loadYAML(path.join(DATA_DIR, 'units', 'heroes.yaml'));
+  MONSTER_TYPES = loadYAML(path.join(DATA_DIR, 'units', 'monsters.yaml'));
   SPELLS = loadYAML(path.join(DATA_DIR, 'cards', 'spells.yaml'));
   EQUIPMENT = loadYAML(path.join(DATA_DIR, 'cards', 'equipment.yaml'));
   ARTIFACTS = loadYAML(path.join(DATA_DIR, 'cards', 'artifacts.yaml'));
@@ -152,7 +152,7 @@ catch (e) { /* validator missing is fine */ }
 // metadata (file, altFile, naturalDir, aliases, footprint). Loaded
 // at boot, hot-reloaded by /api/canonical-pieces consumers via the
 // editor's PUT path (or restart on direct YAML edits).
-const CANONICAL_PIECES_PATH = path.join(__dirname, 'data', 'canonical-pieces.yaml');
+const CANONICAL_PIECES_PATH = path.join(__dirname, 'data', 'pieces', 'canonical-pieces.yaml');
 let CANONICAL_PIECES = { pieces: {} };
 function loadCanonicalPieces() {
   try {
@@ -2203,7 +2203,7 @@ function readBody(req, max = 4 * 1024 * 1024) {
 // Furniture natural-orientation overrides — persisted to disk so the
 // editor's "apply" actually saves, and the live game reads the same
 // file on boot. Shape: { "tomb": "upward", ... }
-const FURN_NATURALS_FILE = path.join(DATA_DIR, 'furniture-naturals.json');
+const FURN_NATURALS_FILE = path.join(DATA_DIR, 'pieces', 'furniture-naturals.json');
 function readFurnNaturals() {
   try {
     if (!fs.existsSync(FURN_NATURALS_FILE)) return {};

@@ -35,8 +35,8 @@
 | Dep | What | Why injected |
 |---|---|---|
 | `MASTER_BOARD` | `{ boardSize, corridorCells, rooms[] }` | Loaded by server.js's `loadMasterBoard()`; reassigned on hot-reload. |
-| `HEROES` | hero stats table (loaded from `data/heroes.yaml`) | Reassigned by `loadGameData()`. |
-| `MONSTER_TYPES` | monster stats table (loaded from `data/monsters.yaml`) | Same. |
+| `HEROES` | hero stats table (loaded from `data/units/heroes.yaml`) | Reassigned by `loadGameData()`. |
+| `MONSTER_TYPES` | monster stats table (loaded from `data/units/monsters.yaml`) | Same. |
 | `SPELLS` | spell card table | Same. |
 | `SPELLS_BY_ELEMENT` | element → spell[] index | Same. |
 | `TREASURE_DECK_TEMPLATE` | deck card list (loaded from `data/cards/treasure.yaml`) | Same. |

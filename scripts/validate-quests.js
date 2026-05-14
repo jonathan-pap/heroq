@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Canonical footprint table — sourced from data/canonical-pieces.yaml
+// Canonical footprint table — sourced from data/pieces/canonical-pieces.yaml
 // (single source of truth shared with the XML→JSON converter and the
 // renderer). For each type we accept its declared (w, h) AND the
 // rotated equivalent (h, w) since rotation is permitted.
@@ -29,7 +29,7 @@ let FOOTPRINTS;
 try {
   const yaml = require('js-yaml');
   const raw = yaml.load(require('fs').readFileSync(
-    require('path').join(__dirname, '..', 'data', 'canonical-pieces.yaml'), 'utf8'
+    require('path').join(__dirname, '..', 'data', 'pieces', 'canonical-pieces.yaml'), 'utf8'
   )).pieces || {};
   FOOTPRINTS = {};
   // Map XML piece names → our internal type names.

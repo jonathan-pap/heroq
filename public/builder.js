@@ -205,7 +205,7 @@ function getSprite(url) {
 
 // ---- Furniture icons — shared with the map-editor tool -------------
 // Loaded from /api/canonical-pieces (sourced from
-// data/canonical-pieces.yaml). The FALLBACK below keeps rendering
+// data/pieces/canonical-pieces.yaml). The FALLBACK below keeps rendering
 // alive while the fetch is in flight, and stays in lock-step with
 // the YAML so an offline editor (no server) still works.
 const FURN_FILE_FALLBACK = {

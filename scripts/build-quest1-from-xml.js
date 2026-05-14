@@ -19,7 +19,7 @@ const yaml = require('js-yaml');
 //   natural: { w, h }   default footprint with long axis horizontal
 //   anchor: TL|TR|BL|BR|CT   where the XML (left, top) sits in the piece
 const PIECES = yaml.load(fs.readFileSync(
-  path.join(__dirname, '..', 'data', 'canonical-pieces.yaml'), 'utf8'
+  path.join(__dirname, '..', 'data', 'pieces', 'canonical-pieces.yaml'), 'utf8'
 )).pieces;
 
 // Compute the cell offsets relative to the anchor cell, for a piece
@@ -182,7 +182,7 @@ const TRAP_TYPE = {
 };
 
 // All piece footprints + rotation cell offsets now live in
-// data/canonical-pieces.yaml — see PIECES at top of file. The legacy
+// data/pieces/canonical-pieces.yaml — see PIECES at top of file. The legacy
 // horizontal/vertical sets below are kept only as docs.
 
 const monsters = [];

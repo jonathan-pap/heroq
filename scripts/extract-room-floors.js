@@ -1,7 +1,7 @@
 // =====================================================================
 // extract-room-floors.js
 //
-// For each room in data/board.yaml, crop the FULL room region from
+// For each room in data/board/board.yaml, crop the FULL room region from
 // assets/board/board2.png and save to assets/floors/<roomId>.png.
 // Each PNG covers the room's whole rectangular bbox in source pixels —
 // not a tile sample — so the renderer can sub-sample one cell at a
@@ -24,7 +24,7 @@ const { PNG } = require('pngjs');
 // the cleanest scan. No cropping — the whole image IS the playable
 // board.
 const SOURCE  = path.join(__dirname, '..', 'assets', 'board', 'board_v2.png');
-const BOARD   = path.join(__dirname, '..', 'data', 'board.yaml');
+const BOARD   = path.join(__dirname, '..', 'data', 'board', 'board.yaml');
 const OUT_DIR = path.join(__dirname, '..', 'assets', 'floors');
 
 // No cropping at extraction time — playable.png stays as the full

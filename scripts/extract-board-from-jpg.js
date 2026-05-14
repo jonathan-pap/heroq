@@ -13,7 +13,7 @@
 // Output:
 //   _reference/board-extracted.json    raw grid + walls + room IDs + colours
 //   _reference/board-extracted.txt     ASCII preview
-//   data/board.generated.yaml          drop-in board.yaml replacement
+//   data/generated/board.generated.yaml  drop-in data/board/board.yaml replacement
 //
 // Run:  node scripts/extract-board-from-jpg.js
 // =====================================================================
@@ -40,7 +40,7 @@ if (!IN) throw new Error(`No board image found in assets/board/`);
 const REF_DIR = path.join(__dirname, '..', '_reference');
 const OUT_JSON  = path.join(REF_DIR, 'board-extracted.json');
 const OUT_ASCII = path.join(REF_DIR, 'board-extracted.txt');
-const OUT_YAML  = path.join(__dirname, '..', 'data', 'board.generated.yaml');
+const OUT_YAML  = path.join(__dirname, '..', 'data', 'generated', 'board.generated.yaml');
 
 if (!fs.existsSync(REF_DIR)) fs.mkdirSync(REF_DIR, { recursive: true });
 
@@ -429,7 +429,7 @@ function avgColourFor(id) {
 }
 
 // ---------------------------------------------------------------------
-// 9. Emit a board.generated.yaml in the same shape as data/board.yaml.
+// 9. Emit a board.generated.yaml in the same shape as data/board/board.yaml.
 //    Rooms are stored as cell lists (not rect) since real HQ rooms are
 //    not all rectangular. Loader needs to support both forms — we'll
 //    add that next. Also dump corridor cells as a list.

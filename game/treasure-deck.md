@@ -29,7 +29,7 @@
 | Dep | What | Notes |
 |---|---|---|
 | `logEvent` | `(room, text, cls?)` | Narration line. |
-| `MONSTER_TYPES` | stats table from `data/monsters.yaml` | Reassigned by `loadGameData()`; must be live. |
+| `MONSTER_TYPES` | stats table from `data/units/monsters.yaml` | Reassigned by `loadGameData()`; must be live. |
 | `resolveAttack` | `(room, attacker, defender)` — single attack resolution | Stays in `server.js` because it touches the full combat / status / death chain. |
 | `checkEndConditions` | `(room) → bool` | Promote winner / defeat after the card resolves. |
 

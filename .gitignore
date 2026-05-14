@@ -1,11 +1,11 @@
 # --- runtime / build ---
 node_modules/
-data/rooms.json
-data/rooms.json.tmp
+data/runtime/rooms.json
+data/runtime/rooms.json.tmp
 # intermediate output of extract scripts
-data/board.generated.yaml
+data/generated/board.generated.yaml
 # local backup files
-data/*.bak
+data/**/*.bak
 srv.log
 srv.err
 *.log

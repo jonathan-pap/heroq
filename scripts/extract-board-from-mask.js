@@ -8,7 +8,7 @@
 // extraction from the photo or render.
 //
 // Output (drop-in):
-//   data/board.yaml                    new master board YAML
+//   data/board/board.yaml              new master board YAML
 //   _reference/board3-extracted.txt    ASCII preview
 //   _reference/board3-extracted-debug.png   colour overlay for review
 //
@@ -23,7 +23,7 @@ const IN  = path.join(__dirname, '..', 'assets', 'board', 'board3.png');
 const REF_DIR = path.join(__dirname, '..', '_reference');
 const OUT_ASCII = path.join(REF_DIR, 'board3-extracted.txt');
 const OUT_DEBUG = path.join(REF_DIR, 'board3-extracted-debug.png');
-const OUT_YAML  = path.join(__dirname, '..', 'data', 'board.yaml');
+const OUT_YAML  = path.join(__dirname, '..', 'data', 'board', 'board.yaml');
 
 if (!fs.existsSync(REF_DIR)) fs.mkdirSync(REF_DIR, { recursive: true });
 
@@ -315,7 +315,7 @@ function pickColourFor(cells) {
 }
 
 // ---------------------------------------------------------------------
-// 7. YAML output — drop-in replacement for data/board.yaml.
+// 7. YAML output — drop-in replacement for data/board/board.yaml.
 // ---------------------------------------------------------------------
 let yaml = '# AUTO-GENERATED from assets/board/board3.png (red-mask reference)\n';
 yaml += '# via scripts/extract-board-from-mask.js — re-run to regenerate.\n';

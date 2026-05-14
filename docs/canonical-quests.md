@@ -22,7 +22,7 @@ stairway from the XML at their canonical (col, row) positions.
 
 ## The pieces
 
-### `data/canonical-pieces.yaml` — the single source of truth
+### `data/pieces/canonical-pieces.yaml` — the single source of truth
 
 Every furniture / tile type's footprint is in one YAML file used by:
 - `scripts/build-quest1-from-xml.js` (XML → JSON converter)
@@ -159,7 +159,7 @@ created at runtime when a falling-block trap fires.
 
 ## Master board mismatch — when the canonical doesn't fit our rooms
 
-Our master board (`data/board.yaml`) was auto-extracted from
+Our master board (`data/board/board.yaml`) was auto-extracted from
 `assets/board/board3.png` and has 22 rooms approximately matching the
 canonical 1989 layout but **not cell-perfectly**. When transcribing a
 canonical XML:
@@ -191,7 +191,7 @@ HeroScribe-XML-derived sandbox-canonical version.
 
 ```
 assets/maps/HQBase-NN-….xml          HeroScribe canonical XML (input)
-data/canonical-pieces.yaml           Footprint reference (truth)
+data/pieces/canonical-pieces.yaml    Footprint reference (truth)
 data/quests/sandbox/
     sandbox-canonical-qNN-….json     Auto-generated quest data (output)
 scripts/build-quest1-from-xml.js     Converter (despite the name, takes any quest)

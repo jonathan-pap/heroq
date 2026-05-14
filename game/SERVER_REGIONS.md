@@ -56,7 +56,7 @@ Extraction candidate: low priority. Tight to WebSocket state.
 ## PERSISTENCE (line ~288)
 
 `scheduleSave()`, `saveState()`, `loadRooms()`. Debounced JSON
-snapshot to `data/rooms.json`.
+snapshot to `data/runtime/rooms.json`.
 
 State touched: `rooms` (reads), `STATE_FILE` (writes).
 

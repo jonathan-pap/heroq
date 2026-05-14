@@ -34,7 +34,7 @@ const PAD_B = 52;
 const W = PAD_L + COLS * CELL + PAD_R;
 const H = PAD_T + ROWS * CELL + PAD_B;
 
-// ---- Furniture natural footprints (mirrors data/canonical-pieces.yaml) -
+// ---- Furniture natural footprints (mirrors data/pieces/canonical-pieces.yaml)
 // Used to recompute cells when rotating.
 const FURN_NATURAL = {
   'tomb':            { w: 2, h: 3 },
@@ -199,7 +199,7 @@ const ROTATABLE_FURN = new Set([
 
 // ---- Heroscribe canonical icons + per-type natural override -----------
 // Furniture metadata lives in /api/canonical-pieces (sourced from
-// data/canonical-pieces.yaml). We fetch it at boot and rebuild the
+// data/pieces/canonical-pieces.yaml). We fetch it at boot and rebuild the
 // flat per-type lookup table the rest of this file expects. While
 // the fetch is in flight, the hardcoded FALLBACK below keeps the
 // editor functional — same shape as the YAML resolves to.
@@ -283,7 +283,7 @@ function applyCanonicalPieces(yaml) {
   } catch { /* offline → keep fallback */ }
 })();
 
-// Natural-orientation overrides — persisted to data/furniture-naturals.json
+// Natural-orientation overrides — persisted to data/pieces/furniture-naturals.json
 // via the /api/furn-naturals endpoint. localStorage is kept as a warm
 // cache so the panel renders something on first paint before the GET
 // completes; it's also broadcast on `storage` so other tabs (the live

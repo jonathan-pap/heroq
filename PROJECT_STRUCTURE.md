@@ -60,7 +60,7 @@ HTTP / WebSocket
 | Folder | Reference doc | What's in it | Quick "where to look" |
 |---|---|---|---|
 | `public/` | [`public/FRONTEND.md`](public/FRONTEND.md) | Browser code: live game, map editor, builder, shared utilities | Game UI/render → [`public/client.js`](public/client.js). Editor → [`public/map-editor.js`](public/map-editor.js). |
-| `data/` | [`data/SCHEMAS.md`](data/SCHEMAS.md) | YAML source of truth + per-quest JSON | Add monster stats → [`data/monsters.yaml`](data/monsters.yaml). New piece → [`data/canonical-pieces.yaml`](data/canonical-pieces.yaml). Quest data → `data/quests/*.json`. |
+| `data/` | [`data/SCHEMAS.md`](data/SCHEMAS.md) | YAML source of truth + per-quest JSON, grouped under `board/`, `units/`, `pieces/`, `cards/`, `quests/` | Add monster stats → [`data/units/monsters.yaml`](data/units/monsters.yaml). New piece → [`data/pieces/canonical-pieces.yaml`](data/pieces/canonical-pieces.yaml). Quest data → `data/quests/*.json`. |
 | `assets/` | [`assets/ART_INDEX.md`](assets/ART_INDEX.md) | All PNG art (board scans, monsters, heroes, furniture, tiles, cards, textures) | New token → `assets/monsters/`. New furniture art → `assets/furniture/`. |
 | `scripts/` | [`scripts/TOOLS.md`](scripts/TOOLS.md) | Offline tools (build, extract, validate, render) | Regenerate floor textures → `node scripts/extract-room-floors.js`. Validate quest JSON → [`scripts/validate-quests.js`](scripts/validate-quests.js). |
 | `test/` | [`test/TESTS.md`](test/TESTS.md) | Unit tests (rules, LoS, fog, AI, schema) | `npm test`. |
@@ -85,22 +85,22 @@ HTTP / WebSocket
 - **Furniture PNG layer** → `public/client/furniture-art.js` (image cache, alt-art toggle, naturals/inset overrides)
 - **Furniture pixel-art fallback** → `public/client/furniture-draw.js` (12 piece primitives)
 - **Sprites (monsters / heroes)** → `public/client/sprites.js` (`HQSprites`)
-- **Furniture metadata** → `data/canonical-pieces.yaml` (file/altFile/aliases)
+- **Furniture metadata** → `data/pieces/canonical-pieces.yaml` (file/altFile/aliases)
 - **Sound effects (synth)** → `public/client/audio.js` (`HQAudio`)
 - **Modal dialogs** → `public/client/modals.js`
 
 ### Authoring tools
 - **Map editor (place pieces)** → `public/map-editor.js`
 - **Builder (texture playground)** → `public/builder.js`
-- **Natural-orientation overrides** → editor's "Natural orientations" panel; persists to `data/furniture-naturals.json` via PUT.
+- **Natural-orientation overrides** → editor's "Natural orientations" panel; persists to `data/pieces/furniture-naturals.json` via PUT.
 
 ### Static content
-- **Hero stats** → `data/heroes.yaml`
-- **Monster stats** → `data/monsters.yaml`
+- **Hero stats** → `data/units/heroes.yaml`
+- **Monster stats** → `data/units/monsters.yaml`
 - **Spells / equipment / treasure / artifacts** → `data/cards/*.yaml`
-- **Master board (rooms / corridors)** → `data/board.yaml`
-- **Furniture metadata (file, altFile, natural, aliases, footprint)** → `data/canonical-pieces.yaml`
-- **Quest content (per-quest)** → `data/quests/*.json`
+- **Master board (rooms / corridors)** → `data/board/board.yaml`
+- **Furniture metadata (file, altFile, natural, aliases, footprint)** → `data/pieces/canonical-pieces.yaml`
+- **Quest content (per-quest)** → `data/quests/*.json` (per-quest meta: `data/quests/_meta.yaml`)
 
 ### Settings & preferences (localStorage)
 | Key | What | Surfaces |

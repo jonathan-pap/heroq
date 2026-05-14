@@ -7,7 +7,7 @@
 > if a PNG is loaded, it wins; otherwise the pixel-art fallback runs.
 >
 > **Related:** [`public/FRONTEND.md`](../FRONTEND.md) (module index),
-> [`data/canonical-pieces.yaml`](../../data/canonical-pieces.yaml) (source
+> [`data/pieces/canonical-pieces.yaml`](../../data/pieces/canonical-pieces.yaml) (source
 > of truth fetched on boot),
 > [`data/SCHEMAS.md`](../../data/SCHEMAS.md) (schema docs),
 > [`public/map-editor.js`](../map-editor.js) (writes the
