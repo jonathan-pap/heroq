@@ -1,8 +1,18 @@
-# `public/` — Browser code
+# Frontend (`public/`)
 
-All frontend code is here. Served as-is by `server.js` (no build
-step). Each top-level HTML page is a self-contained surface with its
-own CSS + JS.
+> **Purpose:** Documents the browser-side surfaces — what each
+> HTML/JS pair does, where each feature lives inside the JS files,
+> how preferences sync across tabs.
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`data/SCHEMAS.md`](../data/SCHEMAS.md) (data the frontends fetch),
+> [`assets/ART_INDEX.md`](../assets/ART_INDEX.md) (PNGs the
+> frontends reference).
+
+All frontend code is here. Served as-is by [`server.js`](../server.js)
+(no build step). Each top-level HTML page is a self-contained
+surface with its own CSS + JS.
 
 ---
 

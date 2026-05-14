@@ -1,9 +1,20 @@
-# `scripts/` — Offline tools
+# Offline tools (`scripts/`)
+
+> **Purpose:** Reference for every CLI script — what it does, its
+> inputs, its outputs, and common workflows (re-extract the board,
+> regenerate floor textures, validate quests).
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`data/SCHEMAS.md`](../data/SCHEMAS.md) (output schemas these
+> scripts write to),
+> [`assets/ART_INDEX.md`](../assets/ART_INDEX.md) (input PNGs
+> these scripts consume / output).
 
 CLI utilities for building, extracting, validating, and rendering.
-None of these are required at runtime — `server.js` boots without
-running any of them. They exist to bootstrap data and check
-consistency.
+None of these are required at runtime — [`server.js`](../server.js)
+boots without running any of them. They exist to bootstrap data and
+check consistency.
 
 Run any with `node scripts/<name>.js` from the repo root.
 

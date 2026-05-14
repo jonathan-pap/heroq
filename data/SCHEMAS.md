@@ -1,8 +1,21 @@
-# `data/` — YAML source of truth + per-quest JSON
+# Data schemas (`data/`)
 
-All static game content lives here. The server reads YAML at boot and
-serves it through REST endpoints; quest JSON is editable through the
-map editor and hot-reloaded on save.
+> **Purpose:** Documents every YAML / JSON file that holds static
+> game content — what each file carries, how the
+> [`canonical-pieces.yaml`](canonical-pieces.yaml) schema works, and
+> the per-quest JSON shape (cells / facing / flip / dark / blocked /
+> etc.).
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`public/FRONTEND.md`](../public/FRONTEND.md) (the three surfaces
+> that consume this data),
+> [`scripts/TOOLS.md`](../scripts/TOOLS.md) (extraction +
+> validation scripts that write / read these files).
+
+All static game content lives here. [`server.js`](../server.js)
+reads YAML at boot and serves it through REST endpoints; quest JSON
+is editable through the map editor and hot-reloaded on save.
 
 ---
 

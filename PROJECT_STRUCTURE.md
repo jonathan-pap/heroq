@@ -1,9 +1,17 @@
 # Project structure
 
-Top-level map of the HeroQuest 1989/2021 web recreation. Use this as
-the **first stop** when looking for where a piece of logic lives or
-where a feature is implemented. Each major folder has its own
-`README.md` with finer-grained detail.
+> **Purpose:** Top-level map of the HeroQuest 1989/2021 web
+> recreation. First stop when looking for where a piece of logic
+> lives or where a feature is implemented.
+>
+> **Related:** Each major folder has its own dedicated reference
+> doc — [`public/FRONTEND.md`](public/FRONTEND.md),
+> [`data/SCHEMAS.md`](data/SCHEMAS.md),
+> [`assets/ART_INDEX.md`](assets/ART_INDEX.md),
+> [`scripts/TOOLS.md`](scripts/TOOLS.md),
+> [`test/TESTS.md`](test/TESTS.md),
+> [`game/RULES.md`](game/RULES.md),
+> [`docs/INDEX.md`](docs/INDEX.md).
 
 ---
 
@@ -31,28 +39,28 @@ HTTP / WebSocket
 
 | File | Purpose |
 |---|---|
-| `server.js` | HTTP + WebSocket server, game state, rules engine, REST endpoints (`/api/board`, `/api/quests`, `/api/canonical-pieces`, `/api/furn-naturals`). Single file — search by region comment. |
-| `bots.js` | Zargon AI move/attack pickers. Imported by `server.js`. |
-| `package.json` | One runtime dep (`ws`), one dev dep (`js-yaml`). Scripts: `start`, `test`. |
-| `start.bat` | Windows launcher. |
-| `render.yaml` | Render.com deploy config. |
-| `README.md` | One-liner — see this file for the real overview. |
-| `UPGRADE_NODE.md` | Node-version migration notes. |
+| [`server.js`](server.js) | HTTP + WebSocket server, game state, rules engine, REST endpoints (`/api/board`, `/api/quests`, `/api/canonical-pieces`, `/api/furn-naturals`). Single file — search by region comment. |
+| [`bots.js`](bots.js) | Zargon AI move/attack pickers. Imported by `server.js`. |
+| [`package.json`](package.json) | One runtime dep (`ws`), one dev dep (`js-yaml`). Scripts: `start`, `test`. |
+| [`start.bat`](start.bat) | Windows launcher. |
+| [`render.yaml`](render.yaml) | Render.com deploy config. |
+| [`README.md`](README.md) | Repo front page → points at this file. |
+| [`UPGRADE_NODE.md`](UPGRADE_NODE.md) | Node-version migration notes. |
 
 ---
 
 ## Major folders (each has its own README.md)
 
-| Folder | What's in it | Quick "where to look" |
-|---|---|---|
-| `public/` | Browser code: live game, map editor, builder, shared utilities | Game UI/render → `public/client.js`. Editor → `public/map-editor.js`. |
-| `data/` | YAML source of truth + per-quest JSON | Add monster stats → `data/monsters.yaml`. New piece → `data/canonical-pieces.yaml`. Quest data → `data/quests/*.json`. |
-| `assets/` | All PNG art (board scans, monsters, heroes, furniture, tiles, cards, textures) | New token → `assets/monsters/`. New furniture art → `assets/furniture/`. |
-| `scripts/` | Offline tools (build, extract, validate, render) | Regenerate floor textures → `node scripts/extract-room-floors.js`. Validate quest JSON → `scripts/validate-quests.js`. |
-| `test/` | Unit tests (rules, LoS, fog, AI, schema) | `npm test`. |
-| `game/` | Shared game-rule modules used server-side | `fog.js` — fog-of-war logic. |
-| `docs/` | Project documentation | `BACKLOG.md` — deferred work. `canonical-quests.md` — quest-design reference. |
-| `_reference/` | Local scratch / archive (git-ignored) | Not in version control. |
+| Folder | Reference doc | What's in it | Quick "where to look" |
+|---|---|---|---|
+| `public/` | [`public/FRONTEND.md`](public/FRONTEND.md) | Browser code: live game, map editor, builder, shared utilities | Game UI/render → [`public/client.js`](public/client.js). Editor → [`public/map-editor.js`](public/map-editor.js). |
+| `data/` | [`data/SCHEMAS.md`](data/SCHEMAS.md) | YAML source of truth + per-quest JSON | Add monster stats → [`data/monsters.yaml`](data/monsters.yaml). New piece → [`data/canonical-pieces.yaml`](data/canonical-pieces.yaml). Quest data → `data/quests/*.json`. |
+| `assets/` | [`assets/ART_INDEX.md`](assets/ART_INDEX.md) | All PNG art (board scans, monsters, heroes, furniture, tiles, cards, textures) | New token → `assets/monsters/`. New furniture art → `assets/furniture/`. |
+| `scripts/` | [`scripts/TOOLS.md`](scripts/TOOLS.md) | Offline tools (build, extract, validate, render) | Regenerate floor textures → `node scripts/extract-room-floors.js`. Validate quest JSON → [`scripts/validate-quests.js`](scripts/validate-quests.js). |
+| `test/` | [`test/TESTS.md`](test/TESTS.md) | Unit tests (rules, LoS, fog, AI, schema) | `npm test`. |
+| `game/` | [`game/RULES.md`](game/RULES.md) | Shared game-rule modules used server-side | [`game/fog.js`](game/fog.js) — fog-of-war logic. |
+| `docs/` | [`docs/INDEX.md`](docs/INDEX.md) | Project documentation | [`docs/BACKLOG.md`](docs/BACKLOG.md) — deferred work. [`docs/canonical-quests.md`](docs/canonical-quests.md) — quest-design reference. |
+| `_reference/` | — | Local scratch / archive (git-ignored) | Not in version control. |
 
 ---
 

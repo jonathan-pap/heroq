@@ -1,7 +1,19 @@
-# `assets/` — Raster art
+# Art index (`assets/`)
 
-PNG / JPG art served statically by `server.js` under `/assets/...`.
-No build step — what's on disk is what the browser fetches.
+> **Purpose:** Indexes every PNG / JPG subfolder, the naming
+> conventions used in each, and the steps to add new art (furniture,
+> tokens, tiles, textures).
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`data/SCHEMAS.md`](../data/SCHEMAS.md) (`canonical-pieces.yaml`
+> resolves filenames here),
+> [`public/FRONTEND.md`](../public/FRONTEND.md) (loaders that read
+> these PNGs).
+
+PNG / JPG art served statically by [`server.js`](../server.js) under
+`/assets/...`. No build step — what's on disk is what the browser
+fetches.
 
 ---
 

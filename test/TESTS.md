@@ -1,4 +1,14 @@
-# `test/` — Unit tests
+# Tests (`test/`)
+
+> **Purpose:** Quick reference for every test file — what it covers,
+> how to run a single test, conventions for new tests.
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`game/RULES.md`](../game/RULES.md) (the rule modules these tests
+> exercise),
+> [`scripts/TOOLS.md`](../scripts/TOOLS.md) (`validate-quests.js` is
+> exercised by `quest-schema.test.js`).
 
 Node.js built-in test runner (`node --test`). Run via `npm test`.
 

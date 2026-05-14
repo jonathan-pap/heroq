@@ -1,8 +1,17 @@
-# `game/` — Shared game-rule modules
+# Rule modules (`game/`)
 
-Server-side game-rule modules. Imported by `server.js`. Kept separate
-from the monolithic `server.js` for testability and to leave room for
-more rule modules as the codebase grows.
+> **Purpose:** Lists the shared rule modules consumed by
+> [`server.js`](../server.js). Pure logic, no transport / state.
+> Easy to unit-test.
+>
+> **Related:**
+> [`PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) (top-level map),
+> [`test/TESTS.md`](../test/TESTS.md) (per-module test coverage),
+> [`server.js`](../server.js) (the only consumer today).
+
+Server-side game-rule modules. Imported by [`server.js`](../server.js).
+Kept separate from the monolithic `server.js` for testability and to
+leave room for more rule modules as the codebase grows.
 
 ---
 
