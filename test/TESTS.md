@@ -24,6 +24,10 @@ Node.js built-in test runner (`node --test`). Run via `npm test`.
 | `activation.test.js` | Monster activation rules — when monsters wake on hero entry. |
 | `bot-decisions.test.js` | Zargon AI: target prioritisation, movement choice, attack pick. |
 | `quest-schema.test.js` | Per-quest JSON validation: required fields, type coverage, in-bounds cells, footprint match against `canonical-pieces.yaml`. |
+| `combat.test.js` | [`game/combat.js`](../game/combat.js) — dice distribution, effective attack/defend/move modifiers, full `resolveAttack` pipeline (drink-to-save, lost artifacts, status decay, snapshot). |
+| `spells.test.js` | [`game/spells.js`](../game/spells.js) — `resolveTarget` lookup, every `applySpellEffect` branch (healBody / buff statuses / directDamage / sleep / summonGenie), LoS gate behaviour. |
+| `traps.test.js` | [`game/traps.js`](../game/traps.js) — spear (skull / shield), pit, block trap branches with side effects (`status.inPit`, permanent rubble cell, halt / endsTurn flags). |
+| `treasure-deck.test.js` | [`game/treasure-deck.js`](../game/treasure-deck.js) — deck reshuffle on empty, every card effect (gold / dice×10 / keep / nothing / arrow / pit / wandering), `adjacentFreeCells` rules. |
 
 ---
 
