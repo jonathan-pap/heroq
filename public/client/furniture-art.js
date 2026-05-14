@@ -178,6 +178,10 @@
   // The hardcoded FALLBACK below keeps things rendering while the fetch
   // is in flight, and works as a self-contained offline default. Adding
   // a new tile is one YAML entry — the fetch on next boot picks it up.
+  //
+  // Two file maps + two image caches, mirroring the furniture path:
+  // ALT_FURN_ON drives both, so toggling the "Alt furniture art" pref
+  // swaps tiles + furniture together.
   let TILE_FILE = {
     // rubble / blocked
     'rubble':         'SingleBlockedSquare.png',
@@ -193,32 +197,48 @@
     // stairway
     'stairway':       'Stairway.png',
   };
+  let TILE_FILE_ALT = {
+    'rubble':         'Block-Square-Single.png',
+    'rubble-double':  'Double-Block-Tile.png',
+    'stairway':       'Stair-way.png',
+  };
   function applyCanonicalTiles(yamlData) {
     const tiles = (yamlData && yamlData.tiles) || {};
     const flat = {};
+    const alt  = {};
     for (const tileId of Object.keys(tiles)) {
       const t = tiles[tileId] || {};
       if (!t.file || !Array.isArray(t.aliases)) continue;
-      for (const alias of t.aliases) flat[alias] = t.file;
+      for (const alias of t.aliases) {
+        flat[alias] = t.file;
+        if (t.altFile) alt[alias] = t.altFile;
+      }
     }
     if (Object.keys(flat).length) {
       TILE_FILE = flat;
-      // Wipe the image cache so the next draw re-resolves through the
-      // refreshed alias map.
-      for (const k of Object.keys(TILE_IMG)) delete TILE_IMG[k];
+      TILE_FILE_ALT = alt;
+      // Wipe both caches so the next draw re-resolves through the
+      // refreshed alias maps.
+      for (const k of Object.keys(TILE_IMG))     delete TILE_IMG[k];
+      for (const k of Object.keys(TILE_IMG_ALT)) delete TILE_IMG_ALT[k];
       _redraw();
     }
   }
-  const TILE_IMG = {};
+  const TILE_IMG     = {};
+  const TILE_IMG_ALT = {};
   function getTileImg(kind) {
-    if (TILE_IMG[kind] !== undefined) return TILE_IMG[kind];
-    const fn = TILE_FILE[kind];
-    if (!fn) { TILE_IMG[kind] = null; return null; }
+    // Alt art for tiles only kicks in when (a) the alt-art pref is on
+    // and (b) the tile has an alt file declared. Otherwise canonical.
+    const useAlt = ALT_FURN_ON && !!TILE_FILE_ALT[kind];
+    const cache = useAlt ? TILE_IMG_ALT : TILE_IMG;
+    if (cache[kind] !== undefined) return cache[kind];
+    const fn = useAlt ? TILE_FILE_ALT[kind] : TILE_FILE[kind];
+    if (!fn) { cache[kind] = null; return null; }
     const img = new Image();
     const entry = { img, ready: false };
-    TILE_IMG[kind] = entry;
+    cache[kind] = entry;
     img.onload  = () => { entry.ready = true; _redraw(); };
-    img.onerror = () => { TILE_IMG[kind] = null; };
+    img.onerror = () => { cache[kind] = null; };
     img.src = `/assets/tiles/${fn}`;
     return entry;
   }

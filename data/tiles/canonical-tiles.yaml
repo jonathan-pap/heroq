@@ -25,7 +25,11 @@
 #   natural:    { w, h }    Footprint in cells. Most tiles are 1×1; the
 #                           Stairway is 2×2; DoubleBlockedSquare is 2×1.
 #   anchor:     TL          XML's (left, top) is the top-left cell.
-#   file:       <name>.png  Tile PNG under /assets/tiles/ (no override).
+#   file:       <name>.png  Canonical tile PNG under /assets/tiles/.
+#   altFile:    <name>.png  Optional alt-art variant under /assets/tiles/
+#                           (toggled together with the furniture alt
+#                           pref via HQFurnitureArt.setAltOn). Falls
+#                           through to `file` when missing.
 #   naturalDir: <dir>       Optional. Direction the tile faces in its
 #                           natural PNG (matters only for the stairway —
 #                           the rubble + trap icons are direction-less).
@@ -42,12 +46,14 @@ tiles:
     natural: { w: 1, h: 1 }
     anchor:  TL
     file:    SingleBlockedSquare.png
+    altFile: Block-Square-Single.png
     aliases: [rubble]
 
   DoubleBlockedSquare:
     natural: { w: 2, h: 1 }
     anchor:  TL
     file:    DoubleBlockedSquare.png
+    altFile: Double-Block-Tile.png
     aliases: [rubble-double]
 
   # Falling-block trap leaves permanent rubble after triggering — the
@@ -87,5 +93,6 @@ tiles:
     natural:    { w: 2, h: 2 }
     anchor:     TL
     file:       Stairway.png
+    altFile:    Stair-way.png
     naturalDir: downward
     aliases:    [stairway]

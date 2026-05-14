@@ -441,6 +441,9 @@ function currentCorridorTexture() {
 // ----- Tile icons (rubble + traps + stairway) -----------------------
 // Sourced from /api/canonical-tiles (data/tiles/canonical-tiles.yaml).
 // The hardcoded FALLBACK keeps things rendering before the fetch lands.
+// Two file maps + two image caches, mirroring the furniture path:
+// ALT_FURN_ON drives both, so toggling the alt-art pref swaps tiles +
+// furniture together.
 let TILE_FILE = {
   'rubble':         'SingleBlockedSquare.png',
   'rubble-double':  'DoubleBlockedSquare.png',
@@ -453,19 +456,29 @@ let TILE_FILE = {
   'chest-trap':     'TreasureChestTrap.png',
   'stairway':       'Stairway.png',
 };
+let TILE_FILE_ALT = {
+  'rubble':         'Block-Square-Single.png',
+  'rubble-double':  'Double-Block-Tile.png',
+  'stairway':       'Stair-way.png',
+};
 function applyCanonicalTiles(yaml) {
   const tiles = (yaml && yaml.tiles) || {};
   const flat = {};
+  const alt  = {};
   for (const tileId of Object.keys(tiles)) {
     const t = tiles[tileId] || {};
     if (!t.file || !Array.isArray(t.aliases)) continue;
-    for (const alias of t.aliases) flat[alias] = t.file;
+    for (const alias of t.aliases) {
+      flat[alias] = t.file;
+      if (t.altFile) alt[alias] = t.altFile;
+    }
   }
   if (Object.keys(flat).length) {
     TILE_FILE = flat;
-    // Wipe the image cache so the next draw re-resolves through the
-    // refreshed alias map.
-    for (const k of Object.keys(TILE_IMG || {})) delete TILE_IMG[k];
+    TILE_FILE_ALT = alt;
+    // Wipe both caches so the next draw re-resolves.
+    for (const k of Object.keys(TILE_IMG || {}))     delete TILE_IMG[k];
+    for (const k of Object.keys(TILE_IMG_ALT || {})) delete TILE_IMG_ALT[k];
     if (typeof draw === 'function') draw();
   }
 }
@@ -475,16 +488,19 @@ function applyCanonicalTiles(yaml) {
     if (r.ok) applyCanonicalTiles(await r.json());
   } catch { /* offline → keep fallback */ }
 })();
-const TILE_IMG = {};
+const TILE_IMG     = {};
+const TILE_IMG_ALT = {};
 function getTileImg(kind) {
-  if (TILE_IMG[kind] !== undefined) return TILE_IMG[kind];
-  const fn = TILE_FILE[kind];
-  if (!fn) { TILE_IMG[kind] = null; return null; }
+  const useAlt = ALT_FURN_ON && !!TILE_FILE_ALT[kind];
+  const cache = useAlt ? TILE_IMG_ALT : TILE_IMG;
+  if (cache[kind] !== undefined) return cache[kind];
+  const fn = useAlt ? TILE_FILE_ALT[kind] : TILE_FILE[kind];
+  if (!fn) { cache[kind] = null; return null; }
   const img = new Image();
   const entry = { img, ready: false };
-  TILE_IMG[kind] = entry;
+  cache[kind] = entry;
   img.onload  = () => { entry.ready = true; draw(); };
-  img.onerror = () => { TILE_IMG[kind] = null; };
+  img.onerror = () => { cache[kind] = null; };
   img.src = `/assets/tiles/${fn}`;
   return entry;
 }
