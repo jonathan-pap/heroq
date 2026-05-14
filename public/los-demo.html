@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>LOS rule sandbox</title>
+<style>
+  body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; background: #1a1612; color: #e8d9bd; }
+  h1 { font-weight: 600; margin: 0 0 4px 0; }
+  .sub { color: #b9a98a; margin: 8px 0; font-size: 14px; line-height: 1.5; max-width: 920px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; background: #2a2114; padding: 12px 16px; border-radius: 6px; margin: 14px 0; }
+  .controls label { font-size: 13px; color: #d6c39e; }
+  .controls select, .controls button {
+    background: #1a1612; color: #e8d9bd; border: 1px solid #5a4220; padding: 6px 10px;
+    border-radius: 4px; font-size: 13px; font-family: inherit; cursor: pointer;
+  }
+  .controls button:hover, .controls select:hover { background: #3a2814; }
+  .controls button.active { background: #5a4220; border-color: #ffb04a; color: #ffb04a; }
+  .scenarios { display: flex; gap: 6px; flex-wrap: wrap; }
+  .scenarios button { padding: 5px 9px; font-size: 12px; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; margin: 8px 0 14px; }
+  .legend .sw { display: inline-block; width: 12px; height: 12px; margin-right: 5px; vertical-align: -2px; border: 1px solid #000; }
+  .stats { font-size: 13px; color: #e8b070; margin: 10px 0; }
+  .stats b { color: #ffb04a; }
+  svg { display: block; background: #0e0a06; border: 1px solid #3a2814; user-select: none; }
+  svg rect.cell { cursor: crosshair; }
+  svg rect.cell:hover { stroke: #ffb04a; stroke-width: 2; }
+  .hover-coord { display: inline-block; min-width: 100px; color: #ffd680; font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<h1>Corridor peek-rule sandbox</h1>
+<p class="sub">
+  Click anywhere on the board to place the hero. The fog-of-war reveals recompute live.
+  Use the rule selector to compare the current proposal against a plain one-cell peek.
+  Quick-pick the canonical test scenarios from the buttons.
+</p>
+
+<div class="controls">
+  <label>Rule:
+    <select id="rule">
+      <option value="parallel" selected>Parallel-lane peek (proposed)</option>
+      <option value="one">One-cell peek only</option>
+      <option value="none">No peek (current game)</option>
+    </select>
+  </label>
+  <label>Hero: <span id="hero-coord" class="hover-coord">(12, 0)</span></label>
+  <label>Hover: <span id="hover-coord" class="hover-coord">—</span></label>
+  <div class="scenarios">
+    <button data-h="12,0">S1: (12,0) top of vertical</button>
+    <button data-h="12,6">S2: (12,6) row 6 mid</button>
+    <button data-h="12,9">S3: (12,9) cross junction</button>
+    <button data-h="25,5">S4: (25,5) east edge</button>
+    <button data-h="9,6">S5: (9,6) west of row 6</button>
+    <button data-h="0,0">corner (0,0)</button>
+    <button data-h="13,0">parallel lane (13,0)</button>
+    <button data-h="16,8">row-6 east stub (16,8)</button>
+  </div>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#3a2814"></span>solid rock (off-play)</span>
+  <span><span class="sw" style="background:#604220"></span>hidden room</span>
+  <span><span class="sw" style="background:#2a2114"></span>hidden corridor</span>
+  <span><span class="sw" style="background:#5a8a5a"></span>revealed corridor (base ray)</span>
+  <span><span class="sw" style="background:#3a6840"></span>revealed room (base ray)</span>
+  <span><span class="sw" style="background:#ffb04a"></span>revealed by peek rule</span>
+  <span><span class="sw" style="background:#ff6060"></span>hero</span>
+</div>
+
+<div class="stats">
+  <span>Base reveal: <b id="stat-base">0</b> cell(s)</span>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <span>Peek adds: <b id="stat-extra">0</b> cell(s)</span>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <span>Total visible: <b id="stat-total">0</b> cell(s)</span>
+</div>
+
+<div id="board-wrap"></div>
+
+<script>
+const CELL = 26;
+const PAD = 8;
+const AXIS = 18;
+
+// Master board geometry inlined from /api/board — same as the game uses.
+const BOARD = {"boardSize":[26,19],"corridorCells":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0],[24,0],[25,0],[0,1],[12,1],[13,1],[25,1],[0,2],[12,2],[13,2],[25,2],[0,3],[12,3],[13,3],[25,3],[0,4],[12,4],[13,4],[25,4],[0,5],[12,5],[13,5],[25,5],[0,6],[9,6],[10,6],[11,6],[12,6],[13,6],[14,6],[15,6],[16,6],[25,6],[0,7],[9,7],[16,7],[25,7],[0,8],[9,8],[16,8],[25,8],[0,9],[1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9],[9,9],[16,9],[17,9],[18,9],[19,9],[20,9],[21,9],[22,9],[23,9],[24,9],[25,9],[0,10],[9,10],[16,10],[25,10],[0,11],[9,11],[16,11],[25,11],[0,12],[9,12],[10,12],[11,12],[12,12],[13,12],[14,12],[15,12],[16,12],[25,12],[0,13],[12,13],[13,13],[25,13],[0,14],[12,14],[13,14],[25,14],[0,15],[12,15],[13,15],[25,15],[0,16],[12,16],[13,16],[25,16],[0,17],[12,17],[13,17],[25,17],[0,18],[1,18],[2,18],[3,18],[4,18],[5,18],[6,18],[7,18],[8,18],[9,18],[10,18],[11,18],[12,18],[13,18],[14,18],[15,18],[16,18],[17,18],[18,18],[19,18],[20,18],[21,18],[22,18],[23,18],[24,18],[25,18]],"rooms":[{"id":"r01","cells":[[1,1],[1,2],[1,3],[2,3],[3,3],[3,2],[3,1],[4,1],[4,2],[4,3],[2,2],[2,1]]},{"id":"r02","cells":[[5,1],[5,2],[5,3],[6,3],[7,3],[7,2],[7,1],[8,1],[8,2],[8,3],[6,2],[6,1]]},{"id":"r03","cells":[[9,1],[9,2],[9,3],[9,4],[9,5],[10,5],[11,5],[11,4],[11,3],[11,2],[11,1],[10,4],[10,3],[10,2],[10,1]]},{"id":"r04","cells":[[14,1],[14,2],[14,3],[14,4],[14,5],[15,5],[16,5],[16,4],[16,3],[16,2],[16,1],[15,4],[15,3],[15,2],[15,1]]},{"id":"r05","cells":[[17,1],[17,2],[17,3],[17,4],[18,4],[19,4],[19,3],[19,2],[19,1],[20,1],[20,2],[20,3],[20,4],[18,3],[18,2],[18,1]]},{"id":"r06","cells":[[21,1],[21,2],[21,3],[21,4],[22,4],[23,4],[23,3],[23,2],[23,1],[24,1],[24,2],[24,3],[24,4],[22,3],[22,2],[22,1]]},{"id":"r07","cells":[[1,4],[1,5],[1,6],[1,7],[1,8],[2,8],[3,8],[3,7],[3,6],[3,5],[3,4],[4,4],[4,5],[4,6],[4,7],[4,8],[2,7],[2,6],[2,5],[2,4]]},{"id":"r08","cells":[[5,4],[5,5],[5,6],[5,7],[5,8],[6,8],[7,8],[7,7],[7,6],[7,5],[7,4],[8,4],[8,5],[8,6],[8,7],[8,8],[6,7],[6,6],[6,5],[6,4]]},{"id":"r09","cells":[[17,5],[17,6],[17,7],[17,8],[18,8],[19,8],[19,7],[19,6],[19,5],[20,5],[20,6],[20,7],[20,8],[18,7],[18,6],[18,5]]},{"id":"r10","cells":[[21,5],[21,6],[21,7],[21,8],[22,8],[23,8],[23,7],[23,6],[23,5],[24,5],[24,6],[24,7],[24,8],[22,7],[22,6],[22,5]]},{"id":"r11","cells":[[10,7],[10,8],[10,9],[10,10],[10,11],[11,11],[12,11],[12,10],[12,9],[12,8],[12,7],[13,7],[14,7],[14,8],[14,9],[14,10],[14,11],[15,11],[15,10],[15,9],[15,8],[15,7],[13,8],[13,9],[13,10],[13,11],[11,10],[11,9],[11,8],[11,7]]},{"id":"r12","cells":[[1,10],[1,11],[1,12],[1,13],[2,13],[3,13],[3,12],[3,11],[3,10],[4,10],[4,11],[4,12],[4,13],[2,12],[2,11],[2,10]]},{"id":"r13","cells":[[5,10],[5,11],[5,12],[6,12],[6,11],[6,10]]},{"id":"r14","cells":[[7,10],[7,11],[7,12],[8,12],[8,11],[8,10]]},{"id":"r15","cells":[[17,10],[17,11],[17,12],[18,12],[18,13],[19,13],[20,13],[20,12],[20,11],[20,10],[19,10],[19,11],[19,12],[18,11],[18,10]]},{"id":"r16","cells":[[21,10],[21,11],[21,12],[21,13],[22,13],[23,13],[23,12],[23,11],[23,10],[24,10],[24,11],[24,12],[24,13],[22,12],[22,11],[22,10]]},{"id":"r17","cells":[[5,13],[5,14],[5,15],[5,16],[5,17],[6,17],[7,17],[7,16],[7,15],[7,14],[7,13],[8,13],[8,14],[8,15],[8,16],[8,17],[6,16],[6,15],[6,14],[6,13]]},{"id":"r18","cells":[[9,13],[9,14],[9,15],[9,16],[9,17],[10,17],[11,17],[11,16],[11,15],[11,14],[11,13],[10,16],[10,15],[10,14],[10,13]]},{"id":"r19","cells":[[14,13],[14,14],[14,15],[14,16],[14,17],[15,17],[16,17],[16,16],[16,15],[16,14],[16,13],[17,13],[17,14],[17,15],[17,16],[17,17],[15,16],[15,15],[15,14],[15,13]]},{"id":"r20","cells":[[1,14],[1,15],[1,16],[1,17],[2,17],[3,17],[3,16],[3,15],[3,14],[4,14],[4,15],[4,16],[4,17],[2,16],[2,15],[2,14]]},{"id":"r21","cells":[[18,14],[18,15],[18,16],[18,17],[19,17],[20,17],[20,16],[20,15],[20,14],[19,16],[19,15],[19,14]]},{"id":"r22","cells":[[21,14],[21,15],[21,16],[21,17],[22,17],[23,17],[23,16],[23,15],[23,14],[24,14],[24,15],[24,16],[24,17],[22,16],[22,15],[22,14]]}]};
+
+const SIZE = BOARD.boardSize;
+const CORRIDOR = new Set();
+for (const c of BOARD.corridorCells) CORRIDOR.add(c[0] + ',' + c[1]);
+const ROOMS = BOARD.rooms;
+const ROOM_OF = new Map();
+const ROOM_LABEL = {};
+ROOMS.forEach((r, i) => {
+  ROOM_LABEL[r.id] = String.fromCharCode(65 + i);
+  for (const cell of r.cells) ROOM_OF.set(cell[0] + ',' + cell[1], r.id);
+});
+
+function tileAt(x, y) {
+  if (x < 0 || y < 0 || x >= SIZE[0] || y >= SIZE[1]) return null;
+  const k = x + ',' + y;
+  if (CORRIDOR.has(k)) return { x: x, y: y, kind: 'corridor', roomId: null };
+  if (ROOM_OF.has(k))  return { x: x, y: y, kind: 'room', roomId: ROOM_OF.get(k) };
+  return { x: x, y: y, kind: 'solid', solid: true, roomId: null };
+}
+
+// ===== LOS engines =====================================================
+
+function baseReveal(hx, hy) {
+  const reveal = new Set([hx + ',' + hy]);
+  const start = tileAt(hx, hy);
+  if (!start || start.solid) return reveal;
+  if (start.kind === 'room') {
+    const r = ROOMS.find(rr => rr.id === start.roomId);
+    if (r) for (const cell of r.cells) reveal.add(cell[0] + ',' + cell[1]);
+  }
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (let d = 0; d < dirs.length; d++) {
+    const dx = dirs[d][0], dy = dirs[d][1];
+    let cx = hx, cy = hy;
+    while (true) {
+      const nx = cx + dx, ny = cy + dy;
+      const tn = tileAt(nx, ny);
+      if (!tn || tn.solid) break;
+      const tCur = tileAt(cx, cy);
+      const sameZone = tCur.roomId === tn.roomId;
+      if (!sameZone) {
+        reveal.add(nx + ',' + ny);
+        if (tn.kind === 'room') {
+          const r = ROOMS.find(rr => rr.id === tn.roomId);
+          if (r) for (const cell of r.cells) reveal.add(cell[0] + ',' + cell[1]);
+        }
+        break;
+      }
+      reveal.add(nx + ',' + ny);
+      cx = nx; cy = ny;
+    }
+  }
+  return reveal;
+}
+
+function peekExtras(hx, hy, mode) {
+  const base = baseReveal(hx, hy);
+  const extra = new Set();
+  if (mode === 'none') return { base: base, extra: extra };
+  const start = tileAt(hx, hy);
+  if (!start || start.solid) return { base: base, extra: extra };
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (let d = 0; d < dirs.length; d++) {
+    const dx = dirs[d][0], dy = dirs[d][1];
+    let cx = hx, cy = hy;
+    while (true) {
+      const perps = (dx !== 0) ? [[0,1],[0,-1]] : [[1,0],[-1,0]];
+      for (let p = 0; p < perps.length; p++) {
+        const px = perps[p][0], py = perps[p][1];
+        const t1 = tileAt(cx + px, cy + py);
+        if (!t1 || t1.solid || t1.kind !== 'corridor') continue;
+        const k1 = (cx + px) + ',' + (cy + py);
+        if (!base.has(k1)) extra.add(k1);
+        if (mode !== 'parallel') continue;
+        // Parallel-lane check: the depth-1 cell must sit in a corridor
+        // that runs along the main ray axis for at least TWO cells
+        // behind. This distinguishes a real parallel lane (col 13
+        // alongside col 12, extending many cells in the main-ray
+        // direction) from an incidental adjacent corridor (the bottom
+        // of a vertical corridor poking sideways into a perimeter row).
+        const b1 = tileAt(cx + px - dx, cy + py - dy);
+        if (!b1 || b1.solid || b1.kind !== 'corridor') continue;
+        const b2 = tileAt(cx + px - 2*dx, cy + py - 2*dy);
+        if (!b2 || b2.solid || b2.kind !== 'corridor') continue;
+        const t2 = tileAt(cx + 2*px, cy + 2*py);
+        if (!t2 || t2.solid || t2.kind !== 'corridor') continue;
+        const k2 = (cx + 2*px) + ',' + (cy + 2*py);
+        if (!base.has(k2)) extra.add(k2);
+      }
+      const nx = cx + dx, ny = cy + dy;
+      const tn = tileAt(nx, ny);
+      if (!tn || tn.solid) break;
+      const tCur = tileAt(cx, cy);
+      if (tCur.roomId !== tn.roomId) break;
+      cx = nx; cy = ny;
+    }
+  }
+  return { base: base, extra: extra };
+}
+
+// ===== Render ==========================================================
+
+const state = { hx: 12, hy: 0, mode: 'parallel' };
+
+function render() {
+  const result = peekExtras(state.hx, state.hy, state.mode);
+  const base = result.base, extra = result.extra;
+  const W = SIZE[0] * CELL + 2 * PAD + AXIS;
+  const H = SIZE[1] * CELL + 2 * PAD + AXIS;
+  let svg = '<svg id="svg" width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg">';
+  for (let x = 0; x < SIZE[0]; x++) {
+    svg += '<text x="' + (PAD + AXIS + x * CELL + CELL/2) + '" y="' + (PAD + 12) + '" font-size="10" text-anchor="middle" fill="#b9a98a">' + x + '</text>';
+  }
+  for (let y = 0; y < SIZE[1]; y++) {
+    svg += '<text x="' + (PAD + 10) + '" y="' + (PAD + AXIS + y * CELL + CELL/2 + 4) + '" font-size="10" text-anchor="middle" fill="#b9a98a">' + y + '</text>';
+  }
+  svg += '<g transform="translate(' + (PAD + AXIS) + ', ' + (PAD + AXIS) + ')">';
+  for (let y = 0; y < SIZE[1]; y++) {
+    for (let x = 0; x < SIZE[0]; x++) {
+      const sx = x * CELL;
+      const sy = y * CELL;
+      const k = x + ',' + y;
+      const t = tileAt(x, y);
+      let fill = '#3a2814';
+      let label = '';
+      if (t && !t.solid) {
+        const isHero = (x === state.hx && y === state.hy);
+        if (isHero) {
+          fill = t.kind === 'corridor' ? '#5a8a5a' : '#3a6840';
+        } else if (base.has(k)) {
+          fill = t.kind === 'corridor' ? '#5a8a5a' : '#3a6840';
+          if (t.roomId) label = ROOM_LABEL[t.roomId] || '';
+        } else if (extra.has(k)) {
+          fill = '#ffb04a';
+        } else if (t.kind === 'corridor') {
+          fill = '#2a2114';
+        } else {
+          fill = '#604220';
+          if (t.roomId) label = ROOM_LABEL[t.roomId] || '';
+        }
+      }
+      svg += '<rect class="cell" data-x="' + x + '" data-y="' + y + '" x="' + sx + '" y="' + sy + '" width="' + CELL + '" height="' + CELL + '" fill="' + fill + '" stroke="#000" />';
+      if (label) {
+        svg += '<text x="' + (sx + CELL/2) + '" y="' + (sy + CELL/2 + 4) + '" font-size="11" text-anchor="middle" fill="#000" opacity="0.55" pointer-events="none">' + label + '</text>';
+      }
+    }
+  }
+  const hpx = state.hx * CELL;
+  const hpy = state.hy * CELL;
+  svg += '<circle cx="' + (hpx + CELL/2) + '" cy="' + (hpy + CELL/2) + '" r="' + (CELL/2 - 3) + '" fill="#ff6060" stroke="#000" stroke-width="2" pointer-events="none" />';
+  svg += '<text x="' + (hpx + CELL/2) + '" y="' + (hpy + CELL/2 + 4) + '" font-size="14" text-anchor="middle" fill="#000" font-weight="bold" pointer-events="none">H</text>';
+  svg += '</g></svg>';
+
+  document.getElementById('board-wrap').innerHTML = svg;
+  document.getElementById('hero-coord').textContent = '(' + state.hx + ', ' + state.hy + ')';
+  document.getElementById('stat-base').textContent = base.size;
+  document.getElementById('stat-extra').textContent = extra.size;
+  document.getElementById('stat-total').textContent = base.size + extra.size;
+
+  const root = document.getElementById('svg');
+  root.addEventListener('click', onClick);
+  root.addEventListener('mousemove', onHover);
+  root.addEventListener('mouseleave', () => {
+    document.getElementById('hover-coord').textContent = '—';
+  });
+}
+
+function onClick(e) {
+  const target = e.target;
+  if (target && target.classList && target.classList.contains('cell')) {
+    const x = parseInt(target.getAttribute('data-x'), 10);
+    const y = parseInt(target.getAttribute('data-y'), 10);
+    state.hx = x; state.hy = y;
+    render();
+  }
+}
+
+function onHover(e) {
+  const target = e.target;
+  if (target && target.classList && target.classList.contains('cell')) {
+    const x = parseInt(target.getAttribute('data-x'), 10);
+    const y = parseInt(target.getAttribute('data-y'), 10);
+    const t = tileAt(x, y);
+    let kind = 'solid';
+    if (t && !t.solid) kind = t.kind === 'corridor' ? 'corridor' : 'room ' + (ROOM_LABEL[t.roomId] || '?');
+    document.getElementById('hover-coord').textContent = '(' + x + ', ' + y + ') ' + kind;
+  }
+}
+
+document.getElementById('rule').addEventListener('change', (e) => {
+  state.mode = e.target.value;
+  render();
+});
+
+for (const btn of document.querySelectorAll('.scenarios button')) {
+  btn.addEventListener('click', () => {
+    const parts = btn.getAttribute('data-h').split(',').map(s => parseInt(s, 10));
+    state.hx = parts[0]; state.hy = parts[1];
+    render();
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
