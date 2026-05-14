@@ -5,6 +5,13 @@
 //   - When a hero ENTERS a room, the WHOLE room is revealed at once.
 //   - When a hero stands in a CORRIDOR, only cells in cardinal LOS are
 //     revealed — blocked by solid rock, walls, and closed doors.
+//   - Cardinal rays also peek ONE cell perpendicular into adjacent
+//     corridors as the ray passes ("see one cell down side passages").
+//     When the depth-1 peek cell sits in a corridor running parallel
+//     to the main ray for at least 2 cells back, a depth-2 peek fires
+//     too — so walking down a 2-wide corridor lets you see one cell
+//     into the perpendicular passage beyond your parallel lane. Walls
+//     and closed doors still block the peek; rooms still need a door.
 //   - Opening a door reveals the ROOM behind it, cascading through
 //     chained open doors.
 //
@@ -17,7 +24,7 @@
 // fog later).
 'use strict';
 const HQRules = require('../public/shared/rules.js');
-const { tileAt, doorBetween } = HQRules;
+const { tileAt, doorBetween, wallBetween } = HQRules;
 
 function noop() {}
 
@@ -74,10 +81,46 @@ function recomputeFromHero(state, hero, log = noop) {
   // Cardinal raycasts from the hero's cell. Each ray walks one cell at
   // a time, stopping when it hits rock, a wall, or a closed door.
   // Crossing into a different room reveals that room whole and ends
-  // the ray.
+  // the ray. At every cell along the ray (including the hero's start
+  // cell) the engine ALSO peeks one cell perpendicular into corridors
+  // — "you can see one cell down the side passage as you pass it".
+  // A depth-2 peek fires when the depth-1 cell sits inside a corridor
+  // running parallel to the main ray for at least two cells "behind"
+  // (i.e. the hero has been walking down a 2-wide corridor, and at the
+  // turn into a perpendicular passage can see one more cell into it).
+  // Walls and closed doors block the peek; rooms are corridor-only.
+  function peekFrom(cur, dx, dy) {
+    const perps = (dx !== 0) ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]];
+    for (const [px, py] of perps) {
+      const p1 = [cur[0] + px, cur[1] + py];
+      if (wallBetween(state, cur, p1)) continue;
+      const door1 = doorBetween(state, cur, p1);
+      if (door1 && door1.state !== 'open') continue;
+      const t1 = tileAt(state, p1[0], p1[1]);
+      // Corridor-only — rooms still need a door to reveal.
+      if (!t1 || t1.solidRock || t1.roomId !== null) continue;
+      revealCell(t1);
+      // Parallel-lane check: the depth-1 cell must sit in a corridor
+      // running parallel to the main ray for at least 2 cells "behind"
+      // (opposite of the main-ray direction).
+      const b1 = tileAt(state, p1[0] - dx, p1[1] - dy);
+      if (!b1 || b1.solidRock || b1.roomId !== null) continue;
+      const b2 = tileAt(state, p1[0] - 2 * dx, p1[1] - 2 * dy);
+      if (!b2 || b2.solidRock || b2.roomId !== null) continue;
+      const p2 = [cur[0] + 2 * px, cur[1] + 2 * py];
+      if (wallBetween(state, p1, p2)) continue;
+      const door2 = doorBetween(state, p1, p2);
+      if (door2 && door2.state !== 'open') continue;
+      const t2 = tileAt(state, p2[0], p2[1]);
+      if (!t2 || t2.solidRock || t2.roomId !== null) continue;
+      revealCell(t2);
+    }
+  }
+
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     let cur = [hero.at[0], hero.at[1]];
     while (true) {
+      peekFrom(cur, dx, dy);
       const next = [cur[0] + dx, cur[1] + dy];
       const tn = tileAt(state, next[0], next[1]);
       if (!tn || tn.solidRock) break;
