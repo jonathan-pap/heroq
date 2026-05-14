@@ -29,6 +29,7 @@ folder's own descriptive doc:
 |---|---|
 | `BACKLOG.md` | Captured improvements that aren't urgent. Newest items at the top. The single place to write down "we should come back to this." |
 | `canonical-quests.md` | Quest-design reference — canonical board layout, room IDs, official quest book mappings. Used while authoring / converting quests. |
+| `UX_PANEL_CRITIQUE.md` | Strategic critique of the player experience by a simulated multi-expert business panel (Christensen / Godin / Kim & Mauborgne / Doumont). Reference document — not a backlog. Concrete actions get extracted into `BACKLOG.md` when we decide to act on them. |
 
 ---
 
