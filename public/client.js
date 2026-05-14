@@ -378,49 +378,8 @@ function renderSpellDraft(view) {
   }
 }
 
-// Single body-level card-preview popover. One element reused for every
-// hover; sits at the top of the DOM so no ancestor's overflow can clip
-// it. Position chosen each hover: prefer to the right of the thumbnail,
-// flip to the left if it would run off-screen, with vertical clamping
-// against the viewport.
-let _cardPreviewEl = null;
-function getCardPreview() {
-  if (_cardPreviewEl) return _cardPreviewEl;
-  const el = document.createElement('img');
-  el.className = 'card-preview-popover';
-  el.alt = '';
-  el.draggable = false;
-  document.body.appendChild(el);
-  _cardPreviewEl = el;
-  return el;
-}
-function attachCardPreview(thumb, url) {
-  thumb.addEventListener('mouseenter', () => {
-    const el = getCardPreview();
-    el.src = url;
-    el.style.display = 'block';
-    // Wait a frame so the popover has natural dimensions, then place it.
-    requestAnimationFrame(() => positionCardPreview(thumb, el));
-  });
-  thumb.addEventListener('mouseleave', () => {
-    if (_cardPreviewEl) _cardPreviewEl.style.display = 'none';
-  });
-}
-function positionCardPreview(thumb, el) {
-  const rect = thumb.getBoundingClientRect();
-  const pw = el.offsetWidth || 220;
-  const ph = el.offsetHeight || 308;
-  const gap = 10;
-  // Prefer right of thumbnail; flip left if it would clip off-screen.
-  let x = rect.right + gap;
-  if (x + pw > window.innerWidth - 4) x = rect.left - gap - pw;
-  if (x < 4) x = 4;
-  // Vertical: align centre to thumbnail; clamp inside viewport.
-  let y = rect.top + rect.height / 2 - ph / 2;
-  y = Math.max(4, Math.min(y, window.innerHeight - ph - 4));
-  el.style.left = `${Math.round(x)}px`;
-  el.style.top  = `${Math.round(y)}px`;
-}
+// Card hover-preview popover lives in public/client/card-preview.js —
+// HQCardPreview.attach(thumb, url) wires a thumbnail for hover preview.
 
 // Replace the coloured letter badge with the printed-art token for the
 // current variant choice. Falls back to the glyph letter if the PNG
@@ -468,7 +427,7 @@ function renderSeatVariant(view, btn, seat, taken) {
   img.alt = `${HERO_NAMES[seat]} (${variant})`;
   img.draggable = false;
   // Hover-zoom: a single body-level popover (avoids parent overflow clips).
-  attachCardPreview(img, cardUrl);
+  HQCardPreview.attach(img, cardUrl);
   host.appendChild(img);
 
   if (isMine) {
@@ -639,7 +598,7 @@ document.getElementById('btn-toggle-rails')?.addEventListener('click', () => {
 function initGameUIChrome() {
   wirePanelCollapse();
   applyRailsHidden(localStorage.getItem(RAILS_STATE_KEY) === '1');
-  wireHandOverlays();
+  HQOverlays.mountHandOverlays();
   wireOptionsMenu();
 }
 
@@ -730,10 +689,8 @@ function wireOptionsMenu() {
       syncOptionsMenuState(lastView);
       if (lastView) drawBoard(lastView);
     } else if (opt === 'alt-furn') {
-      ALT_FURN_ON = !ALT_FURN_ON;
-      try { localStorage.setItem(FURN_ALT_KEY, ALT_FURN_ON ? '1' : '0'); } catch {}
+      HQFurnitureArt.setAltOn(!HQFurnitureArt.isAltOn());
       syncOptionsMenuState(lastView);
-      if (lastView) drawBoard(lastView);
     } else if (opt === 'zargon-speed') {
       const cur = Math.max(1, Math.min(4, lastView?.config?.aiSpeed || 1));
       const next = cur >= 4 ? 1 : cur + 1;
@@ -764,7 +721,7 @@ function syncOptionsMenuState(view) {
   const owToggle = document.getElementById('opt-outer-walls-state');
   if (owToggle) owToggle.classList.toggle('on', !!OUTER_WALLS_ON);
   const afToggle = document.getElementById('opt-alt-furn-state');
-  if (afToggle) afToggle.classList.toggle('on', !!ALT_FURN_ON);
+  if (afToggle) afToggle.classList.toggle('on', HQFurnitureArt.isAltOn());
   const speedVal = document.getElementById('opt-zargon-speed-value');
   if (speedVal && view) {
     const s = Math.max(1, Math.min(4, view.config?.aiSpeed || 1));
@@ -772,52 +729,8 @@ function syncOptionsMenuState(view) {
   }
 }
 
-// ---------- Inventory / Spellbook hand overlays ----------
-function openOverlay(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('hidden');
-}
-function closeOverlay(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.add('hidden');
-}
-function wireHandOverlays() {
-  const itemsBtn  = document.getElementById('btn-open-items');
-  const spellsBtn = document.getElementById('btn-open-spells');
-  if (itemsBtn && !itemsBtn._wired) {
-    itemsBtn.addEventListener('click', () => openOverlay('items-overlay'));
-    itemsBtn._wired = true;
-  }
-  if (spellsBtn && !spellsBtn._wired) {
-    spellsBtn.addEventListener('click', () => openOverlay('spells-overlay'));
-    spellsBtn._wired = true;
-  }
-  // Click outside the inner card, or click an element with data-dismiss,
-  // closes the overlay. Wire once across the document.
-  if (!document._handOverlayWired) {
-    document.addEventListener('click', (ev) => {
-      const dismissTarget = ev.target.closest('[data-dismiss]');
-      if (dismissTarget) {
-        closeOverlay(dismissTarget.dataset.dismiss);
-        return;
-      }
-      // Click on the overlay backdrop itself (not on the inner card)
-      const overlay = ev.target.closest('.modal[data-dismissable]');
-      if (overlay && ev.target === overlay) {
-        closeOverlay(overlay.id);
-      }
-    });
-    document.addEventListener('keydown', (ev) => {
-      if (ev.key !== 'Escape') return;
-      for (const id of ['items-overlay', 'spells-overlay']) {
-        closeOverlay(id);
-      }
-    });
-    document._handOverlayWired = true;
-  }
-}
+// Hand overlays + mobile tabs live in public/client/overlays.js — exposes
+// window.HQOverlays.{mountHandOverlays, mountMobileTabs, setMobileTab}.
 
 // ---------- Game render ----------
 const canvas = document.getElementById('board');
@@ -2097,287 +2010,16 @@ const FACING_RAD = {
 // have a defined orientation (downward).
 const ROTATABLE_PIECES = new Set(['throne', 'weapon-rack']);
 
-// ----- Heroscribe canonical icons -----------------------------------
-// FURN_FILE + FURN_ALT_FILE are sourced at boot from
-// /api/canonical-pieces (which reads data/canonical-pieces.yaml). The
-// hardcoded FALLBACK keeps the game rendering while the fetch is in
-// flight, and works as a self-contained offline default. Adding a new
-// piece is now a single YAML entry — server + all three frontends
-// pick it up on reload.
-const _f = (file, natural = 'downward', dir = 'furniture') => ({ file, natural, dir });
-const FURN_FILE_FALLBACK = {
-  'tomb':              _f('Tomb.png'),
-  'sarcophagus':       _f('Tomb.png'),
-  'sorcerer-table':    _f('SorcerersTable.png'),
-  'sorcerers-table':   _f('SorcerersTable.png'),
-  'alchemist-table':   _f('AlchemistsBench.png', 'upward'),
-  'alchemist-bench':   _f('AlchemistsBench.png', 'upward'),
-  'alchemists-bench':  _f('AlchemistsBench.png', 'upward'),
-  'table':             _f('Table.png'),
-  'bookcase':          _f('Bookcase.png'),
-  'cupboard':          _f('Cupboard.png'),
-  'fireplace':         _f('Fireplace.png'),
-  'weapon-rack':       _f('WeaponsRack.png'),
-  'rack':              _f('Rack.png'),
-  'chest':             _f('TreasureChest.png'),
-  'throne':            _f('Throne.png'),
-  'stairway':          _f('Stairway.png', 'downward', 'tiles'),
-};
-const FURN_ALT_FILE_FALLBACK = {
-  'tomb':             'Tomb-2x3.png',
-  'sarcophagus':      'Tomb-2x3.png',
-  'sorcerer-table':   'Sorcerer Table-2x3.png',
-  'sorcerers-table':  'Sorcerer Table-2x3.png',
-  'alchemist-table':  'Alchemist Bench-2x3.png',
-  'alchemist-bench':  'Alchemist Bench-2x3.png',
-  'alchemists-bench': 'Alchemist Bench-2x3.png',
-  'table':            'Table-2x3.png',
-  'bookcase':         'Bookcase-1x3.png',
-  'cupboard':         'Cupboard-1x3.png',
-  'fireplace':        'Fireplace-1x3.png',
-  'weapon-rack':      'Weapons Rack-1x3.png',
-  'rack':             'Rack-2x3.png',
-  'chest':            'Chest-1x1.png',
-  'throne':           'Throne-1x1.png',
-};
-let FURN_FILE     = { ...FURN_FILE_FALLBACK };
-let FURN_ALT_FILE = { ...FURN_ALT_FILE_FALLBACK };
-function applyCanonicalPieces(yamlData) {
-  const pieces = (yamlData && yamlData.pieces) || {};
-  const flat = {};
-  const alt  = {};
-  for (const pieceId of Object.keys(pieces)) {
-    const p = pieces[pieceId] || {};
-    if (!p.file || !Array.isArray(p.aliases)) continue;
-    for (const alias of p.aliases) {
-      flat[alias] = { file: p.file, natural: p.naturalDir || 'downward', dir: p.dir || 'furniture' };
-      if (p.altFile) alt[alias] = p.altFile;
-    }
-  }
-  if (Object.keys(flat).length) {
-    FURN_FILE = flat;
-    FURN_ALT_FILE = alt;
-    // Wipe per-art-set image caches so getFurnImg re-resolves with the
-    // refreshed FURN_FILE / FURN_ALT_FILE on next draw.
-    for (const k of Object.keys(FURN_IMG))     delete FURN_IMG[k];
-    for (const k of Object.keys(FURN_IMG_ALT)) delete FURN_IMG_ALT[k];
-    if (lastView) drawBoard(lastView);
-  }
-}
-(async () => {
-  try {
-    const r = await fetch('/api/canonical-pieces');
-    if (r.ok) applyCanonicalPieces(await r.json());
-  } catch { /* offline → keep fallback */ }
-})();
-
-// Furniture natural-orientation overrides — set in the map editor's
-// playground and persisted to data/furniture-naturals.json on the
-// server. Applied on top of the hardcoded FURN_FILE defaults so the
-// live game inherits whatever the user dialled in via the editor.
-//
-// localStorage is kept as a fast-path cache so the game has SOMETHING
-// to render before the GET completes; the `storage` event keeps tabs
-// in sync so an editor change in another tab live-updates the running
-// game. Source of truth on reload is always the server file.
-const FURN_NATURAL_LS_KEY = 'hq_furn_natural_overrides_v1';
-function readFurnNaturalsLocal() {
-  try { return JSON.parse(localStorage.getItem(FURN_NATURAL_LS_KEY) || '{}') || {}; }
-  catch { return {}; }
-}
-let FURN_NATURAL_OVERRIDES = readFurnNaturalsLocal();
-function applyFurnNaturals(map) {
-  FURN_NATURAL_OVERRIDES = map || {};
-  // Each cache uses its own override key — canonical reads `type`,
-  // alt reads `${type}:alt`. Fall back to the file's default natural.
-  for (const t of Object.keys(FURN_IMG)) {
-    if (FURN_IMG[t]) {
-      const def = FURN_FILE[t];
-      FURN_IMG[t].natural = FURN_NATURAL_OVERRIDES[t] || (def && def.natural) || 'downward';
-    }
-  }
-  for (const t of Object.keys(FURN_IMG_ALT)) {
-    if (FURN_IMG_ALT[t]) {
-      const def = FURN_FILE[t];
-      FURN_IMG_ALT[t].natural = FURN_NATURAL_OVERRIDES[t + ':alt'] || (def && def.natural) || 'downward';
-    }
-  }
-  if (lastView) drawBoard(lastView);
-}
-// Server is source of truth — fetch on boot, then keep the localStorage
-// cache in sync.
-fetch('/api/furn-naturals').then(r => r.ok ? r.json() : null).then(j => {
-  if (j && typeof j === 'object') {
-    try { localStorage.setItem(FURN_NATURAL_LS_KEY, JSON.stringify(j)); } catch {}
-    applyFurnNaturals(j);
-  }
-}).catch(() => {});
-// Cross-tab live updates from the editor's playground panel.
-window.addEventListener('storage', e => {
-  if (e.key !== FURN_NATURAL_LS_KEY) return;
-  applyFurnNaturals(readFurnNaturalsLocal());
+// Furniture + tile PNG art subsystem lives in public/client/furniture-art.js.
+// Owns canonical-pieces hydration, FURN_IMG / FURN_IMG_ALT / TILE_IMG
+// caches, furn-naturals overrides, the ALT_FURN_ON pref, and the
+// per-art-set inset tables. Init once at boot.
+HQFurnitureArt.init({
+  ctx, CELL,
+  getLastView: () => lastView,
+  drawBoard:   (v) => drawBoard(v),
 });
-
-// Alternate furniture art — sized-name PNGs (Tomb-2x3.png, etc.).
-// FURN_ALT_FILE is populated by the canonical-pieces fetch above
-// (FURN_ALT_FILE_FALLBACK keeps things rendering in the meantime).
-// Toggleable via the Options menu's "Alt furniture art" item; shared
-// localStorage key with the editor + builder so all three surfaces
-// stay visually consistent.
-const FURN_ALT_KEY = 'hq_furn_alt_v1';
-let ALT_FURN_ON = (() => {
-  try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }
-  catch { return false; }
-})();
-window.addEventListener('storage', (e) => {
-  if (e.key === FURN_ALT_KEY) {
-    ALT_FURN_ON = e.newValue === '1';
-    if (lastView) drawBoard(lastView);
-  }
-});
-
-// Two caches — one per art set — so toggling alt vs canonical doesn't
-// blow away images already in memory.
-const FURN_IMG     = {};   // canonical art cache
-const FURN_IMG_ALT = {};   // alt art cache
-function getFurnImg(type) {
-  const def = FURN_FILE[type];
-  if (!def) return null;
-  const useAlt = ALT_FURN_ON && !!FURN_ALT_FILE[type];
-  const cache = useAlt ? FURN_IMG_ALT : FURN_IMG;
-  if (cache[type] !== undefined) return cache[type];
-  const file = useAlt ? FURN_ALT_FILE[type] : def.file;
-  // Per-art-set natural override — alt key `${type}:alt`, canonical key `type`.
-  const overrideKey = useAlt ? type + ':alt' : type;
-  const natural = FURN_NATURAL_OVERRIDES[overrideKey] || def.natural;
-  const img = new Image();
-  const entry = { img, ready: false, natural };
-  cache[type] = entry;
-  img.onload  = () => { entry.ready = true; if (lastView) drawBoard(lastView); };
-  img.onerror = () => { cache[type] = null; };
-  img.src = `/assets/${def.dir || 'furniture'}/${file}`;
-  return entry;
-}
-
-// ----- Tile icons (rubble + trap markers) ---------------------------
-// Map a logical tile kind to a PNG in /assets/tiles/. Used by the
-// blocked-tile and trap renderers to replace hand-drawn glyphs.
-const TILE_FILE = {
-  // rubble / blocked
-  'rubble':         'SingleBlockedSquare.png',
-  'rubble-double':  'DoubleBlockedSquare.png',
-  'falling-block':  'FallingRock.png',
-  'block':          'FallingRock.png',
-  // traps
-  'pit':            'PitTrap.png',
-  'spear':          'SpearTrap.png',
-  'spear-trap':     'SpearTrap.png',
-  'pit-trap':       'PitTrap.png',
-  'chest-trap':     'TreasureChestTrap.png',
-};
-const TILE_IMG = {};
-function getTileImg(kind) {
-  if (TILE_IMG[kind] !== undefined) return TILE_IMG[kind];
-  const fn = TILE_FILE[kind];
-  if (!fn) { TILE_IMG[kind] = null; return null; }
-  const img = new Image();
-  const entry = { img, ready: false };
-  TILE_IMG[kind] = entry;
-  img.onload  = () => { entry.ready = true; if (lastView) drawBoard(lastView); };
-  img.onerror = () => { TILE_IMG[kind] = null; };
-  img.src = `/assets/tiles/${fn}`;
-  return entry;
-}
-function drawTileIcon(kind, px, py, pw, ph) {
-  const e = getTileImg(kind);
-  if (!e || !e.ready) return false;
-  const img = e.img;
-  const cellsW = Math.max(1, Math.round(pw / CELL));
-  const cellsH = Math.max(1, Math.round(ph / CELL));
-  const inset  = tileInsetForBbox(cellsW, cellsH);
-  const slotW = pw - 2 * inset;
-  const slotH = ph - 2 * inset;
-  const ar = img.naturalWidth / img.naturalHeight;
-  let drawW = slotW, drawH = slotW / ar;
-  if (drawH > slotH) { drawH = slotH; drawW = slotH * ar; }
-  ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
-  return true;
-}
-
-// Draw a furniture piece using its canonical image, rotated for facing.
-// Returns true if drawn, false if no image (caller falls back to pixel art).
-//
-// "contain" fit: the image keeps its natural aspect ratio and is
-// centred inside the bbox (with small empty padding when aspects differ
-// from the cell-grid footprint). This avoids the "stretched look" you
-// get from forcing 33×23 into a 32×32 cell or 91×59 into 96×64.
-// Per-shape furniture inset (px gap between icon and cell wall).
-// Four buckets — small (1×1), linear (Nx1), stair (2×2), block (else).
-// Read from the same localStorage key the editor's sliders write so
-// the live game inherits whatever values you tuned in the tool.
-// Per-art-set insets — canonical and alt art keep independent values
-// since they have different proportions. Active set follows
-// ALT_FURN_ON. Editor + builder write to these same keys.
-const FURN_INSETS_LS_KEY     = 'hq_furn_insets_v2';
-const FURN_INSETS_ALT_LS_KEY = 'hq_furn_insets_alt_v1';
-const DEFAULT_FURN_INSETS = { small: 5, linear: 5, stair: 6, block: 12 };
-function _readFurnInsetsFrom(key) {
-  try {
-    const j = JSON.parse(localStorage.getItem(key) || '{}');
-    const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
-    return {
-      small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_FURN_INSETS.small,
-      linear: Number.isFinite(j.linear) ? clamp(j.linear) : DEFAULT_FURN_INSETS.linear,
-      stair:  Number.isFinite(j.stair)  ? clamp(j.stair)  : DEFAULT_FURN_INSETS.stair,
-      block:  Number.isFinite(j.block)  ? clamp(j.block)  : DEFAULT_FURN_INSETS.block,
-    };
-  } catch { return { ...DEFAULT_FURN_INSETS }; }
-}
-let FURN_INSETS_CANON = _readFurnInsetsFrom(FURN_INSETS_LS_KEY);
-let FURN_INSETS_ALT   = _readFurnInsetsFrom(FURN_INSETS_ALT_LS_KEY);
-function activeFurnInsets() { return ALT_FURN_ON ? FURN_INSETS_ALT : FURN_INSETS_CANON; }
-window.addEventListener('storage', e => {
-  if (e.key === FURN_INSETS_LS_KEY)     FURN_INSETS_CANON = _readFurnInsetsFrom(FURN_INSETS_LS_KEY);
-  else if (e.key === FURN_INSETS_ALT_LS_KEY) FURN_INSETS_ALT = _readFurnInsetsFrom(FURN_INSETS_ALT_LS_KEY);
-  else return;
-  if (lastView) drawBoard(lastView);
-});
-function insetForBbox(cellsW, cellsH) {
-  const FURN_INSETS = activeFurnInsets();
-  const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
-  if (mx <= 1) return FURN_INSETS.small;
-  if (mn <= 1) return FURN_INSETS.linear;
-  if (mn === 2 && mx === 2) return FURN_INSETS.stair;
-  return FURN_INSETS.block;
-}
-
-// Tile-icon insets (rubble + traps). Same shape as the furniture
-// buckets; tuned independently because tile art is generally smaller.
-const TILE_INSETS_LS_KEY = 'hq_tile_insets_v1';
-const DEFAULT_TILE_INSETS = { small: 4, linear: 4, block: 6 };
-function _readTileInsets() {
-  try {
-    const j = JSON.parse(localStorage.getItem(TILE_INSETS_LS_KEY) || '{}');
-    const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
-    return {
-      small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_TILE_INSETS.small,
-      linear: Number.isFinite(j.linear) ? clamp(j.linear) : DEFAULT_TILE_INSETS.linear,
-      block:  Number.isFinite(j.block)  ? clamp(j.block)  : DEFAULT_TILE_INSETS.block,
-    };
-  } catch { return { ...DEFAULT_TILE_INSETS }; }
-}
-let TILE_INSETS = _readTileInsets();
-window.addEventListener('storage', e => {
-  if (e.key !== TILE_INSETS_LS_KEY) return;
-  TILE_INSETS = _readTileInsets();
-  if (lastView) drawBoard(lastView);
-});
-function tileInsetForBbox(cellsW, cellsH) {
-  const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
-  if (mx <= 1) return TILE_INSETS.small;
-  if (mn <= 1) return TILE_INSETS.linear;
-  return TILE_INSETS.block;
-}
+const { getFurnImg, drawTileIcon, insetForBbox } = HQFurnitureArt;
 function drawFurniturePieceImage(type, px, py, pw, ph, facing, flipH, flipV) {
   const entry = getFurnImg(type);
   if (!entry || !entry.ready) return false;
@@ -2429,8 +2071,9 @@ function drawFurniturePiece(f) {
   // when the image is still loading or the type has no mapping.
   // Per-art-set flip — alt mode reads f._altFlipH/V, canonical reads
   // f._flipH/V. Same data model the editor + builder write into.
-  const flipH = ALT_FURN_ON ? !!f._altFlipH : !!f._flipH;
-  const flipV = ALT_FURN_ON ? !!f._altFlipV : !!f._flipV;
+  const altOn = HQFurnitureArt.isAltOn();
+  const flipH = altOn ? !!f._altFlipH : !!f._flipH;
+  const flipV = altOn ? !!f._altFlipV : !!f._flipV;
   if (drawFurniturePieceImage(type, px, py, pw, ph, f.facing, flipH, flipV)) return;
 
   // Pixel-art fallback — uses the legacy ROTATABLE_PIECES rule because
@@ -2879,20 +2522,7 @@ canvas.addEventListener('click', (e) => {
 // public/client/modals.js — exposes window.HQModals. Wire it up.
 HQModals.init({ send, getLastView: () => lastView });
 
-// ---------- Mobile tabs ----------
-// At ≤768px the right sidebar collapses into a bottom drawer toggled
-// by a tab bar. Each tab sets `body[data-mtab]` which CSS reads to
-// reveal exactly one panel (Board / Turn / Hero / Log).
-function setMobileTab(name) {
-  document.body.dataset.mtab = name;
-  for (const b of document.querySelectorAll('#mobile-tabs button')) {
-    b.classList.toggle('active', b.dataset.mtab === name);
-  }
-}
-document.body.dataset.mtab = 'board';
-for (const b of document.querySelectorAll('#mobile-tabs button')) {
-  b.addEventListener('click', () => setMobileTab(b.dataset.mtab));
-}
+HQOverlays.mountMobileTabs();
 
 // Audio synth lives in public/client/audio.js — exposes window.HQAudio
 // (sfx / fireSfxFromView / reset / mount). Mount the 🔊 / 🔇 toggle.
