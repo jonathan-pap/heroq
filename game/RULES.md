@@ -15,11 +15,18 @@ leave room for more rule modules as the codebase grows.
 
 ---
 
-## Files
+## Modules
 
-| File | Purpose |
-|---|---|
-| `fog.js` | Fog-of-war logic — which cells are revealed for each hero given the current movement / line-of-sight / open-door / blocked-cell state. Pure functions; takes state, returns reveal updates. Easy to unit-test in `test/fog.test.js`. |
+Each module has a sibling `.md` skill doc — read that first when
+working on it.
+
+| Module | Skill doc | Purpose |
+|---|---|---|
+| [`util.js`](util.js) | [`util.md`](util.md) | Pure helpers — IDs, dice, geometry, array shuffle. Zero state. |
+| [`combat.js`](combat.js) | [`combat.md`](combat.md) | Combat dice (`DICE_FACES`, `rollCombatDie`, `rollAttackDice`). Damage resolution still in `server.js`. |
+| [`los.js`](los.js) | [`los.md`](los.md) | Line-of-sight + occupant queries (`tileAt`, `occupantAt`, `lineOfSight`, `isMultiShareCell`, `isMonsterVisibleToHeroes`). |
+| [`pathfinding.js`](pathfinding.js) | [`pathfinding.md`](pathfinding.md) | BFS pathfinder + corridor branch counter. `passable` is injected by the caller. |
+| [`fog.js`](fog.js) | — | Fog-of-war logic — which cells are revealed for each hero given the current movement / LoS / open-door / blocked state. Tested in [`../test/fog.test.js`](../test/fog.test.js). |
 
 ---
 

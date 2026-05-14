@@ -14,6 +14,20 @@ const yaml = require('js-yaml');
 const { WebSocketServer } = require('ws');
 const { decideMonsterTurn, pickBotName } = require('./bots');
 
+// Pure helper modules — see game/*.md for each module's API.
+const { uid, pid, code, rollD6, bresenham, shuffle } = require('./game/util');
+const { DICE_FACES, rollCombatDie, rollAttackDice } = require('./game/combat');
+const {
+  tileAt, occupantAt, isMonsterVisibleToHeroes,
+  losEdgeBlocked, lineOfSight, isMultiShareCell,
+} = require('./game/los');
+const { findPath: _findPathBFS, countVisibleBranches } = require('./game/pathfinding');
+// Local wrapper — injects this file's `passable` predicate so callers
+// keep the older 4-arg signature.
+function findPath(s, hero, target, maxLength) {
+  return _findPathBFS(s, hero, target, maxLength, passable);
+}
+
 function loadYAML(p) { return yaml.load(fs.readFileSync(p, 'utf8')); }
 
 const PORT       = process.env.PORT || 3000;
@@ -112,8 +126,8 @@ function loadGameData() {
   console.log(`[data] heroes=${Object.keys(HEROES).length} monsters=${Object.keys(MONSTER_TYPES).length} spells=${Object.keys(SPELLS).length} dread-spells=${Object.keys(DREAD_SPELLS).length} equipment=${Object.keys(EQUIPMENT).length} artifacts=${Object.keys(ARTIFACTS).length} treasureDeck=${TREASURE_DECK_TEMPLATE.length} ${boardInfo}`);
 }
 
-// Combat dice: each face is one of these, equal probability
-const DICE_FACES = ['skull','skull','skull','heroShield','heroShield','monsterShield'];
+// Combat dice (`DICE_FACES`, `rollCombatDie`, `rollAttackDice`) now
+// live in `game/combat.js` and are imported at the top of this file.
 
 // ==========================================================
 // QUEST LOADING
@@ -211,40 +225,15 @@ function questList() {
 // ==========================================================
 // UTILITIES
 // ==========================================================
-function uid()  { return crypto.randomBytes(16).toString('hex'); }
-function pid()  { return crypto.randomBytes(6).toString('hex'); }  // public id (safe to expose to peers)
-function code() {
-  const a = 'ABCDEFGHJKMNPQRSTUVWXYZ'; // skip I,L,O for clarity
-  let s = '';
-  for (let i = 0; i < 4; i++) s += a[Math.floor(Math.random() * a.length)];
-  return s;
-}
-function rollD6()  { return 1 + Math.floor(Math.random() * 6); }
-function rollCombatDie() { return DICE_FACES[Math.floor(Math.random() * 6)]; }
-function rollAttackDice(n) { const r = []; for (let i = 0; i < n; i++) r.push(rollCombatDie()); return r; }
-
+// Pure helpers (`uid`, `pid`, `code`, `rollD6`, `bresenham`,
+// `shuffle`) live in `game/util.js`. Combat dice live in
+// `game/combat.js`. Both are imported at the top of this file.
+//
 // Shared geometry + adjacency + wall/door rules are kept in
 // public/shared/rules.js so the server and both browser apps cannot
 // drift. Local re-exports below preserve the existing call sites.
 const HQRules = require('./public/shared/rules.js');
 const { key, edgeKey, adjacent, adjacentDiag, chebyshev } = HQRules;
-
-// Bresenham line — list of cells from `from` to `to` inclusive.
-function bresenham(from, to) {
-  let [x0, y0] = from; const [x1, y1] = to;
-  const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-  const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-  let err = dx + dy;
-  const out = [];
-  while (true) {
-    out.push([x0, y0]);
-    if (x0 === x1 && y0 === y1) break;
-    const e2 = 2 * err;
-    if (e2 >= dy) { err += dy; x0 += sx; }
-    if (e2 <= dx) { err += dx; y0 += sy; }
-  }
-  return out;
-}
 
 // ==========================================================
 // ROOMS
@@ -995,13 +984,7 @@ function buildSecretDoors(quest) {
   }));
 }
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+// `shuffle` now lives in `game/util.js` and is imported at the top.
 
 // ==========================================================
 // TURN HELPERS
@@ -1058,72 +1041,9 @@ function advanceTurn(room) {
 // ==========================================================
 // MOVEMENT / WALL DERIVATION
 // ==========================================================
-function tileAt(s, x, y) { return s.tileMeta[key(x, y)] || null; }
-
-// Is this monster currently visible to the hero side? Used by the
-// move loop to detect "new monster came into view" reveal-stops.
-function isMonsterVisibleToHeroes(s, m) {
-  if (!m || m.dead) return false;
-  if (m.roomId) return !s.roomState[m.roomId].hiddenFor.heroes;
-  const t = s.tileMeta[key(m.at[0], m.at[1])];
-  return !!(t && !t.hiddenFor.heroes);
-}
-
-// True if the edge between two orthogonally-adjacent cells is blocked
-// for the purposes of line-of-sight: solid wall (different rooms with
-// no door), or a closed door. Open doors and same-zone neighbours
-// (same room id, or both corridor) are clear.
-function losEdgeBlocked(s, a, b) {
-  if (wallBetween(s, a, b)) return true;
-  const door = doorBetween(s, a, b);
-  if (door && door.state !== 'open') return true;
-  return false;
-}
-
-// Line-of-sight per the 2021 rulebook: an unobstructed straight line
-// from caster centre to target centre. Walls, closed doors, heroes,
-// and monsters block. The endpoints themselves don't block (the caster
-// and target stand on `from` and `to`).
-//
-// Per the canonical "even if the line just touches a corner" clause,
-// diagonal steps that pass through the meeting of four cells are
-// permissive: the line is blocked only when BOTH L-paths around the
-// corner are walled/doored shut. A single clear side keeps it visible.
-function lineOfSight(s, from, to) {
-  if (from[0] === to[0] && from[1] === to[1]) return true;
-  const cells = bresenham(from, to);
-  for (let i = 1; i < cells.length; i++) {
-    const a = cells[i - 1], b = cells[i];
-    const tb = tileAt(s, b[0], b[1]);
-    if (!tb) return false;
-
-    if (a[0] === b[0] || a[1] === b[1]) {
-      // Orthogonal step: one wall edge to check.
-      if (losEdgeBlocked(s, a, b)) return false;
-    } else {
-      // Diagonal step: the line crosses the corner where four cells
-      // meet. Two possible L-paths around the corner:
-      //   path1: a → (a.x, b.y) → b
-      //   path2: a → (b.x, a.y) → b
-      // The diagonal is blocked only when BOTH paths are blocked at
-      // either leg. (Single clear side → still visible.)
-      const c1 = [a[0], b[1]];
-      const c2 = [b[0], a[1]];
-      const path1Open = !losEdgeBlocked(s, a, c1) && !losEdgeBlocked(s, c1, b);
-      const path2Open = !losEdgeBlocked(s, a, c2) && !losEdgeBlocked(s, c2, b);
-      if (!path1Open && !path2Open) return false;
-    }
-
-    // Intermediate cell blocking — rubble (falling-block trap fired)
-    // and any hero or monster standing in the middle of the line.
-    // Endpoints (caster + target) are excluded.
-    if (i < cells.length - 1) {
-      if (tb.blocked) return false;
-      if (occupantAt(s, b)) return false;
-    }
-  }
-  return true;
-}
+// `tileAt`, `occupantAt`, `isMonsterVisibleToHeroes`,
+// `losEdgeBlocked`, `lineOfSight`, `isMultiShareCell` all live in
+// `game/los.js` and are imported at the top of this file.
 
 // Wall / door / melee predicates come from public/shared/rules.js so the
 // browser previews use the exact same rules as the server enforces.
@@ -1179,27 +1099,8 @@ function passable(s, fromCell, toCell, mover) {
   return true;
 }
 
-// Returns true if `cell` is a stair-cell or a sprung pit (the only
-// places the rules permit two heroes to share a square).
-function isMultiShareCell(s, cell) {
-  if (!cell) return false;
-  if (Array.isArray(s.stairCells) && s.stairCells.some(c => c[0] === cell[0] && c[1] === cell[1])) return true;
-  if (Array.isArray(s.traps)) {
-    return s.traps.some(t => t.type === 'pit' && t.triggered &&
-      t.at[0] === cell[0] && t.at[1] === cell[1]);
-  }
-  return false;
-}
-
-function occupantAt(s, cell) {
-  for (const h of s.heroes) {
-    if (!h.dead && h.at[0] === cell[0] && h.at[1] === cell[1]) return { kind: 'hero', id: h.id, ref: h };
-  }
-  for (const m of s.monsters) {
-    if (!m.dead && m.at[0] === cell[0] && m.at[1] === cell[1]) return { kind: 'monster', id: m.id, ref: m };
-  }
-  return null;
-}
+// `isMultiShareCell` + `occupantAt` are imported from `game/los.js`
+// at the top of this file.
 
 // Visibility / fog-of-war engine lives in game/fog.js. The wrappers
 // below adapt the server's room+log convention to the pure-state API.
@@ -2238,55 +2139,9 @@ function triggerTrapsForCell(room, hero, cell) {
 }
 
 // =============================================================
-// PATHFINDING — BFS from hero's cell to a target, treating closed
-// doors as walkable (the hero auto-opens them mid-walk). Returns
-// the cell list including start and end, or null if unreachable.
+// PATHFINDING — BFS now lives in `game/pathfinding.js`. The local
+// `findPath` wrapper above injects this file's `passable` predicate.
 // =============================================================
-function findPath(s, hero, target, maxLength) {
-  const sx = hero.at[0], sy = hero.at[1];
-  if (sx === target[0] && sy === target[1]) return [hero.at];
-  const finalT = tileAt(s, target[0], target[1]);
-  if (!finalT) return null;
-  if (finalT.furnitureId) return null;
-  // Allow ending on a cell with another hero only if it's a stair cell
-  // or a sprung pit (2021 multi-share exception).
-  const occ = occupantAt(s, target);
-  if (occ) {
-    if (occ.kind === 'hero' && isMultiShareCell(s, target)) {
-      // ok — share allowed
-    } else {
-      return null;
-    }
-  }
-
-  const visited = new Map();
-  visited.set(`${sx},${sy}`, null);
-  const queue = [[hero.at, 0]];
-  while (queue.length > 0) {
-    const [cur, dist] = queue.shift();
-    if (cur[0] === target[0] && cur[1] === target[1]) {
-      const path = [];
-      let k = `${cur[0]},${cur[1]}`;
-      while (k != null) {
-        const [x, y] = k.split(',').map(Number);
-        path.unshift([x, y]);
-        k = visited.get(k);
-      }
-      return path;
-    }
-    if (dist >= maxLength) continue;
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const n = [cur[0]+dx, cur[1]+dy];
-      const nk = `${n[0]},${n[1]}`;
-      if (visited.has(nk)) continue;
-      const result = passable(s, cur, n, { kind: 'hero', id: hero.id });
-      if (!result) continue;
-      visited.set(nk, `${cur[0]},${cur[1]}`);
-      queue.push([n, dist + 1]);
-    }
-  }
-  return null;
-}
 
 // Click-to-walk: server pathfinds, then walks the path one cell at a
 // time. Halts mid-walk if a trap fires, the hero falls, or a monster
@@ -2401,21 +2256,8 @@ function handleMoveTo(room, token, target) {
 // actually see right now: not solid rock, not behind a wall, not behind
 // a closed door they haven't discovered yet, not hidden by fog of war.
 // Used by the corridor intersection-stop rule.
-function countVisibleBranches(s, here, prev) {
-  let n = 0;
-  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-    const cand = [here[0] + dx, here[1] + dy];
-    if (prev && cand[0] === prev[0] && cand[1] === prev[1]) continue;
-    const tc = tileAt(s, cand[0], cand[1]);
-    if (!tc || tc.solidRock) continue;
-    if (tc.hiddenFor && tc.hiddenFor.heroes) continue;
-    if (wallBetween(s, here, cand)) continue;
-    const door = doorBetween(s, here, cand);
-    if (door && door.state !== 'open' && !door.revealed) continue;
-    n++;
-  }
-  return n;
-}
+// `countVisibleBranches` now lives in `game/pathfinding.js` and is
+// imported at the top of this file.
 
 // ==========================================================
 // SEARCH — for traps + secret doors in current room
