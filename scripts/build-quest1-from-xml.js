@@ -200,7 +200,13 @@ const treasure = [];
 const blocked = [];   // SingleBlockedSquare = rubble
 const traps = [];
 const furnitureTraps = [];
-const stairCells = [];
+// Track stair groups separately by PieceID so multi-stair quests
+// (e.g. Q10 Castle of Mystery) can distinguish the entry stair
+// (canonical `Stairway`, where heroes start) from secondary
+// stairs (`Stairs` exit, etc.). For single-stair quests both arrays
+// collapse to one and startCells = stairCells as before.
+const entryStairCells = [];      // Stairway pieces (canonical entry)
+const secondaryStairCells = [];  // Stairs pieces (exit / additional)
 const usedNames = {};
 function nextId(prefix) {
   usedNames[prefix] = (usedNames[prefix] || 0) + 1;
@@ -216,11 +222,15 @@ for (const o of objects) {
   // HeroScribe quest maps; they don't have any in-engine effect.
   if (/^(Letter[A-Z]|Number\d+(-\d+)?)$/.test(o.id)) continue;
 
-  // Stairway — pull cells from YAML (always 2x2 from top-left anchor).
-  // 'Stairs' is HeroScribe's alternate id used in some quests
-  // (e.g. Q10 Castle of Mystery); treat the same as 'Stairway'.
-  if (o.id === 'Stairway' || o.id === 'Stairs') {
-    for (const cell of cellsForPiece('Stairway', c, r, o.rot)) stairCells.push(cell);
+  // Stairway / Stairs — both render as 2x2 stair tiles. Track them
+  // separately by PieceID so multi-stair quests can pick the right
+  // group for startCells (heroes start on the canonical `Stairway`).
+  if (o.id === 'Stairway') {
+    for (const cell of cellsForPiece('Stairway', c, r, o.rot)) entryStairCells.push(cell);
+    continue;
+  }
+  if (o.id === 'Stairs') {
+    for (const cell of cellsForPiece('Stairway', c, r, o.rot)) secondaryStairCells.push(cell);
     continue;
   }
 
@@ -314,8 +324,16 @@ for (const o of objects) {
   console.warn(`Unhandled XML object: ${o.id} at ${c},${r}`);
 }
 
-// Assemble the JSON
-const startCells = stairCells.length === 4 ? stairCells.slice() : [[1, 14]];
+// Assemble the JSON.
+// All stair cells render on the board (one PNG per 2x2 group). The
+// entry stair (Stairway) is preferred as startCells; fall back to the
+// only stair group if a single-stair quest used the `Stairs` PieceID,
+// or to a debug seed cell if neither produced exactly 4 cells.
+const stairCells = [...entryStairCells, ...secondaryStairCells];
+const startCells =
+  entryStairCells.length === 4   ? entryStairCells.slice() :
+  stairCells.length === 4        ? stairCells.slice() :
+  /* no canonical 2x2 entry */     [[1, 14]];
 
 // Try to extract the quest's friendly name from the XML <quest name="…">.
 const nameMatch = xml.match(/<quest\s+name="([^"]+)"/);
