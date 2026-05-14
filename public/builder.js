@@ -236,16 +236,17 @@ const FACING_RAD_E = {
 
 // Same key + key shape as the tool. Read-only here — the tool owns
 // editing; we just want to match its current rendering.
-const NATURAL_LS_KEY    = 'hq_furn_natural_overrides_v1';
-const FURN_INSETS_LS_KEY = 'hq_furn_insets_v2';
+const NATURAL_LS_KEY         = 'hq_furn_natural_overrides_v1';
+const FURN_INSETS_LS_KEY     = 'hq_furn_insets_v2';
+const FURN_INSETS_ALT_LS_KEY = 'hq_furn_insets_alt_v1';
 const DEFAULT_INSETS = { small: 5, linear: 5, stair: 6, block: 12 };
 let NATURAL_OVERRIDES = (() => {
   try { return JSON.parse(localStorage.getItem(NATURAL_LS_KEY) || '{}') || {}; }
   catch { return {}; }
 })();
-let FURN_INSETS = (() => {
+function _readInsetsFrom(key) {
   try {
-    const j = JSON.parse(localStorage.getItem(FURN_INSETS_LS_KEY) || '{}');
+    const j = JSON.parse(localStorage.getItem(key) || '{}');
     const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
     return {
       small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_INSETS.small,
@@ -254,7 +255,9 @@ let FURN_INSETS = (() => {
       block:  Number.isFinite(j.block)  ? clamp(j.block)  : DEFAULT_INSETS.block,
     };
   } catch { return { ...DEFAULT_INSETS }; }
-})();
+}
+let FURN_INSETS_CANON = _readInsetsFrom(FURN_INSETS_LS_KEY);
+let FURN_INSETS_ALT   = _readInsetsFrom(FURN_INSETS_ALT_LS_KEY);
 // Pull the server-side naturals (authoritative) once at boot. If it
 // errors we keep the localStorage cache.
 (async () => {
@@ -277,17 +280,56 @@ window.addEventListener('storage', (e) => {
     draw();
   }
   if (e.key === FURN_INSETS_LS_KEY) {
-    try { FURN_INSETS = { ...DEFAULT_INSETS, ...(JSON.parse(e.newValue || '{}') || {}) }; }
-    catch { /* keep current */ }
+    FURN_INSETS_CANON = _readInsetsFrom(FURN_INSETS_LS_KEY);
+    draw();
+  }
+  if (e.key === FURN_INSETS_ALT_LS_KEY) {
+    FURN_INSETS_ALT = _readInsetsFrom(FURN_INSETS_ALT_LS_KEY);
     draw();
   }
 });
 
+// Alternate furniture art (sized-name PNGs). Shared with the editor
+// + live game via localStorage `hq_furn_alt_v1` — toggling in any
+// surface updates the others through the `storage` event.
+const FURN_ALT_FILE = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+const FURN_ALT_KEY = 'hq_furn_alt_v1';
+let ALT_FURN_ON = (() => {
+  try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }
+  catch { return false; }
+})();
+window.addEventListener('storage', (e) => {
+  if (e.key === FURN_ALT_KEY) {
+    ALT_FURN_ON = e.newValue === '1';
+    const el = document.getElementById('layer-altFurn');
+    if (el) el.checked = ALT_FURN_ON;
+    draw();
+  }
+});
+
+function naturalOverrideKey(type) { return ALT_FURN_ON ? type + ':alt' : type; }
 function furnEntry(type) {
   const def = FURN_FILE_BUILTIN[type];
   if (!def) return null;
-  const override = NATURAL_OVERRIDES[type];
-  return { file: def.file, natural: override || def.natural, dir: def.dir || 'furniture' };
+  const file = (ALT_FURN_ON && FURN_ALT_FILE[type]) ? FURN_ALT_FILE[type] : def.file;
+  const override = NATURAL_OVERRIDES[naturalOverrideKey(type)];
+  return { file, natural: override || def.natural, dir: def.dir || 'furniture' };
 }
 const FURN_IMG = {};   // type → { img, ready, natural, file }
 function getFurnImg(type) {
@@ -304,11 +346,12 @@ function getFurnImg(type) {
   return entry;
 }
 function insetForBbox(cellsW, cellsH) {
+  const set = ALT_FURN_ON ? FURN_INSETS_ALT : FURN_INSETS_CANON;
   const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
-  if (mx <= 1) return FURN_INSETS.small;
-  if (mn <= 1) return FURN_INSETS.linear;
-  if (mn === 2 && mx === 2) return FURN_INSETS.stair;
-  return FURN_INSETS.block;
+  if (mx <= 1) return set.small;
+  if (mn <= 1) return set.linear;
+  if (mn === 2 && mx === 2) return set.stair;
+  return set.block;
 }
 function drawFurnIcon(type, px, py, pw, ph, facing, flipH, flipV) {
   const entry = getFurnImg(type);
@@ -681,8 +724,11 @@ function draw() {
       const py = PAD_T + mn[1] * CELL;
       const pw = (mx[0] - mn[0] + 1) * CELL;
       const ph = (mx[1] - mn[1] + 1) * CELL;
+      // Per-art-set flip: alt mode reads f._altFlipH/V.
+      const flipH = ALT_FURN_ON ? !!f._altFlipH : !!f._flipH;
+      const flipV = ALT_FURN_ON ? !!f._altFlipV : !!f._flipV;
       const usedImage = drawFurnIcon(f.type, px, py, pw, ph,
-                                     f.facing, !!f._flipH, !!f._flipV);
+                                     f.facing, flipH, flipV);
       if (!usedImage) {
         // Fallback while the PNG is still loading or the type has no
         // canonical asset (e.g. an expansion piece): coloured rect +
@@ -1019,6 +1065,18 @@ if (cwToggle) {
   cwToggle.addEventListener('change', () => {
     state.corridorWalls = cwToggle.checked;
     if (state.layers.roomTex) draw();
+  });
+}
+
+// Alt furniture art toggle — shared with the editor + game via
+// localStorage `hq_furn_alt_v1`.
+const altFurnToggle = $('layer-altFurn');
+if (altFurnToggle) {
+  altFurnToggle.checked = ALT_FURN_ON;
+  altFurnToggle.addEventListener('change', () => {
+    ALT_FURN_ON = altFurnToggle.checked;
+    try { localStorage.setItem(FURN_ALT_KEY, ALT_FURN_ON ? '1' : '0'); } catch {}
+    draw();
   });
 }
 

@@ -89,6 +89,9 @@
       <label><input type="checkbox" id="layer-grid"       checked> Grid</label>
       <label><input type="checkbox" id="layer-coords"     checked> Coordinate labels (1-based)</label>
       <label><input type="checkbox" id="layer-furniture"  checked> Furniture</label>
+      <label style="margin-left:18px;">
+        <input type="checkbox" id="layer-altFurn"> Alt furniture art (sized icons)
+      </label>
       <label><input type="checkbox" id="layer-doors"      checked> Doors</label>
       <label><input type="checkbox" id="layer-secret"     checked> Secret doors</label>
       <label><input type="checkbox" id="layer-monsters"   checked> Monsters</label>
@@ -127,8 +130,8 @@
     </div>
 
     <div class="panel">
-      <h3>Furniture inset</h3>
-      <div class="hint">Px of padding between each piece's icon and the cell wall. Three buckets — change live, persists in localStorage.</div>
+      <h3>Furniture inset <span class="hint" id="furn-inset-mode-tag" style="margin-left:6px;"></span></h3>
+      <div class="hint">Px of padding between each piece's icon and the cell wall. Each art set (canonical / alt) keeps its own values — flip <em>Alt furniture art</em> to tune the other set.</div>
       <div class="natural-row">
         <code title="1×1 — throne, chest, altar">small (1×1)</code>
         <input type="range" id="furn-inset-small" min="0" max="15" step="1">
@@ -152,7 +155,7 @@
     </div>
 
     <div class="panel">
-      <h3>Natural orientations</h3>
+      <h3>Natural orientations <span class="hint" id="natural-mode-tag" style="margin-left:6px;"></span></h3>
       <div class="hint">
         Override each piece type's <em>natural</em> source direction.
         Changes save automatically to <code>data/furniture-naturals.json</code>
@@ -183,6 +186,6 @@
 </main>
 
 <script src="shared/rules.js?v=1"></script>
-<script src="map-editor.js?v=43"></script>
+<script src="map-editor.js?v=48"></script>
 </body>
 </html>

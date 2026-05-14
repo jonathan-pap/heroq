@@ -804,6 +804,11 @@ function wireOptionsMenu() {
       try { localStorage.setItem(OUTER_WALLS_KEY, OUTER_WALLS_ON ? '1' : '0'); } catch {}
       syncOptionsMenuState(lastView);
       if (lastView) drawBoard(lastView);
+    } else if (opt === 'alt-furn') {
+      ALT_FURN_ON = !ALT_FURN_ON;
+      try { localStorage.setItem(FURN_ALT_KEY, ALT_FURN_ON ? '1' : '0'); } catch {}
+      syncOptionsMenuState(lastView);
+      if (lastView) drawBoard(lastView);
     } else if (opt === 'zargon-speed') {
       const cur = Math.max(1, Math.min(4, lastView?.config?.aiSpeed || 1));
       const next = cur >= 4 ? 1 : cur + 1;
@@ -833,6 +838,8 @@ function syncOptionsMenuState(view) {
   if (lwToggle) lwToggle.classList.toggle('on', !!LIGHT_WALLS_ON);
   const owToggle = document.getElementById('opt-outer-walls-state');
   if (owToggle) owToggle.classList.toggle('on', !!OUTER_WALLS_ON);
+  const afToggle = document.getElementById('opt-alt-furn-state');
+  if (afToggle) afToggle.classList.toggle('on', !!ALT_FURN_ON);
   const speedVal = document.getElementById('opt-zargon-speed-value');
   if (speedVal && view) {
     const s = Math.max(1, Math.min(4, view.config?.aiSpeed || 1));
@@ -2320,11 +2327,18 @@ function readFurnNaturalsLocal() {
 let FURN_NATURAL_OVERRIDES = readFurnNaturalsLocal();
 function applyFurnNaturals(map) {
   FURN_NATURAL_OVERRIDES = map || {};
-  // Update cached image entries so the next paint uses the new natural.
+  // Each cache uses its own override key — canonical reads `type`,
+  // alt reads `${type}:alt`. Fall back to the file's default natural.
   for (const t of Object.keys(FURN_IMG)) {
     if (FURN_IMG[t]) {
       const def = FURN_FILE[t];
       FURN_IMG[t].natural = FURN_NATURAL_OVERRIDES[t] || (def && def.natural) || 'downward';
+    }
+  }
+  for (const t of Object.keys(FURN_IMG_ALT)) {
+    if (FURN_IMG_ALT[t]) {
+      const def = FURN_FILE[t];
+      FURN_IMG_ALT[t].natural = FURN_NATURAL_OVERRIDES[t + ':alt'] || (def && def.natural) || 'downward';
     }
   }
   if (lastView) drawBoard(lastView);
@@ -2343,19 +2357,59 @@ window.addEventListener('storage', e => {
   applyFurnNaturals(readFurnNaturalsLocal());
 });
 
-// Cache: type → { img, ready, natural } | null (no file)
-const FURN_IMG = {};
+// Alternate furniture art — sized-name PNGs (Tomb-2x3.png, etc.).
+// Toggleable via the Options menu's "Alt furniture art" item; shared
+// localStorage key with the editor + builder so all three surfaces
+// stay visually consistent.
+const FURN_ALT_FILE = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+const FURN_ALT_KEY = 'hq_furn_alt_v1';
+let ALT_FURN_ON = (() => {
+  try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }
+  catch { return false; }
+})();
+window.addEventListener('storage', (e) => {
+  if (e.key === FURN_ALT_KEY) {
+    ALT_FURN_ON = e.newValue === '1';
+    if (lastView) drawBoard(lastView);
+  }
+});
+
+// Two caches — one per art set — so toggling alt vs canonical doesn't
+// blow away images already in memory.
+const FURN_IMG     = {};   // canonical art cache
+const FURN_IMG_ALT = {};   // alt art cache
 function getFurnImg(type) {
-  if (FURN_IMG[type] !== undefined) return FURN_IMG[type];
   const def = FURN_FILE[type];
-  if (!def) { FURN_IMG[type] = null; return null; }
-  const natural = FURN_NATURAL_OVERRIDES[type] || def.natural;
+  if (!def) return null;
+  const useAlt = ALT_FURN_ON && !!FURN_ALT_FILE[type];
+  const cache = useAlt ? FURN_IMG_ALT : FURN_IMG;
+  if (cache[type] !== undefined) return cache[type];
+  const file = useAlt ? FURN_ALT_FILE[type] : def.file;
+  // Per-art-set natural override — alt key `${type}:alt`, canonical key `type`.
+  const overrideKey = useAlt ? type + ':alt' : type;
+  const natural = FURN_NATURAL_OVERRIDES[overrideKey] || def.natural;
   const img = new Image();
   const entry = { img, ready: false, natural };
-  FURN_IMG[type] = entry;
+  cache[type] = entry;
   img.onload  = () => { entry.ready = true; if (lastView) drawBoard(lastView); };
-  img.onerror = () => { FURN_IMG[type] = null; };
-  img.src = `/assets/${def.dir || 'furniture'}/${def.file}`;
+  img.onerror = () => { cache[type] = null; };
+  img.src = `/assets/${def.dir || 'furniture'}/${file}`;
   return entry;
 }
 
@@ -2415,11 +2469,15 @@ function drawTileIcon(kind, px, py, pw, ph) {
 // Four buckets — small (1×1), linear (Nx1), stair (2×2), block (else).
 // Read from the same localStorage key the editor's sliders write so
 // the live game inherits whatever values you tuned in the tool.
-const FURN_INSETS_LS_KEY = 'hq_furn_insets_v2';
+// Per-art-set insets — canonical and alt art keep independent values
+// since they have different proportions. Active set follows
+// ALT_FURN_ON. Editor + builder write to these same keys.
+const FURN_INSETS_LS_KEY     = 'hq_furn_insets_v2';
+const FURN_INSETS_ALT_LS_KEY = 'hq_furn_insets_alt_v1';
 const DEFAULT_FURN_INSETS = { small: 5, linear: 5, stair: 6, block: 12 };
-function _readFurnInsets() {
+function _readFurnInsetsFrom(key) {
   try {
-    const j = JSON.parse(localStorage.getItem(FURN_INSETS_LS_KEY) || '{}');
+    const j = JSON.parse(localStorage.getItem(key) || '{}');
     const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
     return {
       small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_FURN_INSETS.small,
@@ -2429,13 +2487,17 @@ function _readFurnInsets() {
     };
   } catch { return { ...DEFAULT_FURN_INSETS }; }
 }
-let FURN_INSETS = _readFurnInsets();
+let FURN_INSETS_CANON = _readFurnInsetsFrom(FURN_INSETS_LS_KEY);
+let FURN_INSETS_ALT   = _readFurnInsetsFrom(FURN_INSETS_ALT_LS_KEY);
+function activeFurnInsets() { return ALT_FURN_ON ? FURN_INSETS_ALT : FURN_INSETS_CANON; }
 window.addEventListener('storage', e => {
-  if (e.key !== FURN_INSETS_LS_KEY) return;
-  FURN_INSETS = _readFurnInsets();
+  if (e.key === FURN_INSETS_LS_KEY)     FURN_INSETS_CANON = _readFurnInsetsFrom(FURN_INSETS_LS_KEY);
+  else if (e.key === FURN_INSETS_ALT_LS_KEY) FURN_INSETS_ALT = _readFurnInsetsFrom(FURN_INSETS_ALT_LS_KEY);
+  else return;
   if (lastView) drawBoard(lastView);
 });
 function insetForBbox(cellsW, cellsH) {
+  const FURN_INSETS = activeFurnInsets();
   const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
   if (mx <= 1) return FURN_INSETS.small;
   if (mn <= 1) return FURN_INSETS.linear;
@@ -2519,7 +2581,11 @@ function drawFurniturePiece(f) {
 
   // Preferred path: heroscribe canonical PNG. Falls back to pixel art
   // when the image is still loading or the type has no mapping.
-  if (drawFurniturePieceImage(type, px, py, pw, ph, f.facing, !!f._flipH, !!f._flipV)) return;
+  // Per-art-set flip — alt mode reads f._altFlipH/V, canonical reads
+  // f._flipH/V. Same data model the editor + builder write into.
+  const flipH = ALT_FURN_ON ? !!f._altFlipH : !!f._flipH;
+  const flipV = ALT_FURN_ON ? !!f._altFlipV : !!f._flipV;
+  if (drawFurniturePieceImage(type, px, py, pw, ph, f.facing, flipH, flipV)) return;
 
   // Pixel-art fallback — uses the legacy ROTATABLE_PIECES rule because
   // most of the hand-drawn glyphs are symmetric.

@@ -261,12 +261,57 @@ async function saveNaturalOverrides(map) {
 }
 let NATURAL_OVERRIDES = loadNaturalOverridesLocal();
 
-// Effective entry for a type — built-in file with natural overlaid.
+// Alternate furniture art — sized-name files in /assets/furniture/
+// (Tomb-2x3.png, Bookcase-1x3.png, etc.). Toggleable via the "Alt
+// furniture art" preference (shared with the builder + live game so
+// all three surfaces stay visually consistent). Types without an alt
+// PNG fall through to the canonical file.
+const FURN_ALT_FILE = {
+  'tomb':             'Tomb-2x3.png',
+  'sarcophagus':      'Tomb-2x3.png',
+  'sorcerer-table':   'Sorcerer Table-2x3.png',
+  'sorcerers-table':  'Sorcerer Table-2x3.png',
+  'alchemist-table':  'Alchemist Bench-2x3.png',
+  'alchemist-bench':  'Alchemist Bench-2x3.png',
+  'alchemists-bench': 'Alchemist Bench-2x3.png',
+  'table':            'Table-2x3.png',
+  'bookcase':         'Bookcase-1x3.png',
+  'cupboard':         'Cupboard-1x3.png',
+  'fireplace':        'Fireplace-1x3.png',
+  'weapon-rack':      'Weapons Rack-1x3.png',
+  'rack':             'Rack-2x3.png',
+  'chest':            'Chest-1x1.png',
+  'throne':           'Throne-1x1.png',
+};
+const FURN_ALT_KEY = 'hq_furn_alt_v1';
+let ALT_FURN_ON = (() => {
+  try { return localStorage.getItem(FURN_ALT_KEY) === '1'; }
+  catch { return false; }
+})();
+window.addEventListener('storage', (e) => {
+  if (e.key === FURN_ALT_KEY) {
+    ALT_FURN_ON = e.newValue === '1';
+    const el = document.getElementById('layer-altFurn');
+    if (el) el.checked = ALT_FURN_ON;
+    if (state && state._refreshFurnInsetSliders) state._refreshFurnInsetSliders();
+    try { renderNaturalList(); } catch {}
+    try { refreshSelectionPanel(); } catch {}
+    draw();
+  }
+});
+
+// Effective entry for a type — picks alt file when the preference is
+// on (with canonical fallback), then overlays the per-type natural
+// orientation override. Natural overrides are STORED per art set so
+// the two art styles can have different orientations: the alt key is
+// `${type}:alt`, canonical is plain `${type}`.
+function naturalOverrideKey(type) { return ALT_FURN_ON ? type + ':alt' : type; }
 function furnEntry(type) {
   const def = FURN_FILE_BUILTIN[type];
   if (!def) return null;
-  const override = NATURAL_OVERRIDES[type];
-  return { file: def.file, natural: override || def.natural, dir: def.dir || 'furniture' };
+  const file = (ALT_FURN_ON && FURN_ALT_FILE[type]) ? FURN_ALT_FILE[type] : def.file;
+  const override = NATURAL_OVERRIDES[naturalOverrideKey(type)];
+  return { file, natural: override || def.natural, dir: def.dir || 'furniture' };
 }
 
 const FACING_RAD_E = {
@@ -396,11 +441,17 @@ function drawTileIcon(kind, px, py, pw, ph) {
 //   block  — bigger rectangles (tomb 2×3, table 3×2, rack 2×3, etc.)
 // Each bucket has its own slider in the inspector panel; values
 // persist to localStorage and the live game reads the same key.
-const FURN_INSETS_LS_KEY = 'hq_furn_insets_v2';
+// Per-art-set insets: canonical and alt art use different proportions
+// so they need independent padding values. Each set persists to its
+// own localStorage key; the sliders write into the ACTIVE set (chosen
+// by ALT_FURN_ON), so toggling the art set also swaps which numbers
+// the sliders + game read.
+const FURN_INSETS_LS_KEY     = 'hq_furn_insets_v2';     // canonical
+const FURN_INSETS_ALT_LS_KEY = 'hq_furn_insets_alt_v1'; // alt
 const DEFAULT_INSETS = { small: 5, linear: 5, stair: 6, block: 12 };
-function _readInsets() {
+function _readInsetsFrom(key) {
   try {
-    const j = JSON.parse(localStorage.getItem(FURN_INSETS_LS_KEY) || '{}');
+    const j = JSON.parse(localStorage.getItem(key) || '{}');
     const clamp = v => Math.max(0, Math.min(20, parseInt(v, 10) || 0));
     return {
       small:  Number.isFinite(j.small)  ? clamp(j.small)  : DEFAULT_INSETS.small,
@@ -410,20 +461,25 @@ function _readInsets() {
     };
   } catch { return { ...DEFAULT_INSETS }; }
 }
-let FURN_INSETS = _readInsets();
+const FURN_INSETS_CANON = _readInsetsFrom(FURN_INSETS_LS_KEY);
+const FURN_INSETS_ALT   = _readInsetsFrom(FURN_INSETS_ALT_LS_KEY);
+function activeInsets() { return ALT_FURN_ON ? FURN_INSETS_ALT : FURN_INSETS_CANON; }
+function activeInsetsKey() { return ALT_FURN_ON ? FURN_INSETS_ALT_LS_KEY : FURN_INSETS_LS_KEY; }
 function setFurnInset(bucket, v) {
-  FURN_INSETS[bucket] = Math.max(0, Math.min(20, v));
-  localStorage.setItem(FURN_INSETS_LS_KEY, JSON.stringify(FURN_INSETS));
+  const set = activeInsets();
+  set[bucket] = Math.max(0, Math.min(20, v));
+  localStorage.setItem(activeInsetsKey(), JSON.stringify(set));
   draw();
 }
 // Categorise a piece by its on-screen bbox (in cells). 1×1 → small,
 // thin Nx1 strips → linear, exactly 2×2 → stair, anything else → block.
 function insetForBbox(cellsW, cellsH) {
+  const set = activeInsets();
   const mn = Math.min(cellsW, cellsH), mx = Math.max(cellsW, cellsH);
-  if (mx <= 1) return FURN_INSETS.small;
-  if (mn <= 1) return FURN_INSETS.linear;
-  if (mn === 2 && mx === 2) return FURN_INSETS.stair;
-  return FURN_INSETS.block;
+  if (mx <= 1) return set.small;
+  if (mn <= 1) return set.linear;
+  if (mn === 2 && mx === 2) return set.stair;
+  return set.block;
 }
 
 // Same idea, but for tile icons (rubble, traps). Stairway now flows
@@ -660,6 +716,23 @@ function bindUi() {
     });
   }
 
+  // Alt furniture art toggle — shared with the builder + game. Also
+  // refreshes the furniture-inset slider DOM + the natural-orientation
+  // panel so the user sees the active art set's tuned values (each
+  // art set has its own independent values).
+  const altFurnToggle = $('layer-altFurn');
+  if (altFurnToggle) {
+    altFurnToggle.checked = ALT_FURN_ON;
+    altFurnToggle.addEventListener('change', () => {
+      ALT_FURN_ON = altFurnToggle.checked;
+      try { localStorage.setItem(FURN_ALT_KEY, ALT_FURN_ON ? '1' : '0'); } catch {}
+      if (state._refreshFurnInsetSliders) state._refreshFurnInsetSliders();
+      renderNaturalList();
+      refreshSelectionPanel();
+      draw();
+    });
+  }
+
   canvas.addEventListener('mousedown', onCanvasMouseDown);
   canvas.addEventListener('mousemove', onCanvasMouseMove);
   canvas.addEventListener('mouseup',   onCanvasMouseUp);
@@ -691,18 +764,34 @@ function bindUi() {
     draw();
   });
 
-  // Furniture inset sliders — one per shape bucket
+  // Furniture inset sliders — one per shape bucket. Each slider reads
+  // and writes the ACTIVE inset set (canonical or alt depending on
+  // ALT_FURN_ON), so flipping art sets gives you independent tuning.
+  function refreshFurnInsetSliders() {
+    const set = activeInsets();
+    for (const bucket of ['small', 'linear', 'stair', 'block']) {
+      const el  = $(`furn-inset-${bucket}`);
+      const lab = $(`furn-inset-${bucket}-val`);
+      if (!el || !lab) continue;
+      el.value = String(set[bucket]);
+      lab.textContent = `${set[bucket]}px`;
+    }
+    const tag = $('furn-inset-mode-tag');
+    if (tag) tag.textContent = ALT_FURN_ON ? '(alt art)' : '(canonical art)';
+  }
   for (const bucket of ['small', 'linear', 'stair', 'block']) {
     const el  = $(`furn-inset-${bucket}`);
     const lab = $(`furn-inset-${bucket}-val`);
     if (!el || !lab) continue;
-    el.value = String(FURN_INSETS[bucket]);
-    lab.textContent = `${FURN_INSETS[bucket]}px`;
     el.addEventListener('input', () => {
       setFurnInset(bucket, parseInt(el.value, 10));
-      lab.textContent = `${FURN_INSETS[bucket]}px`;
+      lab.textContent = `${activeInsets()[bucket]}px`;
     });
   }
+  refreshFurnInsetSliders();
+  // Expose so the alt-furn toggle handler can refresh slider DOM when
+  // the active art set changes.
+  state._refreshFurnInsetSliders = refreshFurnInsetSliders;
 
   // Tile inset sliders (rubble + traps)
   for (const bucket of ['small', 'linear', 'block']) {
@@ -723,56 +812,89 @@ function bindUi() {
 }
 
 // ===== NATURAL-ORIENTATION PLAYGROUND ====================================
+// Build a map: file → [type aliases that point to it]. Used so the
+// natural panel shows ONE row per icon, and editing it propagates to
+// every alias (otherwise an override on `alchemist-bench` wouldn't
+// affect quest data that uses `alchemist-table`).
+function aliasesByFile() {
+  const groups = {};
+  for (const type of Object.keys(FURN_FILE_BUILTIN)) {
+    const file = FURN_FILE_BUILTIN[type].file;
+    (groups[file] = groups[file] || []).push(type);
+  }
+  return groups;
+}
+
 function renderNaturalList() {
   const host = $('natural-list');
   if (!host) return;
   host.innerHTML = '';
-  // sort the type list — it's nicer when alphabetical, with aliases at end
-  const types = Object.keys(FURN_FILE_BUILTIN).sort();
-  for (const type of types) {
-    const def = FURN_FILE_BUILTIN[type];
-    const cur = NATURAL_OVERRIDES[type] || def.natural;
-    const isOverride = !!NATURAL_OVERRIDES[type];
+  // One row per unique icon file. Representative type = first alias
+  // alphabetically (stable + predictable for the UI label).
+  const groups = aliasesByFile();
+  const reps = Object.keys(groups).sort().map(file => groups[file].slice().sort()[0]);
+  for (const rep of reps.sort()) {
+    const def = FURN_FILE_BUILTIN[rep];
+    const repKey = naturalOverrideKey(rep);
+    const cur = NATURAL_OVERRIDES[repKey] || def.natural;
+    const isOverride = !!NATURAL_OVERRIDES[repKey];
+    const aliases = groups[def.file].slice().sort();
+    const aliasNote = aliases.length > 1
+      ? ` <span class="hint" style="font-size:10px;">(+${aliases.length - 1} alias${aliases.length > 2 ? 'es' : ''})</span>`
+      : '';
+    const titleAttr = aliases.length > 1
+      ? `aliases: ${aliases.join(', ')} · ${def.file}`
+      : def.file;
     const row = document.createElement('div');
     row.className = 'natural-row' + (isOverride ? ' changed' : '');
     row.innerHTML = `
-      <code title="${escapeHtml(def.file)}">${escapeHtml(type)}</code>
-      <select data-type="${escapeHtml(type)}">
+      <code title="${escapeHtml(titleAttr)}">${escapeHtml(rep)}${aliasNote}</code>
+      <select data-type="${escapeHtml(rep)}">
         ${NATURAL_OPTS.map(o => `<option value="${o}"${o === cur ? ' selected' : ''}>${o}</option>`).join('')}
       </select>
-      <button class="reset-one" data-type="${escapeHtml(type)}" title="Reset to default (${def.natural})">×</button>
+      <button class="reset-one" data-type="${escapeHtml(rep)}" title="Reset to default (${def.natural})">×</button>
     `;
     host.appendChild(row);
   }
-  // wire selects + reset buttons
   for (const sel of host.querySelectorAll('select[data-type]')) {
     sel.addEventListener('change', () => onNaturalChange(sel.dataset.type, sel.value));
   }
   for (const btn of host.querySelectorAll('button.reset-one[data-type]')) {
     btn.addEventListener('click', () => onNaturalChange(btn.dataset.type, FURN_FILE_BUILTIN[btn.dataset.type].natural, true));
   }
+  // Panel hint shows which art set is being edited.
+  const tag = document.getElementById('natural-mode-tag');
+  if (tag) tag.textContent = ALT_FURN_ON ? '(alt art)' : '(canonical art)';
 }
 
 async function onNaturalChange(type, value, isReset) {
   const def = FURN_FILE_BUILTIN[type];
   if (!def) return;
-  if (isReset || value === def.natural) {
-    delete NATURAL_OVERRIDES[type];
-    if (FURN_IMG[type]) FURN_IMG[type].natural = def.natural;
-  } else {
-    NATURAL_OVERRIDES[type] = value;
-    if (FURN_IMG[type]) FURN_IMG[type].natural = value;
+  // Propagate to every alias pointing at the same file, otherwise a
+  // change on one name (e.g. 'alchemist-bench') wouldn't apply to a
+  // quest that uses a different alias (e.g. 'alchemist-table').
+  const groups = aliasesByFile();
+  const aliases = groups[def.file] || [type];
+  for (const t of aliases) {
+    const k = naturalOverrideKey(t);
+    if (isReset || value === FURN_FILE_BUILTIN[t].natural) {
+      delete NATURAL_OVERRIDES[k];
+      if (FURN_IMG[t]) FURN_IMG[t].natural = FURN_FILE_BUILTIN[t].natural;
+    } else {
+      NATURAL_OVERRIDES[k] = value;
+      if (FURN_IMG[t]) FURN_IMG[t].natural = value;
+    }
   }
   renderNaturalList();
   draw();
-  setStatus(`saving natural for ${type}…`);
+  setStatus(`saving natural for ${type}${ALT_FURN_ON ? ' (alt)' : ''}…`);
   const ok = await saveNaturalOverrides(NATURAL_OVERRIDES);
-  if (ok) setStatus(`Saved · ${type} → ${isReset ? def.natural + ' (reset)' : value}`);
+  if (ok) setStatus(`Saved · ${type}${ALT_FURN_ON ? ' (alt)' : ''} → ${isReset ? def.natural + ' (reset)' : value} (${aliases.length} alias${aliases.length > 1 ? 'es' : ''})`);
 }
 
 async function resetNaturalOverrides() {
   if (!Object.keys(NATURAL_OVERRIDES).length) { setStatus('No overrides to reset.'); return; }
-  if (!confirm('Clear all natural-orientation overrides? This writes to disk.')) return;
+  if (!confirm('Clear all natural-orientation overrides (BOTH art sets)? This writes to disk.')) return;
   NATURAL_OVERRIDES = {};
   for (const t of Object.keys(FURN_IMG)) {
     if (FURN_IMG[t]) FURN_IMG[t].natural = FURN_FILE_BUILTIN[t]?.natural || 'downward';
@@ -955,12 +1077,17 @@ function flipSelection(axis) {
   }
   const f = state.quest.furniture[s.index];
   if (!f) return;
-  if (axis === 'h') f._flipH = !f._flipH;
-  else              f._flipV = !f._flipV;
-  // strip the property if it's now false to keep JSON tidy
-  if (!f._flipH) delete f._flipH;
-  if (!f._flipV) delete f._flipV;
-  commitMutation(`Flipped ${f.type} ${axis === 'h' ? 'horizontally' : 'vertically'}`);
+  // Per-art-set flip — canonical fields are f._flipH/_flipV; alt fields
+  // are f._altFlipH/_altFlipV. The active set's field is toggled and
+  // also cleaned up when false to keep the JSON tidy.
+  const hKey = ALT_FURN_ON ? '_altFlipH' : '_flipH';
+  const vKey = ALT_FURN_ON ? '_altFlipV' : '_flipV';
+  if (axis === 'h') f[hKey] = !f[hKey];
+  else              f[vKey] = !f[vKey];
+  if (!f[hKey]) delete f[hKey];
+  if (!f[vKey]) delete f[vKey];
+  const suffix = ALT_FURN_ON ? ' (alt)' : '';
+  commitMutation(`Flipped ${f.type} ${axis === 'h' ? 'horizontally' : 'vertically'}${suffix}`);
 }
 
 function rotateSelection(dir) {
@@ -1324,8 +1451,11 @@ function refreshSelectionPanel() {
     $('sel-type').textContent = r.type || '?';
     $('sel-at').textContent = `L${minC + 1}T${minR + 1} (${maxC - minC + 1}×${maxR - minR + 1})`;
     $('sel-row-facing').hidden = false;
-    const flipBits = (r._flipH ? ' · flipH' : '') + (r._flipV ? ' · flipV' : '');
-    $('sel-facing').textContent = (r.facing || 'downward') + flipBits;
+    const flipH = ALT_FURN_ON ? !!r._altFlipH : !!r._flipH;
+    const flipV = ALT_FURN_ON ? !!r._altFlipV : !!r._flipV;
+    const flipBits = (flipH ? ' · flipH' : '') + (flipV ? ' · flipV' : '');
+    const tag = ALT_FURN_ON ? ' [alt]' : '';
+    $('sel-facing').textContent = (r.facing || 'downward') + flipBits + tag;
     $('sel-row-name').hidden = !r._note;
     $('sel-name').textContent = r._note || '';
     $('btn-rot-cw').disabled  = !ROTATABLE_FURN.has(r.type);
@@ -1801,8 +1931,11 @@ function drawFurniture(f) {
 
   // Heroscribe canonical PNG when available — falls back to the
   // colored-rect + label glyph otherwise (still useful when a type
-  // doesn't have an image yet, e.g. expansion pieces).
-  const usedImage = drawFurnIcon(f.type, x, y, w, h, f.facing, !!f._flipH, !!f._flipV);
+  // doesn't have an image yet, e.g. expansion pieces). Per-art-set
+  // flip: alt mode reads f._altFlipH/V, canonical reads f._flipH/V.
+  const flipH = ALT_FURN_ON ? !!f._altFlipH : !!f._flipH;
+  const flipV = ALT_FURN_ON ? !!f._altFlipV : !!f._flipV;
+  const usedImage = drawFurnIcon(f.type, x, y, w, h, f.facing, flipH, flipV);
   if (!usedImage) {
     ctx.fillStyle = C.furn[f.type] || '#969696';
     ctx.fillRect(x + 4, y + 4, w - 8, h - 8);

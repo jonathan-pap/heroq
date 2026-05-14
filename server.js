@@ -689,8 +689,14 @@ function buildBoardState(quest) {
       type: f.type || 'block',
       cells: (f.cells || []).map(c => [...c]),
       facing: f.facing || null,
-      _flipH: !!f._flipH || undefined,
-      _flipV: !!f._flipV || undefined,
+      _flipH:    !!f._flipH    || undefined,
+      _flipV:    !!f._flipV    || undefined,
+      // Per-art-set flips — the client picks _altFlip* when the
+      // "Alt furniture art" option is on (and falls back to _flip*).
+      // Strip-and-undefined keeps the wire payload clean for pieces
+      // that don't carry alt flips.
+      _altFlipH: !!f._altFlipH || undefined,
+      _altFlipV: !!f._altFlipV || undefined,
       _note:  f._note || undefined,
     });
   }

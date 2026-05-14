@@ -1101,7 +1101,8 @@
           7
         ]
       ],
-      "facing": "leftward"
+      "facing": "rightward",
+      "_altFlipH": true
     },
     {
       "id": "f-table1",
@@ -1182,8 +1183,9 @@
           8
         ]
       ],
-      "facing": "rightward",
-      "_flipH": true
+      "facing": "downward",
+      "_flipH": true,
+      "_altFlipH": true
     },
     {
       "id": "f-table2",
@@ -1314,7 +1316,8 @@
           17
         ]
       ],
-      "facing": "rightward"
+      "facing": "rightward",
+      "_altFlipH": true
     },
     {
       "id": "f-weapon-rack1",
@@ -1344,7 +1347,7 @@
           16
         ]
       ],
-      "facing": "leftward"
+      "facing": "rightward"
     },
     {
       "id": "f-bookcase2",
