@@ -80,6 +80,7 @@ pollution beyond the explicit namespace.
 | Module | Public on `window` | What it owns |
 |---|---|---|
 | `client/sprites.js` | `HQSprites` | Per-type PNG name tables (`MONSTER_TYPE_FILE`, `HERO_FILE`, `HERO_NAMES`, `HERO_VARIANTS`), the two mutable sprite caches (`monsterSprites`, `heroSprites`), variant URL builders, and `load({ onLoaded })` which kicks off async PNG fetches. The renderer destructures the caches once at boot so they read unprefixed. |
+| `client/audio.js` | `HQAudio` | Web Audio synth — `sfx(name)` table (door / combat / kill / spell / reveal / treasure / boss / victory / defeat), `fireSfxFromView(view)` which diffs log + combat for new events, `reset()` for screen transitions, `mount()` for the corner 🔊 / 🔇 toggle. Mute pref persists in `localStorage.hq_audio`. |
 
 Adding another split:
 
