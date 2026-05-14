@@ -22,6 +22,9 @@ const {
   losEdgeBlocked, lineOfSight, isMultiShareCell,
 } = require('./game/los');
 const { findPath: _findPathBFS, countVisibleBranches } = require('./game/pathfinding');
+const {
+  _evalObjectiveOne, evaluateObjectives, requiredObjectivesMet,
+} = require('./game/objectives');
 // Local wrapper — injects this file's `passable` predicate so callers
 // keep the older 4-arg signature.
 function findPath(s, hero, target, maxLength) {
@@ -1490,95 +1493,10 @@ function resolveAttack(room, attacker, defender) {
 // appended — it's locked until all required earlier rows are done,
 // then completes when a living hero stands on a stair cell.
 // ==========================================================
-function _evalObjectiveOne(s, o) {
-  let kind = o.kind;
-  let cell = o.cell;
-  let monsterId = o.monsterId;
-  const knownKinds = ['kill', 'kill-all', 'reach', 'gave-item', 'survive'];
-  if (!knownKinds.includes(kind) && o.fallbackKind) {
-    kind = o.fallbackKind;
-    cell = o.fallbackCell || cell;
-  }
-  if (kind === 'kill') {
-    const m = s.monsters.find(x => x.id === monsterId);
-    return !!(m && m.dead);
-  }
-  if (kind === 'kill-all') {
-    return s.monsters.length > 0 && s.monsters.every(m => m.dead);
-  }
-  if (kind === 'reach') {
-    return !!(cell && s.heroes.some(h => !h.dead && h.at[0] === cell[0] && h.at[1] === cell[1]));
-  }
-  if (kind === 'gave-item') {
-    // True once any hero has handed an item to another hero this quest.
-    return !!s._gaveItem;
-  }
-  if (kind === 'survive') {
-    // True if at least one hero is alive AND (if monsterId given) that
-    // monster is no longer a threat (dead). With no monsterId, just any
-    // hero alive — used for "endure to the end" sub-goals.
-    const anyAlive = s.heroes.some(h => !h.dead);
-    if (!anyAlive) return false;
-    if (monsterId) {
-      const m = s.monsters.find(x => x.id === monsterId);
-      return !!(m && m.dead);
-    }
-    return true;
-  }
-  // Unknown kinds (e.g. 'escort' before its handler ships) report incomplete.
-  return false;
-}
-
-function evaluateObjectives(s) {
-  const list = (Array.isArray(s.objectives) && s.objectives.length)
-    ? s.objectives
-    : (s.objective ? [s.objective] : []);
-
-  const out = [];
-  for (let i = 0; i < list.length; i++) {
-    const o = list[i];
-    // Strip a trailing "...return to the staircase." style suffix from the
-    // text, since the auto-appended stairs row covers that. Keeps the
-    // panel reading clean for legacy single-objective quests.
-    let text = (o.text || `Objective ${i + 1}`);
-    text = text.replace(/[.,;:!\s]*(then|and|,)?\s*return(ing)?\s+to\s+(the\s+)?stair(case|s|way)\.?\s*$/i, '').trim();
-    if (!text) text = o.text || `Objective ${i + 1}`;
-    out.push({
-      id: o.id || `o${i}`,
-      text,
-      done: _evalObjectiveOne(s, o),
-      optional: !!o.optional,
-    });
-  }
-
-  // Auto-stairs row: per the 2021 rulebook ("you successfully complete
-  // a quest only when you have... returned to the safety of the
-  // stairway"), EVERY living hero must be on a stair cell — not just
-  // one. Locked until all required earlier objectives are done.
-  const required = out.filter(o => !o.optional);
-  const allRequiredDone = required.length > 0 && required.every(o => o.done);
-  const stairCells = (s.stairCells && s.stairCells.length) ? s.stairCells : (s._startCells || []);
-  const livingHeroes = s.heroes.filter(h => !h.dead);
-  const heroesOnStair = livingHeroes.filter(h =>
-    stairCells.some(c => c[0] === h.at[0] && c[1] === h.at[1])
-  ).length;
-  const stairsDone = allRequiredDone
-    && livingHeroes.length > 0
-    && stairCells.length > 0
-    && heroesOnStair === livingHeroes.length;
-  // Show progress on the row so players can see who still needs to walk back
-  let stairText = 'All living heroes return to a staircase';
-  if (livingHeroes.length > 0) stairText += ` (${heroesOnStair}/${livingHeroes.length})`;
-  out.push({
-    id: '_stairs',
-    text: stairText,
-    done: stairsDone,
-    optional: false,
-    locked: !allRequiredDone,
-  });
-
-  return out;
-}
+// `_evalObjectiveOne`, `evaluateObjectives`, and `requiredObjectivesMet`
+// now live in `game/objectives.js` and are imported at the top of
+// this file. `checkEndConditions` (below) keeps the state-mutating
+// promotion to `winner` and the between-quest hero restoration.
 
 // 2021 rule: a quest is complete only when its objective has been met
 // AND at least one living hero stands on a stairway tile. We track
@@ -1595,25 +1513,15 @@ function checkEndConditions(room) {
     return true;
   }
   // Update objectiveMet — supports rich `objectives` array OR singleton
-  // `objective`. For the array form, "met" means all non-optional rows
-  // are complete. Reuses _evalObjectiveOne so the flip is in lockstep
-  // with what the live UI panel shows.
-  if (!s.objectiveMet) {
+  // `objective`. Reuses requiredObjectivesMet from game/objectives.js
+  // so the flip is in lockstep with what the live UI panel shows.
+  if (!s.objectiveMet && requiredObjectivesMet(s)) {
     const arr = (Array.isArray(s.objectives) && s.objectives.length) ? s.objectives : null;
-    let met = false;
-    let textForLog = '';
-    if (arr) {
-      const required = arr.filter(o => !o.optional);
-      met = required.length > 0 && required.every(o => _evalObjectiveOne(s, o));
-      textForLog = required.map(o => o.text).filter(Boolean).join('; ') || 'goal complete.';
-    } else if (s.objective) {
-      met = _evalObjectiveOne(s, s.objective);
-      textForLog = s.objective.text || 'goal complete.';
-    }
-    if (met) {
-      s.objectiveMet = true;
-      logEvent(room, `Objective achieved: ${textForLog} Now return to the staircase to finish the quest.`, 'reveal');
-    }
+    const textForLog = arr
+      ? (arr.filter(o => !o.optional).map(o => o.text).filter(Boolean).join('; ') || 'goal complete.')
+      : ((s.objective && s.objective.text) || 'goal complete.');
+    s.objectiveMet = true;
+    logEvent(room, `Objective achieved: ${textForLog} Now return to the staircase to finish the quest.`, 'reveal');
   }
   const obj = s.objective;
   // Victory — objective met AND every living hero on a stair cell.

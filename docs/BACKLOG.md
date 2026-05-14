@@ -8,6 +8,40 @@ into the relevant folder's README as historical context).
 
 ---
 
+## Continue server.js module extraction (Phases B + C)
+
+**Why:** Phases A landed (util / combat-dice / los / pathfinding /
+objectives) and shaved ~150 lines off `server.js`. The big wins for
+the next pass are documented in
+[`../game/SERVER_REGIONS.md`](../game/SERVER_REGIONS.md). Until
+extracted they live in `server.js` but the SKILL doc gives Claude
+a focused pointer when working on each region.
+
+**Extraction order** (highest value first):
+
+1. `game/view.js` — `viewFor` (line ~366, ~200 lines). Pure
+   projection, big block, immediately testable.
+2. `game/quest-builder.js` — `buildBoardState` + the `build*` family
+   (line ~605, ~390 lines). Pure modulo `shuffle`. Good for
+   testability.
+3. `game/spells.js` — `resolveSpell` (line ~1714, ~170 lines). High
+   churn area; move once seams are obvious.
+4. `game/traps.js` — `triggerTrapsForCell` (line ~2071, ~70 lines).
+   Self-contained, small.
+5. `game/treasure-deck.js` — draw + effect resolver (line ~1883).
+6. `game/combat.js` (full) — fold damage resolution + effective dice
+   (lines ~1392 and ~1664) into the existing combat module.
+
+Each extraction:
+- Targets one well-bounded region.
+- Uses **dependency injection** for `logEvent` / `checkEndConditions` /
+  rules-tables — never hard-imports them.
+- Adds a sibling `<module>.md` skill doc with purpose / exports /
+  state-shape contract.
+- Verifies `npm test` still passes.
+
+---
+
 ## YAML consolidation for monsters / hero tokens / tile icons
 
 **Why:** The furniture tables collapsed into `canonical-pieces.yaml`

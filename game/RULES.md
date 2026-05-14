@@ -26,7 +26,16 @@ working on it.
 | [`combat.js`](combat.js) | [`combat.md`](combat.md) | Combat dice (`DICE_FACES`, `rollCombatDie`, `rollAttackDice`). Damage resolution still in `server.js`. |
 | [`los.js`](los.js) | [`los.md`](los.md) | Line-of-sight + occupant queries (`tileAt`, `occupantAt`, `lineOfSight`, `isMultiShareCell`, `isMonsterVisibleToHeroes`). |
 | [`pathfinding.js`](pathfinding.js) | [`pathfinding.md`](pathfinding.md) | BFS pathfinder + corridor branch counter. `passable` is injected by the caller. |
+| [`objectives.js`](objectives.js) | [`objectives.md`](objectives.md) | Quest-objective evaluation — `_evalObjectiveOne`, `evaluateObjectives`, `requiredObjectivesMet`. Pure; the state-mutating `checkEndConditions` stays in `server.js`. |
 | [`fog.js`](fog.js) | — | Fog-of-war logic — which cells are revealed for each hero given the current movement / LoS / open-door / blocked state. Tested in [`../test/fog.test.js`](../test/fog.test.js). |
+
+---
+
+## Index of regions still in `server.js`
+
+See [`SERVER_REGIONS.md`](SERVER_REGIONS.md) — line-range map of
+every region in `server.js`, what state each touches, and which
+ones are extraction candidates for a future pass.
 
 ---
 
