@@ -965,16 +965,25 @@ function drawBoard(view) {
   // textures). Draws over the base floor render but UNDER walls,
   // doors, furniture, etc., so the readable game art stays on top.
   HQTextures.drawFloorTextures(view, tm);
-  // Stair markers — group adjacent stair cells into one footprint (the
-  // canonical 2x2 stairway tile renders as a single piece, not 4 tiled
-  // glyphs). Only revealed cells participate so fog still hides hidden
-  // stairs.
-  const visibleStairs = (view.stairCells || []).filter(c => {
-    const t = tm.get(`${c[0]},${c[1]}`);
+  // Stair markers — render each stair piece as ONE 2x2 PNG with its
+  // own facing (the quest designer's XML rotation). Prefers the
+  // structured `view.stairs` array; falls back to grouping the flat
+  // `view.stairCells` for pre-schema-bump views.
+  const isRevealed = (cell) => {
+    const t = tm.get(`${cell[0]},${cell[1]}`);
     return t && t.revealed;
-  });
-  for (const group of groupAdjacentCells(visibleStairs)) {
-    drawStairsGroup(group);
+  };
+  if (Array.isArray(view.stairs) && view.stairs.length) {
+    for (const s of view.stairs) {
+      const visible = (s.cells || []).filter(isRevealed);
+      if (!visible.length) continue;
+      drawStairsGroup(visible, s.facing);
+    }
+  } else {
+    const visibleStairs = (view.stairCells || []).filter(isRevealed);
+    for (const group of groupAdjacentCells(visibleStairs)) {
+      drawStairsGroup(group);
+    }
   }
   // Inter-cell walls (between revealed tiles only — hidden walls remain dark)
   drawWalls(view, tm);
@@ -1274,7 +1283,9 @@ function groupAdjacentCells(cells) {
 // Stair group — paints the canonical 2×2 (or otherwise grouped) stair
 // footprint as a single sand-coloured backing + the heroscribe stair
 // PNG via HQTileArt (so alt-art + canonical-tiles.yaml are honoured).
-function drawStairsGroup(group) {
+// `facing` is optional — when supplied the stair PNG rotates to match
+// the quest designer's intent (XML rotation).
+function drawStairsGroup(group, facing) {
   if (!group || !group.length) return;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const [cx, cy] of group) {
@@ -1288,7 +1299,7 @@ function drawStairsGroup(group) {
   ctx.save();
   ctx.fillStyle = '#cba366';
   ctx.fillRect(px, py, pw, ph);
-  drawTileIcon('stairway', px, py, pw, ph);
+  drawTileIcon('stairway', px, py, pw, ph, facing);
   ctx.strokeStyle = '#3a2814';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);

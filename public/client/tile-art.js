@@ -69,22 +69,39 @@
     'rubble-double':  'Double-Block-Tile.png',
     'stairway':       'Stair-way.png',
   };
+  // Per-alias natural orientation. Only directional tiles (stairway)
+  // declare a naturalDir in canonical-tiles.yaml; the rubble + trap
+  // markers are symmetric and don't rotate.
+  let TILE_NATURAL = { 'stairway': 'downward' };
+
+  // Canvas rotation for a `facing` string relative to the tile's
+  // natural orientation. Same convention as the furniture renderer:
+  // downward = 0, rightward = +90°, upward = ±180°, leftward = -90°.
+  const FACING_RAD = {
+    downward:  0,
+    upward:    Math.PI,
+    leftward:  -Math.PI / 2,
+    rightward:  Math.PI / 2,
+  };
 
   function applyCanonicalTiles(yamlData) {
     const tiles = (yamlData && yamlData.tiles) || {};
     const flat = {};
     const alt  = {};
+    const nat  = {};
     for (const tileId of Object.keys(tiles)) {
       const t = tiles[tileId] || {};
       if (!t.file || !Array.isArray(t.aliases)) continue;
       for (const alias of t.aliases) {
         flat[alias] = t.file;
-        if (t.altFile) alt[alias] = t.altFile;
+        if (t.altFile)    alt[alias] = t.altFile;
+        if (t.naturalDir) nat[alias] = t.naturalDir;
       }
     }
     if (Object.keys(flat).length) {
       TILE_FILE = flat;
       TILE_FILE_ALT = alt;
+      TILE_NATURAL = nat;
       // Wipe both caches so the next draw re-resolves through the
       // refreshed alias maps.
       for (const k of Object.keys(TILE_IMG))     delete TILE_IMG[k];
@@ -112,7 +129,10 @@
     img.src = `/assets/tiles/${fn}`;
     return entry;
   }
-  function drawTileIcon(kind, px, py, pw, ph) {
+  // facing is optional. If supplied and the tile declares a naturalDir
+  // (only the stairway does today), the canvas is rotated around the
+  // bbox centre by (facing − natural). Non-directional tiles ignore it.
+  function drawTileIcon(kind, px, py, pw, ph, facing) {
     const e = getTileImg(kind);
     if (!e || !e.ready) return false;
     const img = e.img;
@@ -124,7 +144,23 @@
     const ar = img.naturalWidth / img.naturalHeight;
     let drawW = slotW, drawH = slotW / ar;
     if (drawH > slotH) { drawH = slotH; drawW = slotH * ar; }
-    _ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
+
+    const natural = TILE_NATURAL[kind];
+    const facingA = (facing && FACING_RAD[facing] != null) ? FACING_RAD[facing] : 0;
+    const naturalA = (natural && FACING_RAD[natural] != null) ? FACING_RAD[natural] : 0;
+    let angle = facingA - naturalA;
+    while (angle >  Math.PI) angle -= 2 * Math.PI;
+    while (angle < -Math.PI) angle += 2 * Math.PI;
+
+    if (Math.abs(angle) < 1e-6) {
+      _ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
+    } else {
+      _ctx.save();
+      _ctx.translate(px + pw / 2, py + ph / 2);
+      _ctx.rotate(angle);
+      _ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+      _ctx.restore();
+    }
     return true;
   }
 

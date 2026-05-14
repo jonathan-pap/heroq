@@ -460,21 +460,32 @@ let TILE_FILE_ALT = {
   'rubble-double':  'Double-Block-Tile.png',
   'stairway':       'Stair-way.png',
 };
+// Per-alias natural orientation (directional tiles only — stairway).
+let TILE_NATURAL = { 'stairway': 'downward' };
+const TILE_FACING_RAD = {
+  downward:  0,
+  upward:    Math.PI,
+  leftward:  -Math.PI / 2,
+  rightward:  Math.PI / 2,
+};
 function applyCanonicalTiles(yaml) {
   const tiles = (yaml && yaml.tiles) || {};
   const flat = {};
   const alt  = {};
+  const nat  = {};
   for (const tileId of Object.keys(tiles)) {
     const t = tiles[tileId] || {};
     if (!t.file || !Array.isArray(t.aliases)) continue;
     for (const alias of t.aliases) {
       flat[alias] = t.file;
-      if (t.altFile) alt[alias] = t.altFile;
+      if (t.altFile)    alt[alias] = t.altFile;
+      if (t.naturalDir) nat[alias] = t.naturalDir;
     }
   }
   if (Object.keys(flat).length) {
     TILE_FILE = flat;
     TILE_FILE_ALT = alt;
+    TILE_NATURAL = nat;
     // Wipe both caches so the next draw re-resolves.
     for (const k of Object.keys(TILE_IMG || {}))     delete TILE_IMG[k];
     for (const k of Object.keys(TILE_IMG_ALT || {})) delete TILE_IMG_ALT[k];
@@ -503,7 +514,10 @@ function getTileImg(kind) {
   img.src = `/assets/tiles/${fn}`;
   return entry;
 }
-function drawTileIcon(kind, px, py, pw, ph) {
+// facing is optional. If supplied and the tile declares a naturalDir
+// (only the stairway does), the canvas rotates around the bbox centre
+// by (facing − natural). Non-directional tiles ignore it.
+function drawTileIcon(kind, px, py, pw, ph, facing) {
   const e = getTileImg(kind);
   if (!e || !e.ready) return false;
   const img = e.img;
@@ -515,7 +529,23 @@ function drawTileIcon(kind, px, py, pw, ph) {
   const ar = img.naturalWidth / img.naturalHeight;
   let drawW = slotW, drawH = slotW / ar;
   if (drawH > slotH) { drawH = slotH; drawW = slotH * ar; }
-  ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
+
+  const natural = TILE_NATURAL[kind];
+  const facingA = (facing && TILE_FACING_RAD[facing] != null) ? TILE_FACING_RAD[facing] : 0;
+  const naturalA = (natural && TILE_FACING_RAD[natural] != null) ? TILE_FACING_RAD[natural] : 0;
+  let angle = facingA - naturalA;
+  while (angle >  Math.PI) angle -= 2 * Math.PI;
+  while (angle < -Math.PI) angle += 2 * Math.PI;
+
+  if (Math.abs(angle) < 1e-6) {
+    ctx.drawImage(img, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
+  } else {
+    ctx.save();
+    ctx.translate(px + pw / 2, py + ph / 2);
+    ctx.rotate(angle);
+    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+  }
   return true;
 }
 
@@ -1030,6 +1060,7 @@ async function loadQuest(file, silent) {
   const r = await fetch('/api/quests/' + encodeURIComponent(file));
   if (!r.ok) { setStatus('load failed'); return; }
   const q = await r.json();
+  normalizeStairs(q);
   state.current = file;
   state.quest = q;
   state.selection = null;
@@ -1194,7 +1225,18 @@ function rotateSelection(dir) {
     commitMutation('Rotated door');
     return;
   }
-  setStatus('Rotation only applies to furniture and doors.');
+  if (s.kind === 'stair') {
+    const stair = state.quest.stairs[s.index];
+    if (!stair) return;
+    // 2×2 stair is symmetric — only the PNG rotation (facing) changes.
+    const order = ['downward', 'rightward', 'upward', 'leftward'];
+    const cur = order.indexOf(stair.facing || 'downward');
+    const next = ((cur + (dir > 0 ? 1 : -1)) + 4) % 4;
+    stair.facing = order[next];
+    commitMutation('Rotated stair');
+    return;
+  }
+  setStatus('Rotation only applies to furniture, doors, and stairs.');
 }
 
 function rotateFurniture(f, dir) {
@@ -1269,6 +1311,7 @@ function deleteSelection() {
     treasure: 'treasure',
     trap: 'traps',
     blocked: 'blocked',
+    stair: 'stairs',
   };
   if (s.kind === 'npc') {
     delete state.quest.friendlyNpc;
@@ -1276,6 +1319,7 @@ function deleteSelection() {
     const key = map[s.kind];
     if (!key || !state.quest[key]) return;
     state.quest[key].splice(s.index, 1);
+    if (s.kind === 'stair') syncStairCells(state.quest);
   }
   state.selection = null;
   commitMutation('Deleted ' + s.kind);
@@ -1336,6 +1380,14 @@ function nudgeSelection(dx, dy) {
       s.ref = arr[s.index];
       break;
     }
+    case 'stair': {
+      const stair = state.quest.stairs[s.index]; if (!stair) return;
+      const moved = (stair.cells || []).map(([c, r]) => [c + dx, r + dy]);
+      if (!moved.every(([c, r]) => inB(c, r))) return;
+      stair.cells = moved;
+      syncStairCells(state.quest);
+      break;
+    }
   }
   commitMutation('Nudged ' + s.kind);
 }
@@ -1347,6 +1399,49 @@ function clearSelection() {
 }
 
 // ===== HIT-TESTING =======================================================
+// Ensure q.stairs exists in the structured shape. Older quests only
+// carried a flat `stairCells` array — synthesize a single group with
+// `facing: 'downward'` from it so the editor can manipulate stairs
+// uniformly. Idempotent — only fills in if missing.
+function normalizeStairs(q) {
+  if (!q) return;
+  if (Array.isArray(q.stairs)) return;
+  const cells = (q.stairCells || []).map(c => [...c]);
+  if (!cells.length) { q.stairs = []; return; }
+  // Group adjacent cells into pieces (4-neighbour flood fill).
+  const set = new Map();
+  for (const c of cells) set.set(`${c[0]},${c[1]}`, c);
+  const seen = new Set();
+  const groups = [];
+  for (const startKey of set.keys()) {
+    if (seen.has(startKey)) continue;
+    const group = [];
+    const stack = [startKey];
+    while (stack.length) {
+      const k = stack.pop();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const cell = set.get(k);
+      group.push(cell);
+      const [x, y] = cell;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nk = `${x+dx},${y+dy}`;
+        if (set.has(nk) && !seen.has(nk)) stack.push(nk);
+      }
+    }
+    groups.push(group);
+  }
+  q.stairs = groups.map(g => ({ cells: g, facing: 'downward' }));
+}
+
+// Rebuild q.stairCells from q.stairs. Called whenever the structured
+// `stairs` array mutates so the legacy flat field stays in sync (the
+// server still reads stairCells, and old views fall back to it).
+function syncStairCells(q) {
+  if (!q || !Array.isArray(q.stairs)) return;
+  q.stairCells = q.stairs.flatMap(s => (s.cells || []).map(c => [...c]));
+}
+
 function pickAt(c, r) {
   const q = state.quest;
   if (!q) return null;
@@ -1379,6 +1474,13 @@ function pickAt(c, r) {
   for (let i = 0; i < (q.blocked || []).length; i++) {
     const b = q.blocked[i];
     if (b && b[0] === c && b[1] === r) return { kind: 'blocked', index: i, ref: b };
+  }
+  // Stair pieces — each entry is { cells: [[..]], facing }. The
+  // selection ref IS that object so rotate / move / delete operate
+  // on it directly.
+  for (let i = 0; i < (q.stairs || []).length; i++) {
+    const s = q.stairs[i];
+    if ((s.cells || []).some(p => eq(p, [c, r]))) return { kind: 'stair', index: i, ref: s };
   }
   return null;
 }
@@ -1423,7 +1525,7 @@ function onCanvasMouseDown(e) {
   // the cursor offset from it so motion is relative.
   const ref = hit.ref;
   let anchor = null;
-  if (hit.kind === 'furniture') {
+  if (hit.kind === 'furniture' || hit.kind === 'stair') {
     let mc = 99, mr = 99;
     for (const [cc, rr] of (ref.cells || [])) { if (cc < mc) mc = cc; if (rr < mr) mr = rr; }
     anchor = [mc, mr];
@@ -1472,7 +1574,7 @@ function onCanvasMouseUp() {
 // from its current anchor and stays on-board).
 function moveEntityTo(ds, newC, newR) {
   const ref = ds.ref;
-  if (ds.kind === 'furniture') {
+  if (ds.kind === 'furniture' || ds.kind === 'stair') {
     const cells = ref.cells || [];
     let mc = 99, mr = 99, xc = -1, xr = -1;
     for (const [cc, rr] of cells) {
@@ -1484,6 +1586,7 @@ function moveEntityTo(ds, newC, newR) {
     if (newC < 0 || newR < 0 || newC + w > COLS || newR + h > ROWS) return false;
     const dc = newC - mc, dr = newR - mr;
     ref.cells = cells.map(([cc, rr]) => [cc + dc, rr + dr]);
+    if (ds.kind === 'stair') syncStairCells(state.quest);
     return true;
   }
   if (ds.kind === 'door' || ds.kind === 'secretDoor') {
@@ -1792,8 +1895,8 @@ function drawBoard() {
     }
   }
 
-  // start / stair cells — render the heroscribe stairway image over
-  // the blue START highlight so the editor matches the live game.
+  // Start cells — cyan highlight where heroes spawn. Often (but not
+  // always — see Q10) the same cells as the entry stair.
   if (state.layers.start) {
     const starts = q.startCells || q.stairCells || [];
     ctx.fillStyle = C.start;
@@ -1808,17 +1911,31 @@ function drawBoard() {
       const sy = PAD_T + mn[1] * CELL;
       const sw = (mx[0] - mn[0] + 1) * CELL;
       const sh = (mx[1] - mn[1] + 1) * CELL;
-      // Stairway is now a TILE (data/tiles/canonical-tiles.yaml), so it
-      // renders through the tile image cache — drawTileIcon picks up
-      // the alt-art toggle and the tile-inset bucket the same way the
-      // game's HQTileArt does.
-      drawTileIcon('stairway', sx, sy, sw, sh);
       ctx.strokeStyle = C.startBdr; ctx.lineWidth = 2;
       ctx.strokeRect(sx + 1, sy + 1, sw - 2, sh - 2);
       ctx.fillStyle = C.startBdr;
       ctx.font = 'bold 10px ui-monospace, Consolas, monospace';
       ctx.textAlign = 'left'; ctx.textBaseline = 'top';
       ctx.fillText('START', sx + 4, sy + 4);
+    }
+
+    // Stair pieces — render each q.stairs entry as its own 2×2 PNG
+    // with the right facing. drawTileIcon honours alt-art + natural
+    // orientation, so rotating the stair in the editor shows up
+    // immediately.
+    for (const stair of (q.stairs || [])) {
+      const cells = stair.cells || [];
+      if (!cells.length) continue;
+      let mc = 99, mr = 99, xc = -1, xr = -1;
+      for (const [c, r] of cells) {
+        if (c < mc) mc = c; if (r < mr) mr = r;
+        if (c > xc) xc = c; if (r > xr) xr = r;
+      }
+      const sx = PAD_L + mc * CELL;
+      const sy = PAD_T + mr * CELL;
+      const sw = (xc - mc + 1) * CELL;
+      const sh = (xr - mr + 1) * CELL;
+      drawTileIcon('stairway', sx, sy, sw, sh, stair.facing);
     }
   }
 

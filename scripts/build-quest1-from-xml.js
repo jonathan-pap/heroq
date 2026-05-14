@@ -205,8 +205,11 @@ const furnitureTraps = [];
 // (canonical `Stairway`, where heroes start) from secondary
 // stairs (`Stairs` exit, etc.). For single-stair quests both arrays
 // collapse to one and startCells = stairCells as before.
-const entryStairCells = [];      // Stairway pieces (canonical entry)
-const secondaryStairCells = [];  // Stairs pieces (exit / additional)
+// Each stair is stored as { cells, facing } so the editor can rotate
+// the PNG (Stairway's natural PNG faces downward; XML rotation
+// preserves the original quest designer's intent).
+const entryStairs = [];      // Stairway pieces (canonical entry)
+const secondaryStairs = [];  // Stairs pieces (exit / additional)
 const usedNames = {};
 function nextId(prefix) {
   usedNames[prefix] = (usedNames[prefix] || 0) + 1;
@@ -225,12 +228,20 @@ for (const o of objects) {
   // Stairway / Stairs — both render as 2x2 stair tiles. Track them
   // separately by PieceID so multi-stair quests can pick the right
   // group for startCells (heroes start on the canonical `Stairway`).
+  // facing carries the XML rotation so the renderer can spin the PNG
+  // to match the quest designer's intent.
   if (o.id === 'Stairway') {
-    for (const cell of cellsForPiece('Stairway', c, r, o.rot)) entryStairCells.push(cell);
+    entryStairs.push({
+      cells: cellsForPiece('Stairway', c, r, o.rot),
+      facing: o.rot || 'downward',
+    });
     continue;
   }
   if (o.id === 'Stairs') {
-    for (const cell of cellsForPiece('Stairway', c, r, o.rot)) secondaryStairCells.push(cell);
+    secondaryStairs.push({
+      cells: cellsForPiece('Stairway', c, r, o.rot),
+      facing: o.rot || 'downward',
+    });
     continue;
   }
 
@@ -325,11 +336,17 @@ for (const o of objects) {
 }
 
 // Assemble the JSON.
-// All stair cells render on the board (one PNG per 2x2 group). The
-// entry stair (Stairway) is preferred as startCells; fall back to the
-// only stair group if a single-stair quest used the `Stairs` PieceID,
-// or to a debug seed cell if neither produced exactly 4 cells.
-const stairCells = [...entryStairCells, ...secondaryStairCells];
+// All stair groups render on the board (one PNG per 2x2). `stairs`
+// is the rich structured array (per-group cells + facing); the flat
+// `stairCells` stays as a union of all cells for back-compat with
+// any reader that hasn't migrated yet.
+// The entry stair (Stairway) is preferred as startCells; fall back
+// to the only stair group if a single-stair quest used the `Stairs`
+// PieceID, or to a debug seed cell if neither produced exactly 4
+// cells.
+const stairs = [...entryStairs, ...secondaryStairs];
+const stairCells = stairs.flatMap(s => s.cells);
+const entryStairCells = entryStairs.flatMap(s => s.cells);
 const startCells =
   entryStairCells.length === 4   ? entryStairCells.slice() :
   stairCells.length === 4        ? stairCells.slice() :
@@ -368,6 +385,7 @@ const quest = {
   furnitureTraps,
 
   startCells,
+  stairs,
   stairCells,
 
   wanderingMonster: 'orc',

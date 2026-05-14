@@ -394,6 +394,15 @@ function freshGameState(room, deps) {
     stairCells: (quest.stairCells && quest.stairCells.length)
       ? quest.stairCells.map(c => [...c])
       : (quest.startCells || []).map(c => [...c]),
+    // Structured stair groups (per-group cells + facing). Falls back
+    // to a single 'downward' group built from stairCells/startCells if
+    // the quest JSON doesn't carry the new shape yet (older quests).
+    stairs: Array.isArray(quest.stairs)
+      ? quest.stairs.map(s => ({
+          cells: (s.cells || []).map(c => [...c]),
+          facing: s.facing || 'downward',
+        }))
+      : null,
     _startCells: (quest.startCells || []).map(c => [...c]),
     // Debug overlays — show 1-based coords (L#T#) and / or room IDs.
     showCellCoords: !!quest.showCellCoords,

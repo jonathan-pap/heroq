@@ -87,6 +87,10 @@ function viewFor(room, token, deps) {
     objectiveText: s.objectiveText,
     objectives: evaluateObjectives(s),
     stairCells: (s.stairCells && s.stairCells.length) ? s.stairCells : (s._startCells || []),
+    // Structured stair groups (with per-group facing) — new shape.
+    // Renderers can fall back to grouping stairCells if `stairs` is
+    // missing (older quests / runtime state pre-schema-bump).
+    stairs: Array.isArray(s.stairs) ? s.stairs : null,
     showCellCoords: !!s.showCellCoords,
     showRoomIds: !!s.showRoomIds,
     // Furniture as discrete pieces with full footprints — the renderer
