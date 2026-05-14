@@ -1271,14 +1271,9 @@ function groupAdjacentCells(cells) {
 // still mechanically the escape route, but the previous radial-fan arcs
 // were visual noise so they're gone — replaced by three crisp step
 // lines that read as "stairs" without the swirl.
-// Stair tile — heroscribe Stairway.png drawn over the natural stair-tile
-// backing. Falls back to a solid sand colour if the PNG hasn't loaded.
-let stairImg = null;
-(() => {
-  const img = new Image();
-  img.onload = () => { stairImg = img; if (lastView) drawBoard(lastView); };
-  img.src = '/assets/tiles/Stairway.png';
-})();
+// Stair group — paints the canonical 2×2 (or otherwise grouped) stair
+// footprint as a single sand-coloured backing + the heroscribe stair
+// PNG via HQTileArt (so alt-art + canonical-tiles.yaml are honoured).
 function drawStairsGroup(group) {
   if (!group || !group.length) return;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -1293,19 +1288,7 @@ function drawStairsGroup(group) {
   ctx.save();
   ctx.fillStyle = '#cba366';
   ctx.fillRect(px, py, pw, ph);
-  if (stairImg) {
-    // Use the same stair-bucket inset the editor's slider drives so
-    // tweaks in the tool propagate to the live game.
-    const cellsW = Math.max(1, Math.round(pw / CELL));
-    const cellsH = Math.max(1, Math.round(ph / CELL));
-    const inset  = insetForBbox(cellsW, cellsH);
-    const slotW = pw - 2 * inset;
-    const slotH = ph - 2 * inset;
-    const ar = stairImg.naturalWidth / stairImg.naturalHeight;
-    let drawW = slotW, drawH = slotW / ar;
-    if (drawH > slotH) { drawH = slotH; drawW = slotH * ar; }
-    ctx.drawImage(stairImg, px + (pw - drawW) / 2, py + (ph - drawH) / 2, drawW, drawH);
-  }
+  drawTileIcon('stairway', px, py, pw, ph);
   ctx.strokeStyle = '#3a2814';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);

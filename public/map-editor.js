@@ -219,7 +219,6 @@ const FURN_FILE_FALLBACK = {
   'rack':              { file: 'Rack.png',            natural: 'downward' },
   'chest':             { file: 'TreasureChest.png',   natural: 'downward' },
   'throne':            { file: 'Throne.png',          natural: 'downward' },
-  'stairway':          { file: 'Stairway.png',        natural: 'downward', dir: 'tiles' },
 };
 // Alt-art fallback (sized-name icons). Populated by canonicalPieces
 // when present; kept here so the toggle still has something to swap
@@ -1809,10 +1808,11 @@ function drawBoard() {
       const sy = PAD_T + mn[1] * CELL;
       const sw = (mx[0] - mn[0] + 1) * CELL;
       const sh = (mx[1] - mn[1] + 1) * CELL;
-      // Try the heroscribe stair tile via the furniture image cache —
-      // routed through drawFurnIcon so it picks up the FURN_INSETS.stair
-      // bucket automatically (stairway is canonically 2×2).
-      drawFurnIcon('stairway', sx, sy, sw, sh, null, false, false);
+      // Stairway is now a TILE (data/tiles/canonical-tiles.yaml), so it
+      // renders through the tile image cache — drawTileIcon picks up
+      // the alt-art toggle and the tile-inset bucket the same way the
+      // game's HQTileArt does.
+      drawTileIcon('stairway', sx, sy, sw, sh);
       ctx.strokeStyle = C.startBdr; ctx.lineWidth = 2;
       ctx.strokeRect(sx + 1, sy + 1, sw - 2, sh - 2);
       ctx.fillStyle = C.startBdr;
